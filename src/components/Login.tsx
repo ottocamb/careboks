@@ -20,11 +20,11 @@ const Login = ({ onLogin }: LoginProps) => {
 
     // Simple password check
     if (password === "tartutartu") {
-      localStorage.setItem("cardiocomm-auth", "true");
+      localStorage.setItem("doctorbridge-auth", "true");
       onLogin();
       toast({
         title: "Access Granted",
-        description: "Welcome to CardioComm AI",
+        description: "Welcome to Doctor Bridge",
       });
     } else {
       toast({
@@ -48,7 +48,7 @@ const Login = ({ onLogin }: LoginProps) => {
             </div>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">CardioComm AI</h1>
+            <h1 className="text-2xl font-bold text-foreground">Doctor Bridge</h1>
             <p className="text-sm text-muted-foreground">Patient Communication Tool</p>
           </div>
         </CardHeader>

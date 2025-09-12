@@ -14,7 +14,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const authStatus = localStorage.getItem("cardiocomm-auth");
+    const authStatus = localStorage.getItem("doctorbridge-auth");
     setIsAuthenticated(authStatus === "true");
   }, []);
 
@@ -23,7 +23,7 @@ const App = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("cardiocomm-auth");
+    localStorage.removeItem("doctorbridge-auth");
     setIsAuthenticated(false);
   };
 

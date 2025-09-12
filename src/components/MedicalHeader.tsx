@@ -17,7 +17,7 @@ const MedicalHeader = ({ currentStep, totalSteps, onLogout }: MedicalHeaderProps
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">CardioComm AI</h1>
+              <h1 className="text-2xl font-bold text-foreground">Doctor Bridge</h1>
               <p className="text-sm text-muted-foreground">Patient Communication Tool</p>
             </div>
           </div>
