@@ -21,7 +21,11 @@ interface PatientData {
   comorbidities: string[];
 }
 
-const Index = () => {
+interface IndexProps {
+  onLogout: () => void;
+}
+
+const Index = ({ onLogout }: IndexProps) => {
   const [currentStep, setCurrentStep] = useState<Step>('input');
   const [technicalNote, setTechnicalNote] = useState("");
   const [patientData, setPatientData] = useState<PatientData | null>(null);
@@ -69,7 +73,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <MedicalHeader currentStep={currentStepIndex + 1} totalSteps={totalSteps} />
+      <MedicalHeader currentStep={currentStepIndex + 1} totalSteps={totalSteps} onLogout={onLogout} />
       
       <main className="container mx-auto px-6 py-8">
         {currentStep === 'input' && (

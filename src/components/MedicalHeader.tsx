@@ -1,11 +1,13 @@
-import { Heart, Languages, Shield } from "lucide-react";
+import { Heart, Languages, Shield, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MedicalHeaderProps {
   currentStep: number;
   totalSteps: number;
+  onLogout: () => void;
 }
 
-const MedicalHeader = ({ currentStep, totalSteps }: MedicalHeaderProps) => {
+const MedicalHeader = ({ currentStep, totalSteps, onLogout }: MedicalHeaderProps) => {
   return (
     <header className="bg-card border-b border-border shadow-md">
       <div className="container mx-auto px-6 py-4">
@@ -31,16 +33,27 @@ const MedicalHeader = ({ currentStep, totalSteps }: MedicalHeaderProps) => {
               <span>Clinically Approved</span>
             </div>
             
-            <div className="text-right">
-              <div className="text-sm font-medium text-foreground">
-                Step {currentStep} of {totalSteps}
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-sm font-medium text-foreground">
+                  Step {currentStep} of {totalSteps}
+                </div>
+                <div className="w-32 h-2 bg-muted rounded-full mt-1">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-32 h-2 bg-muted rounded-full mt-1">
-                <div 
-                  className="h-full bg-primary rounded-full transition-all duration-500"
-                  style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                />
-              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onLogout}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
