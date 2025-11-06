@@ -33,16 +33,38 @@ const ProfileSection = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      setProfile({
-        first_name: data.first_name || "",
-        last_name: data.last_name || "",
-        email: data.email || user.email || "",
-        role: data.role || ""
-      });
+      // If no profile exists, create one
+      if (!data) {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email || "",
+            first_name: "",
+            last_name: "",
+            role: ""
+          });
+
+        if (insertError) throw insertError;
+
+        setProfile({
+          first_name: "",
+          last_name: "",
+          email: user.email || "",
+          role: ""
+        });
+      } else {
+        setProfile({
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          email: data.email || user.email || "",
+          role: data.role || ""
+        });
+      }
     } catch (error: any) {
       console.error('Error loading profile:', error);
       toast({
