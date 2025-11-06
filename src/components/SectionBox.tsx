@@ -10,7 +10,6 @@ interface SectionBoxProps {
   icon: React.ReactNode;
   title: string;
   content: string;
-  gaps?: string[];
   onEdit: (newContent: string) => void;
   themeColor: string;
   className?: string;
@@ -20,7 +19,6 @@ export const SectionBox = ({
   icon,
   title,
   content,
-  gaps = [],
   onEdit,
   themeColor,
   className,
@@ -28,7 +26,6 @@ export const SectionBox = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
 
-  const hasGaps = gaps.length > 0;
   const isEmpty = !content || content.trim().length === 0;
 
   const handleSave = () => {
@@ -50,16 +47,10 @@ export const SectionBox = ({
             <CardTitle className="text-lg leading-tight">{title}</CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            {!isEmpty && !hasGaps && (
+            {!isEmpty && (
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                 <Check className="w-3 h-3 mr-1" />
                 Complete
-              </Badge>
-            )}
-            {hasGaps && (
-              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                <AlertCircle className="w-3 h-3 mr-1" />
-                Gaps
               </Badge>
             )}
             {isEmpty && (
@@ -79,19 +70,6 @@ export const SectionBox = ({
               className="min-h-[200px] font-sans"
               placeholder="Enter content for this section..."
             />
-            
-            {hasGaps && (
-              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 space-y-2">
-                <p className="text-sm font-medium text-amber-900">
-                  Physician prompts to address:
-                </p>
-                <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
-                  {gaps.map((gap, idx) => (
-                    <li key={idx}>{gap}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
 
             <div className="flex gap-2">
               <Button onClick={handleSave} size="sm" className="flex-1">
@@ -113,17 +91,6 @@ export const SectionBox = ({
             ) : (
               <div className="prose prose-sm max-w-none">
                 <p className="whitespace-pre-wrap text-foreground">{content}</p>
-              </div>
-            )}
-
-            {hasGaps && !isEditing && (
-              <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-                <p className="text-xs font-medium text-amber-900 mb-1">
-                  ⚠️ {gaps.length} gap{gaps.length > 1 ? 's' : ''} identified
-                </p>
-                <p className="text-xs text-amber-700">
-                  Click Edit to address missing information
-                </p>
               </div>
             )}
 

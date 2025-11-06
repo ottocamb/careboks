@@ -102,12 +102,6 @@ export const ClinicianApproval = ({
     }
   };
 
-  // Get gaps for each section from analysis
-  const getSectionGaps = (index: number): string[] => {
-    if (!analysis?.categories || !analysis.categories[index]) return [];
-    return analysis.categories[index].gaps || [];
-  };
-
   // Define section configurations
   const sectionConfigs = [
     { icon: <Heart />, themeColor: "text-blue-600" },
@@ -142,7 +136,6 @@ export const ClinicianApproval = ({
             icon={sectionConfigs[index]?.icon}
             title={section.title}
             content={section.content}
-            gaps={getSectionGaps(index)}
             onEdit={(newContent) => handleSectionEdit(index, newContent)}
             themeColor={sectionConfigs[index]?.themeColor || "text-gray-600"}
           />
@@ -155,51 +148,9 @@ export const ClinicianApproval = ({
           icon={sectionConfigs[6]?.icon}
           title={sections[6].title}
           content={sections[6].content}
-          gaps={getSectionGaps(6)}
           onEdit={(newContent) => handleSectionEdit(6, newContent)}
           themeColor={sectionConfigs[6]?.themeColor || "text-red-600"}
         />
-      )}
-
-      {/* AI Analysis Summary (if available) */}
-      {analysis && (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-lg">AI Analysis Summary</CardTitle>
-            <CardDescription>
-              Extracted information and identified gaps from the technical note
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {analysis.categories?.map((category: any, idx: number) => (
-              <div key={idx} className="space-y-2">
-                <h4 className="font-semibold text-sm text-blue-900">
-                  {category.category || `Category ${idx + 1}`}
-                </h4>
-                {category.extracted?.length > 0 && (
-                  <div className="text-sm">
-                    <p className="text-blue-700 font-medium">Extracted:</p>
-                    <ul className="list-disc list-inside text-blue-600 ml-2">
-                      {category.extracted.map((item: string, i: number) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {category.gaps?.length > 0 && (
-                  <div className="text-sm">
-                    <p className="text-amber-700 font-medium">Gaps to address:</p>
-                    <ul className="list-disc list-inside text-amber-600 ml-2">
-                      {category.gaps.map((gap: string, i: number) => (
-                        <li key={i}>{gap}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
       )}
 
       {/* Clinical Safety Reminders */}
