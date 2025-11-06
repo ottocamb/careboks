@@ -1,10 +1,7 @@
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-// Vite-friendly worker URL import
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - Vite will resolve this to an asset URL
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 
-GlobalWorkerOptions.workerSrc = pdfjsWorker as unknown as string;
+// Use CDN for worker
+GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
 export async function pdfToImageDataUrls(
   file: File,
