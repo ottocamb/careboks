@@ -8,42 +8,42 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 213 27% 15%;
+    --background: 33 31% 94%;
+    --foreground: 24 4% 22%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 213 27% 15%;
+    --card: 33 31% 96%;
+    --card-foreground: 24 4% 22%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 213 27% 15%;
+    --popover: 33 31% 96%;
+    --popover-foreground: 24 4% 22%;
 
-    --primary: 206 89% 24%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 127 19% 58%;
+    --primary-foreground: 33 31% 94%;
 
-    --secondary: 155 44% 85%;
-    --secondary-foreground: 213 27% 15%;
+    --secondary: 28 36% 81%;
+    --secondary-foreground: 24 4% 22%;
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 213 16% 45%;
+    --muted: 28 36% 88%;
+    --muted-foreground: 24 4% 45%;
 
-    --accent: 155 58% 45%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 127 19% 58%;
+    --accent-foreground: 33 31% 94%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 33 31% 94%;
 
-    --border: 210 20% 88%;
-    --input: 0 0% 100%;
-    --ring: 206 89% 24%;
+    --border: 28 36% 85%;
+    --input: 33 31% 96%;
+    --ring: 127 19% 58%;
 
-    --medical-blue: 206 89% 24%;
-    --medical-green: 155 58% 45%;
-    --medical-light-blue: 206 89% 88%;
-    --medical-light-green: 155 44% 85%;
+    --medical-blue: 127 19% 58%;
+    --medical-green: 127 19% 58%;
+    --medical-light-blue: 127 19% 88%;
+    --medical-light-green: 28 36% 81%;
     --warning: 38 92% 50%;
     --warning-foreground: 48 96% 89%;
-    --success: 155 58% 45%;
-    --success-foreground: 0 0% 98%;
+    --success: 127 19% 58%;
+    --success-foreground: 33 31% 94%;
 
     --gradient-medical: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
