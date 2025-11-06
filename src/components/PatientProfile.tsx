@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { User, Brain, Globe, Users } from "lucide-react";
-
 interface PatientData {
   age: string;
   sex: string;
@@ -19,13 +18,14 @@ interface PatientData {
   mentalState: string;
   comorbidities: string[];
 }
-
 interface PatientProfileProps {
   onNext: (data: PatientData) => void;
   onBack: () => void;
 }
-
-const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
+const PatientProfile = ({
+  onNext,
+  onBack
+}: PatientProfileProps) => {
   const [data, setData] = useState<PatientData>({
     age: "",
     sex: "",
@@ -38,24 +38,17 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
     mentalState: "",
     comorbidities: []
   });
-
   const handleComorbidityChange = (comorbidity: string, checked: boolean) => {
     setData(prev => ({
       ...prev,
-      comorbidities: checked 
-        ? [...prev.comorbidities, comorbidity]
-        : prev.comorbidities.filter(c => c !== comorbidity)
+      comorbidities: checked ? [...prev.comorbidities, comorbidity] : prev.comorbidities.filter(c => c !== comorbidity)
     }));
   };
-
   const handleNext = () => {
     onNext(data);
   };
-
   const isValid = data.age && data.sex && data.language && data.healthLiteracy && data.journeyType;
-
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
+  return <div className="max-w-4xl mx-auto space-y-6">
       <Card className="shadow-card">
         <CardHeader>
           <div className="flex items-center space-x-2">
@@ -70,7 +63,10 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="age">Age</Label>
-              <Select value={data.age} onValueChange={(value) => setData(prev => ({ ...prev, age: value }))}>
+              <Select value={data.age} onValueChange={value => setData(prev => ({
+              ...prev,
+              age: value
+            }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select age bracket" />
                 </SelectTrigger>
@@ -85,7 +81,10 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="sex">Sex</Label>
-              <Select value={data.sex} onValueChange={(value) => setData(prev => ({ ...prev, sex: value }))}>
+              <Select value={data.sex} onValueChange={value => setData(prev => ({
+              ...prev,
+              sex: value
+            }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select sex" />
                 </SelectTrigger>
@@ -99,7 +98,10 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="language">Preferred Language</Label>
-              <Select value={data.language} onValueChange={(value) => setData(prev => ({ ...prev, language: value }))}>
+              <Select value={data.language} onValueChange={value => setData(prev => ({
+              ...prev,
+              language: value
+            }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
@@ -113,7 +115,10 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="literacy">Health Literacy Level</Label>
-              <Select value={data.healthLiteracy} onValueChange={(value) => setData(prev => ({ ...prev, healthLiteracy: value }))}>
+              <Select value={data.healthLiteracy} onValueChange={value => setData(prev => ({
+              ...prev,
+              healthLiteracy: value
+            }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select literacy level" />
                 </SelectTrigger>
@@ -127,7 +132,10 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="journey">Patient Journey Type</Label>
-              <Select value={data.journeyType} onValueChange={(value) => setData(prev => ({ ...prev, journeyType: value }))}>
+              <Select value={data.journeyType} onValueChange={value => setData(prev => ({
+              ...prev,
+              journeyType: value
+            }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select journey type" />
                 </SelectTrigger>
@@ -142,7 +150,10 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="risk">Risk Communication Preference</Label>
-              <Select value={data.riskAppetite} onValueChange={(value) => setData(prev => ({ ...prev, riskAppetite: value }))}>
+              <Select value={data.riskAppetite} onValueChange={value => setData(prev => ({
+              ...prev,
+              riskAppetite: value
+            }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select preference" />
                 </SelectTrigger>
@@ -155,54 +166,32 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <Label>Mental State Considerations</Label>
-            <Select value={data.mentalState} onValueChange={(value) => setData(prev => ({ ...prev, mentalState: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select mental state (if observable)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="calm">Calm and receptive</SelectItem>
-                <SelectItem value="anxious">Anxious</SelectItem>
-                <SelectItem value="depressed">Depressed/overwhelmed</SelectItem>
-                <SelectItem value="denial">In denial</SelectItem>
-                <SelectItem value="accepting">Accepting</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          
 
           <div className="space-y-4">
             <Label>Comorbidities</Label>
             <div className="grid grid-cols-2 gap-4">
-              {['Diabetes', 'Hypertension', 'COPD', 'Kidney Disease', 'Depression'].map(condition => (
-                <div key={condition} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={condition}
-                    checked={data.comorbidities.includes(condition)}
-                    onCheckedChange={(checked) => handleComorbidityChange(condition, !!checked)}
-                  />
+              {['Diabetes', 'Hypertension', 'COPD', 'Kidney Disease', 'Depression'].map(condition => <div key={condition} className="flex items-center space-x-2">
+                  <Checkbox id={condition} checked={data.comorbidities.includes(condition)} onCheckedChange={checked => handleComorbidityChange(condition, !!checked)} />
                   <Label htmlFor={condition}>{condition}</Label>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="accessibility"
-                checked={data.hasAccessibilityNeeds}
-                onCheckedChange={(checked) => setData(prev => ({ ...prev, hasAccessibilityNeeds: !!checked }))}
-              />
+              <Checkbox id="accessibility" checked={data.hasAccessibilityNeeds} onCheckedChange={checked => setData(prev => ({
+              ...prev,
+              hasAccessibilityNeeds: !!checked
+            }))} />
               <Label htmlFor="accessibility">Patient has vision/hearing accessibility needs</Label>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="relatives"
-                checked={data.includeRelatives}
-                onCheckedChange={(checked) => setData(prev => ({ ...prev, includeRelatives: !!checked }))}
-              />
+              <Checkbox id="relatives" checked={data.includeRelatives} onCheckedChange={checked => setData(prev => ({
+              ...prev,
+              includeRelatives: !!checked
+            }))} />
               <Label htmlFor="relatives">Include information for relatives/caregivers</Label>
             </div>
           </div>
@@ -255,8 +244,6 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PatientProfile;
