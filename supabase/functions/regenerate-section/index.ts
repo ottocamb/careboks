@@ -1,13 +1,88 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { 
-  SYSTEM_PROMPT, 
-  getPersonalizationInstructions,
-  getSectionGuidelines,
-  getLanguageSpecificGuidelines,
-  SAFETY_RULES,
-  PatientProfile
-} from "../generate-patient-draft/prompts/medical-communicator-prompt.ts";
+
+// Prompt definitions (duplicated from generate-patient-draft for edge function isolation)
+const SYSTEM_PROMPT = `You are an expert medical communicator specializing in translating complex clinical information into clear, empathetic, patient-friendly explanations.
+
+YOUR ROLE:
+- Transform technical medical information into language patients can understand
+- Adapt communication based on patient's health literacy, age, language, and emotional state
+- Maintain clinical accuracy while prioritizing clarity
+- Never speculate or add information not present in the source material
+- Acknowledge uncertainty clearly when information is incomplete
+
+CORE PRINCIPLES:
+1. CLARITY OVER JARGON: Use simple, everyday language
+2. EMPATHY WITHOUT PATRONIZING: Be warm and supportive while respecting patient intelligence
+3. ACCURACY: Never hallucinate medical facts; work only with provided information
+4. PERSONALIZATION: Adapt tone, vocabulary, and depth based on patient profile
+5. SAFETY FIRST: Emphasize critical information (medications, warning signs, contacts)
+6. ACKNOWLEDGE GAPS: When uncertain, say "We don't yet know; your doctor will guide you"`;
+
+interface PatientProfile {
+  age: number;
+  sex: 'male' | 'female' | 'other';
+  healthLiteracy: 'low' | 'medium' | 'high';
+  language: 'estonian' | 'russian' | 'english';
+  journeyType?: 'elective' | 'emergency' | 'chronic' | 'first-time';
+  comorbidities?: string;
+  smokingStatus?: string;
+  riskAppetite?: 'minimal' | 'moderate' | 'detailed';
+}
+
+const getPersonalizationInstructions = (profile: PatientProfile): string => {
+  let instructions = `\nPERSONALIZATION REQUIREMENTS:\n`;
+  
+  if (profile.healthLiteracy === 'low') {
+    instructions += `
+HEALTH LITERACY (LOW):
+- Use very simple vocabulary (5th-grade reading level)
+- Short sentences (10-15 words maximum)
+- Avoid medical terms; use everyday analogies`;
+  } else if (profile.healthLiteracy === 'medium') {
+    instructions += `
+HEALTH LITERACY (MEDIUM):
+- Use clear, straightforward language
+- Introduce medical terms with immediate explanation
+- Moderate sentence length (15-20 words)`;
+  } else {
+    instructions += `
+HEALTH LITERACY (HIGH):
+- Professional but accessible language
+- Medical terminology is acceptable with context
+- Longer, more detailed explanations are okay`;
+  }
+
+  if (profile.age < 40) {
+    instructions += `\nAGE (YOUNGER): Address long-term lifestyle impact (career, family planning)`;
+  } else if (profile.age >= 65) {
+    instructions += `\nAGE (OLDER): Address retirement, mobility, independence concerns`;
+  }
+
+  if (profile.journeyType === 'emergency') {
+    instructions += `\nJOURNEY TYPE (EMERGENCY): Acknowledge the sudden nature, provide reassurance`;
+  } else if (profile.journeyType === 'first-time') {
+    instructions += `\nJOURNEY TYPE (FIRST-TIME): Assume no prior medical knowledge`;
+  } else if (profile.journeyType === 'chronic') {
+    instructions += `\nJOURNEY TYPE (CHRONIC): Build on existing knowledge`;
+  }
+
+  if (profile.riskAppetite === 'minimal') {
+    instructions += `\nINFORMATION DEPTH (MINIMAL): Brief, essential information only`;
+  } else if (profile.riskAppetite === 'detailed') {
+    instructions += `\nINFORMATION DEPTH (DETAILED): Comprehensive explanations with statistics`;
+  }
+
+  return instructions;
+};
+
+const SAFETY_RULES = `
+CRITICAL SAFETY RULES:
+1. NEVER SPECULATE - If information is missing, say so explicitly
+2. ALWAYS INCLUDE WARNING SIGNS - Even if details are limited
+3. MEDICATION SAFETY - Always warn: Never stop medications without consulting doctor
+4. NO HALLUCINATIONS - Only use information from provided analysis and technical note
+5. CULTURAL SENSITIVITY - Respect patient's language and cultural context`;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -62,6 +137,17 @@ EXTRACTED MEDICAL INFORMATION:
 - Emergency Contacts: ${analysis.emergencyContacts?.join(', ') || 'None'}
 ` : 'No structured analysis available.';
 
+    // Section-specific guidelines
+    const sectionGuidelines = {
+      0: "Explain the diagnosis in plain language with relevant test results",
+      1: "Provide practical daily instructions for diet, activity, and monitoring",
+      2: "Break down the timeline into phases with expected improvements",
+      3: "Describe long-term lifestyle impact with realistic but hopeful perspective",
+      4: "List each medication with name, dosage, timing, purpose, and importance",
+      5: "List emergency symptoms requiring immediate action",
+      6: "Provide cardiologist/physician contact, nurse hotline, pharmacy, and emergency numbers"
+    };
+
     // Build focused prompt for this specific section
     const userPrompt = `
 TECHNICAL NOTE:
@@ -75,31 +161,24 @@ PATIENT PROFILE:
 - Language: ${profile.language}
 - Health Literacy: ${profile.healthLiteracy}
 - Journey Type: ${profile.journeyType || 'not specified'}
-- Comorbidities: ${profile.comorbidities || 'none'}
 - Risk Appetite: ${profile.riskAppetite}
 
 ${getPersonalizationInstructions(profile)}
 
-${getSectionGuidelines(profile.language)}
-
-${getLanguageSpecificGuidelines(profile.language)}
-
 ${SAFETY_RULES}
 
+SECTION FOCUS: "${sectionTitle}"
+GUIDELINES: ${sectionGuidelines[sectionIndex as keyof typeof sectionGuidelines] || 'Generate appropriate content for this section'}
+
 CRITICAL INSTRUCTIONS:
-- You are regenerating ONLY this section: "${sectionTitle}"
-- Focus exclusively on the content for this section
-- Do NOT include section separators or dividers
-- Do NOT include the section title
-- Do NOT generate content for other sections
-- Return ONLY the paragraph text that belongs in this section
-- Use all the medical information provided above to answer this specific question
+- Generate content ONLY for the section: "${sectionTitle}"
+- Do NOT include section separators, dividers, or the section title
+- Return ONLY the paragraph text for this section
+- Use all medical information to answer this specific question
 - Follow all personalization requirements for this patient
+- Write in ${profile.language}
 
-Current content (for context):
-${currentContent || '(empty)'}
-
-Generate improved content for the section "${sectionTitle}" in ${profile.language}.`;
+Generate content for "${sectionTitle}".`;
 
     // Call Lovable AI
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
