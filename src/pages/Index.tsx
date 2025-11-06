@@ -17,7 +17,6 @@ interface PatientData {
   riskAppetite: string;
   hasAccessibilityNeeds: boolean;
   includeRelatives: boolean;
-  mentalState: string;
   comorbidities: string[];
 }
 

@@ -191,7 +191,6 @@ export type Database = {
           include_relatives: boolean | null
           journey_type: string | null
           language: string | null
-          mental_state: string | null
           risk_appetite: string | null
           sex: string | null
         }
@@ -206,7 +205,6 @@ export type Database = {
           include_relatives?: boolean | null
           journey_type?: string | null
           language?: string | null
-          mental_state?: string | null
           risk_appetite?: string | null
           sex?: string | null
         }
@@ -221,7 +219,6 @@ export type Database = {
           include_relatives?: boolean | null
           journey_type?: string | null
           language?: string | null
-          mental_state?: string | null
           risk_appetite?: string | null
           sex?: string | null
         }

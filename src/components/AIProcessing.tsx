@@ -69,8 +69,6 @@ Teie testide tulemused:
 • Vereanalüüs näitas kõrget südamestressi taset  
 • Jalad on tursunud, sest vedelik koguneb kehas
 
-${patientData.mentalState === 'anxious' ? 'Me mõistame, et see diagnoos võib tunduda hirmutav. Teie arst ja õed on siin, et Teid aidata. See on ravi- ja hallatav seisund.' : ''}
-
 
 ═══════════════════════════════════════════════════
 KUIDAS PEAKSIN EDASI ELAMA
@@ -172,7 +170,7 @@ Südameõde
 📞 +372 7XX XXXX
 Nõustamine ja küsimused: E-R 9:00-16:00
 
-${patientData.mentalState === 'anxious' ? 'Psühholoog (emotsionaalne tugi)\n📞 +372 7XX XXXX\n📧 psyhholoogia@haigla.ee\n\n' : ''}Apteek
+Apteek
 📞 +372 7XX XXXX
 Ravimite küsimused
 
@@ -195,8 +193,6 @@ Helistage kohe kui:
 • Сила сердца: 35% (норма 55-70%)
 • Анализ крови показал высокий уровень стресса сердца
 • Ноги отекают, потому что жидкость накапливается в организме
-
-${patientData.mentalState === 'anxious' ? 'Мы понимаем, что этот диагноз может пугать. Ваш врач и медсестры здесь, чтобы помочь Вам. Это поддающееся лечению и контролируемое состояние.' : ''}
 
 
 ═══════════════════════════════════════════════════
@@ -299,7 +295,7 @@ ${literacyLevel === 'low' ? 'Вам нужно будет принимать л�
 📞 +372 7XX XXXX
 Консультации и вопросы: Пн-Пт 9:00-16:00
 
-${patientData.mentalState === 'anxious' ? 'Психолог (эмоциональная поддержка)\n📞 +372 7XX XXXX\n📧 psyhholoogia@haigla.ee\n\n' : ''}Аптека
+Аптека
 📞 +372 7XX XXXX
 Вопросы о лекарствах
 
@@ -322,8 +318,6 @@ Your test results:
 • Heart strength: 35% (normal is 55-70%)
 • Blood test showed high levels of heart stress
 • Your legs are swollen because fluid is building up in your body
-
-${patientData.mentalState === 'anxious' ? 'We understand this diagnosis may feel frightening. Your doctor and nurses are here to help you. This is a treatable and manageable condition.' : ''}
 
 
 ═══════════════════════════════════════════════════
@@ -426,7 +420,7 @@ Heart Failure Nurse
 📞 +372 7XX XXXX
 Advice and questions: Mon-Fri 9:00-16:00
 
-${patientData.mentalState === 'anxious' ? 'Psychologist (emotional support)\n📞 +372 7XX XXXX\n📧 psychology@hospital.ee\n\n' : ''}Pharmacy
+Pharmacy
 📞 +372 7XX XXXX
 Medication questions
 

@@ -18,7 +18,6 @@ interface PatientData {
   riskAppetite: string;
   hasAccessibilityNeeds: boolean;
   includeRelatives: boolean;
-  mentalState: string;
   comorbidities: string[];
 }
 
@@ -40,7 +39,6 @@ const PatientProfile = ({ caseId, onNext, onBack }: PatientProfileProps) => {
     riskAppetite: "",
     hasAccessibilityNeeds: false,
     includeRelatives: false,
-    mentalState: "",
     comorbidities: []
   });
 
@@ -187,22 +185,6 @@ const PatientProfile = ({ caseId, onNext, onBack }: PatientProfileProps) => {
           </div>
 
           <div className="space-y-4">
-            <Label>Mental State Considerations</Label>
-            <Select value={data.mentalState} onValueChange={(value) => setData(prev => ({ ...prev, mentalState: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select mental state (if observable)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="calm">Calm and receptive</SelectItem>
-                <SelectItem value="anxious">Anxious</SelectItem>
-                <SelectItem value="depressed">Depressed/overwhelmed</SelectItem>
-                <SelectItem value="denial">In denial</SelectItem>
-                <SelectItem value="accepting">Accepting</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-4">
             <Label>Comorbidities</Label>
             <div className="grid grid-cols-2 gap-4">
               {['Diabetes', 'Hypertension', 'COPD', 'Kidney Disease', 'Depression'].map(condition => (
@@ -257,7 +239,7 @@ const PatientProfile = ({ caseId, onNext, onBack }: PatientProfileProps) => {
               <h3 className="font-semibold">Personalization</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Content is tailored to age, literacy, and mental state
+              Content is tailored to age and literacy level
             </p>
           </CardContent>
         </Card>

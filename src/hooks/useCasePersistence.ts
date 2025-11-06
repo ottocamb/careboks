@@ -17,7 +17,6 @@ export interface PatientProfileData {
   riskAppetite: string;
   hasAccessibilityNeeds: boolean;
   includeRelatives: boolean;
-  mentalState: string;
   comorbidities: string[];
 }
 
@@ -102,7 +101,6 @@ export const useCasePersistence = () => {
           risk_appetite: profileData.riskAppetite,
           has_accessibility_needs: profileData.hasAccessibilityNeeds,
           include_relatives: profileData.includeRelatives,
-          mental_state: profileData.mentalState,
           comorbidities: profileData.comorbidities
         })
         .select()
