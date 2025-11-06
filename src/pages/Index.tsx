@@ -3,7 +3,7 @@ import MedicalHeader from "@/components/MedicalHeader";
 import TechnicalNoteInput from "@/components/TechnicalNoteInput";
 import PatientProfile from "@/components/PatientProfile";
 import AIProcessing from "@/components/AIProcessing";
-import ClinicianApproval from "@/components/ClinicianApproval";
+import { ClinicianApproval } from "@/components/ClinicianApproval";
 import FinalOutput from "@/components/FinalOutput";
 
 type Step = 'input' | 'profile' | 'processing' | 'approval' | 'output';
@@ -54,7 +54,7 @@ const Index = ({ onLogout }: IndexProps) => {
     setCurrentStep('approval');
   };
 
-  const handleClinicianApproval = (approvedText: string) => {
+  const handleClinicianApproval = (approvedText: string, clinicianName: string) => {
     setFinalText(approvedText);
     setCurrentStep('output');
   };

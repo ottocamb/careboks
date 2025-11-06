@@ -1,267 +1,252 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserCheck, Edit, CheckCircle, AlertTriangle, Printer, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
+import { Printer, ChevronLeft, CheckCircle2, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle } from "lucide-react";
+import { SectionBox } from "@/components/SectionBox";
+import { parseDraftIntoSections, reconstructDraft, ParsedSection } from "@/utils/draftParser";
 
 interface ClinicianApprovalProps {
   caseId: string;
   draft: string;
   analysis?: any;
-  onApprove: (finalText: string) => void;
+  onApprove: (finalText: string, clinicianName: string) => void;
   onBack: () => void;
 }
 
-const ClinicianApproval = ({ caseId, draft, analysis, onApprove, onBack }: ClinicianApprovalProps) => {
-  const { saveApproval, updateCase } = useCasePersistence();
-  const [editedDraft, setEditedDraft] = useState(draft);
-  const [isEditing, setIsEditing] = useState(false);
+export const ClinicianApproval = ({
+  caseId,
+  draft,
+  analysis,
+  onApprove,
+  onBack,
+}: ClinicianApprovalProps) => {
+  const [sections, setSections] = useState<ParsedSection[]>([]);
   const [clinicianName, setClinicianName] = useState("");
   const { toast } = useToast();
+  const { saveApproval, updateCase } = useCasePersistence();
+
+  // Parse draft into sections on mount
+  useEffect(() => {
+    const parsed = parseDraftIntoSections(draft);
+    setSections(parsed);
+  }, [draft]);
+
+  const handleSectionEdit = (index: number, newContent: string) => {
+    const updated = [...sections];
+    updated[index].content = newContent;
+    setSections(updated);
+  };
 
   const handleApprove = async () => {
     if (!clinicianName.trim()) {
       toast({
-        title: "Clinician approval required",
-        description: "Please enter your name to approve this content.",
-        variant: "destructive"
+        title: "Clinician name required",
+        description: "Please enter your name before approving",
+        variant: "destructive",
       });
       return;
     }
 
-    const finalText = editedDraft + `\n\n---\nApproved by: ${clinicianName}\nDate: ${new Date().toLocaleDateString()}\nTime: ${new Date().toLocaleTimeString()}`;
-    
-    const { error: approvalError } = await saveApproval(caseId, finalText, `Approved by ${clinicianName}`);
-    if (approvalError) {
+    try {
+      // Reconstruct full text from sections
+      const finalText = reconstructDraft(sections);
+
+      // Save approval
+      await saveApproval(caseId, finalText, clinicianName);
+      await updateCase(caseId, { status: "approved" });
+
       toast({
-        title: "Save failed",
-        description: "Failed to save approval",
-        variant: "destructive"
+        title: "Document approved",
+        description: "Patient communication has been finalized",
       });
-      return;
-    }
 
-    const { error: updateError } = await updateCase(caseId, { status: 'approved' });
-    if (updateError) {
+      onApprove(finalText, clinicianName);
+    } catch (error) {
+      console.error("Error approving document:", error);
       toast({
-        title: "Update failed",
-        description: "Failed to update case status",
-        variant: "destructive"
+        title: "Approval failed",
+        description: "Could not save approval. Please try again.",
+        variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Approval saved successfully"
-    });
-    onApprove(finalText);
   };
 
-  const wordCount = editedDraft.split(/\s+/).length;
-  const readingTime = Math.ceil(wordCount / 200); // Average reading speed
+  const handlePrintPreview = () => {
+    const finalText = reconstructDraft(sections);
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Patient Communication</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+              h1 { color: #1a365d; border-bottom: 3px solid #3182ce; padding-bottom: 10px; }
+              h2 { color: #2d3748; margin-top: 30px; }
+              p { line-height: 1.6; color: #4a5568; }
+              .separator { border-top: 2px dashed #cbd5e0; margin: 20px 0; }
+            </style>
+          </head>
+          <body>
+            ${finalText.replace(/\n/g, "<br>")}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  // Get gaps for each section from analysis
+  const getSectionGaps = (index: number): string[] => {
+    if (!analysis?.categories || !analysis.categories[index]) return [];
+    return analysis.categories[index].gaps || [];
+  };
+
+  // Define section configurations
+  const sectionConfigs = [
+    { icon: <Heart />, themeColor: "text-blue-600" },
+    { icon: <Activity />, themeColor: "text-green-600" },
+    { icon: <Calendar />, themeColor: "text-purple-600" },
+    { icon: <Sparkles />, themeColor: "text-yellow-600" },
+    { icon: <Pill />, themeColor: "text-orange-600" },
+    { icon: <Phone />, themeColor: "text-teal-600" },
+    { icon: <AlertTriangle />, themeColor: "text-red-600" },
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <Card className="shadow-card">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <UserCheck className="h-5 w-5 text-primary" />
-              <CardTitle>Clinician Review & Approval</CardTitle>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="text-sm">
-                {wordCount} words • {readingTime} min read
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-                className="flex items-center space-x-2"
-              >
-                <Edit className="h-4 w-4" />
-                <span>{isEditing ? 'Preview' : 'Edit'}</span>
-              </Button>
-            </div>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle2 className="w-6 h-6 text-primary" />
+            Review & Edit Patient Communication
+          </CardTitle>
           <CardDescription>
-            Review the AI-generated patient communication and make any necessary edits before approval.
+            Review each section below, make any necessary edits, and approve the final document
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {isEditing ? (
-            <div className="space-y-2">
-              <Label htmlFor="draft-edit">Edit Patient Communication</Label>
-              <Textarea
-                id="draft-edit"
-                value={editedDraft}
-                onChange={(e) => setEditedDraft(e.target.value)}
-                className="min-h-[400px] font-serif text-base leading-relaxed"
-                placeholder="Edit the patient communication..."
-              />
-            </div>
-          ) : (
-            <div className="prose max-w-none">
-              <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-                <div className="whitespace-pre-wrap font-serif text-base leading-relaxed text-foreground">
-                  {editedDraft}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-success/5 border-success/20">
-              <CardContent className="pt-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <CheckCircle className="h-4 w-4 text-success" />
-                  <span className="font-medium text-success">Content Validated</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Medical terminology checked against approved glossary
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="pt-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <UserCheck className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-primary">Personalized</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Adapted to patient profile and literacy level
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-warning/5 border-warning/20">
-              <CardContent className="pt-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <AlertTriangle className="h-4 w-4 text-warning" />
-                  <span className="font-medium text-warning">Safety Check</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Red flags and emergency instructions included
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="border-t border-border pt-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="clinician-name">Approving Clinician</Label>
-                <input
-                  id="clinician-name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={clinicianName}
-                  onChange={(e) => setClinicianName(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                />
-              </div>
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={onBack}>
-                  Back to Patient Profile
-                </Button>
-                <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => window.print()}
-                    className="flex items-center space-x-2"
-                  >
-                    <Printer className="h-4 w-4" />
-                    <span>Print Preview</span>
-                  </Button>
-                  <Button 
-                    onClick={handleApprove}
-                    className="flex items-center space-x-2"
-                    disabled={!clinicianName.trim()}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    <span>Approve & Finalize</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
+      {/* Seven Section Boxes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sections.slice(0, 6).map((section, index) => (
+          <SectionBox
+            key={index}
+            icon={sectionConfigs[index]?.icon}
+            title={section.title}
+            content={section.content}
+            gaps={getSectionGaps(index)}
+            onEdit={(newContent) => handleSectionEdit(index, newContent)}
+            themeColor={sectionConfigs[index]?.themeColor || "text-gray-600"}
+          />
+        ))}
+      </div>
+
+      {/* Warning Signs - Full Width */}
+      {sections[6] && (
+        <SectionBox
+          icon={sectionConfigs[6]?.icon}
+          title={sections[6].title}
+          content={sections[6].content}
+          gaps={getSectionGaps(6)}
+          onEdit={(newContent) => handleSectionEdit(6, newContent)}
+          themeColor={sectionConfigs[6]?.themeColor || "text-red-600"}
+        />
+      )}
+
+      {/* AI Analysis Summary (if available) */}
       {analysis && (
-        <Card className="shadow-card">
+        <Card className="border-blue-200 bg-blue-50">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Brain className="h-5 w-5 text-primary" />
-              <span>AI-Extracted Information & Physician Prompts</span>
-            </CardTitle>
+            <CardTitle className="text-lg">AI Analysis Summary</CardTitle>
             <CardDescription>
-              Review extracted information and address any gaps identified by the AI
+              Extracted information and identified gaps from the technical note
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {analysis.categories?.map((category: any, idx: number) => (
-              <div key={idx} className="border border-border rounded-lg p-4 space-y-3">
-                <h3 className="font-semibold text-lg text-foreground">{category.name}</h3>
-                
-                <div>
-                  <h4 className="font-medium text-sm text-muted-foreground mb-2">📋 Extracted Information:</h4>
-                  {category.extractedInfo?.length > 0 ? (
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      {category.extractedInfo.map((info: string, i: number) => (
-                        <li key={i}>{info}</li>
+              <div key={idx} className="space-y-2">
+                <h4 className="font-semibold text-sm text-blue-900">
+                  {category.category || `Category ${idx + 1}`}
+                </h4>
+                {category.extracted?.length > 0 && (
+                  <div className="text-sm">
+                    <p className="text-blue-700 font-medium">Extracted:</p>
+                    <ul className="list-disc list-inside text-blue-600 ml-2">
+                      {category.extracted.map((item: string, i: number) => (
+                        <li key={i}>{item}</li>
                       ))}
                     </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic">No information found.</p>
-                  )}
-                </div>
-
-                <div className="bg-warning/5 border border-warning/20 rounded-md p-3">
-                  <h4 className="font-medium text-sm text-warning mb-2 flex items-center space-x-1">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span>⚠️ Gaps & Physician Prompts:</span>
-                  </h4>
-                  {category.gaps?.length > 0 ? (
-                    <ul className="list-disc list-inside space-y-1 text-sm">
+                  </div>
+                )}
+                {category.gaps?.length > 0 && (
+                  <div className="text-sm">
+                    <p className="text-amber-700 font-medium">Gaps to address:</p>
+                    <ul className="list-disc list-inside text-amber-600 ml-2">
                       {category.gaps.map((gap: string, i: number) => (
-                        <li key={i} className="text-foreground">{gap}</li>
+                        <li key={i}>{gap}</li>
                       ))}
                     </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic">All information complete.</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>
         </Card>
       )}
 
-      <Card className="bg-medical-light-green border-accent/20">
-        <CardContent className="pt-6">
-          <h3 className="font-semibold mb-2 flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4 text-accent" />
-            <span>Clinical Safety Reminders</span>
-          </h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Ensure all medical information is accurate and up-to-date</li>
-            <li>• Verify medication names, dosages, and instructions</li>
-            <li>• Confirm emergency contact information is included</li>
-            <li>• Check that lifestyle recommendations are appropriate for this patient</li>
-            <li>• Ensure content aligns with current treatment plan</li>
+      {/* Clinical Safety Reminders */}
+      <Card className="border-amber-200 bg-amber-50">
+        <CardHeader>
+          <CardTitle className="text-lg text-amber-900">Clinical Safety Reminders</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
+            <li>Verify all medication names, doses, and instructions are accurate</li>
+            <li>Ensure emergency contact information is complete and correct</li>
+            <li>Confirm warning signs are clear and specific to the patient's condition</li>
+            <li>Check that lifestyle advice is appropriate for the patient's specific situation</li>
+            <li>Ensure language is appropriate for the patient's health literacy level</li>
           </ul>
+        </CardContent>
+      </Card>
+
+      {/* Approval Controls */}
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="clinician-name">Approving Clinician Name *</Label>
+            <Input
+              id="clinician-name"
+              value={clinicianName}
+              onChange={(e) => setClinicianName(e.target.value)}
+              placeholder="Dr. Jane Smith"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button onClick={onBack} variant="outline" className="flex-1">
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+            <Button onClick={handlePrintPreview} variant="outline" className="flex-1">
+              <Printer className="w-4 h-4 mr-1" />
+              Print Preview
+            </Button>
+            <Button onClick={handleApprove} className="flex-1">
+              <CheckCircle2 className="w-4 h-4 mr-1" />
+              Approve & Finalize
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 };
-
-export default ClinicianApproval;
