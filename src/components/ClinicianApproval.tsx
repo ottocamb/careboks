@@ -102,15 +102,15 @@ export const ClinicianApproval = ({
     }
   };
 
-  // Define section configurations
+  // Define section configurations with hardcoded titles
   const sectionConfigs = [
-    { icon: <Heart />, themeColor: "text-blue-600" },
-    { icon: <Activity />, themeColor: "text-green-600" },
-    { icon: <Calendar />, themeColor: "text-purple-600" },
-    { icon: <Sparkles />, themeColor: "text-yellow-600" },
-    { icon: <Pill />, themeColor: "text-orange-600" },
-    { icon: <Phone />, themeColor: "text-teal-600" },
-    { icon: <AlertTriangle />, themeColor: "text-red-600" },
+    { title: "What do I have", icon: <Heart />, themeColor: "text-blue-600" },
+    { title: "How should I live next", icon: <Activity />, themeColor: "text-green-600" },
+    { title: "How the next 6 months of my life will look like", icon: <Calendar />, themeColor: "text-purple-600" },
+    { title: "What does it mean for my life", icon: <Sparkles />, themeColor: "text-yellow-600" },
+    { title: "My medications", icon: <Pill />, themeColor: "text-orange-600" },
+    { title: "Warning signs", icon: <AlertTriangle />, themeColor: "text-red-600" },
+    { title: "My contacts", icon: <Phone />, themeColor: "text-teal-600" },
   ];
 
   return (
@@ -130,28 +130,26 @@ export const ClinicianApproval = ({
 
       {/* Seven Section Boxes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {sections.slice(0, 6).map((section, index) => (
+        {sectionConfigs.slice(0, 6).map((config, index) => (
           <SectionBox
             key={index}
-            icon={sectionConfigs[index]?.icon}
-            title={section.title}
-            content={section.content}
+            icon={config.icon}
+            title={config.title}
+            content={sections[index]?.content || ""}
             onEdit={(newContent) => handleSectionEdit(index, newContent)}
-            themeColor={sectionConfigs[index]?.themeColor || "text-gray-600"}
+            themeColor={config.themeColor}
           />
         ))}
       </div>
 
-      {/* Warning Signs - Full Width */}
-      {sections[6] && (
-        <SectionBox
-          icon={sectionConfigs[6]?.icon}
-          title={sections[6].title}
-          content={sections[6].content}
-          onEdit={(newContent) => handleSectionEdit(6, newContent)}
-          themeColor={sectionConfigs[6]?.themeColor || "text-red-600"}
-        />
-      )}
+      {/* My Contacts - Full Width */}
+      <SectionBox
+        icon={sectionConfigs[6].icon}
+        title={sectionConfigs[6].title}
+        content={sections[6]?.content || ""}
+        onEdit={(newContent) => handleSectionEdit(6, newContent)}
+        themeColor={sectionConfigs[6].themeColor}
+      />
 
       {/* Clinical Safety Reminders */}
       <Card className="border-amber-200 bg-amber-50">
