@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +7,7 @@ import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import careboksLogo from "@/assets/careboks-logo.png";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -96,12 +96,9 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="p-3 bg-primary rounded-lg">
-              <Heart className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img src={careboksLogo} alt="Careboks" className="h-16 w-auto" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Carebox</h1>
             <CardDescription>Your medical expertise, delivered with clarity</CardDescription>
           </div>
         </CardHeader>

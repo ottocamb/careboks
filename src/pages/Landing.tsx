@@ -1,7 +1,8 @@
-import { ArrowRight, CheckCircle2, FileText, Heart, MessageSquare, Users } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, MessageSquare, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import careboksLogo from "@/assets/careboks-logo.png";
 const Landing = () => {
   const navigate = useNavigate();
   return <div className="min-h-screen bg-background">
@@ -9,13 +10,7 @@ const Landing = () => {
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary rounded-lg">
-              <Heart className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Careboks</h1>
-              <p className="text-xs text-muted-foreground">Your medical expertise, delivered with clarity</p>
-            </div>
+            <img src={careboksLogo} alt="Careboks" className="h-10 w-auto" />
           </div>
           <Button onClick={() => navigate("/auth")}>Access System</Button>
         </div>

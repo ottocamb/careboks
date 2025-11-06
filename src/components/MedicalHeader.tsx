@@ -1,6 +1,8 @@
-import { Heart, Languages, LogOut, User, Home } from "lucide-react";
+import { Languages, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
+import careboksLogo from "@/assets/careboks-logo.png";
+
 interface MedicalHeaderProps {
   currentStep: number;
   totalSteps: number;
@@ -19,13 +21,7 @@ const MedicalHeader = ({
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary rounded-lg">
-              <Heart className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Carebox</h1>
-              <p className="text-sm text-muted-foreground">Your medical expertise, delivered with clarity</p>
-            </div>
+            <img src={careboksLogo} alt="Careboks" className="h-10 w-auto" />
           </div>
           
           <div className="flex items-center space-x-6">
