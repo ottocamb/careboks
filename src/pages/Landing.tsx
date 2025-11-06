@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import careboksLogo from "@/assets/careboks-logo.png";
+import clinicianPatientPhoto from "@/assets/careboks-photo-1800.jpg";
 const Landing = () => {
   const navigate = useNavigate();
   return <div className="min-h-screen bg-background">
@@ -34,6 +35,26 @@ const Landing = () => {
           })}>
               See Example Output
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Clinician-Patient Communication Section */}
+      <section className="py-16 px-6 bg-[hsl(var(--muted)/0.20)]">
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="order-2 md:order-1">
+              <img 
+                src={clinicianPatientPhoto} 
+                alt="Clinician explaining medical information to patient" 
+                className="w-full h-auto rounded-2xl object-cover aspect-[4/3]"
+              />
+            </div>
+            <div className="order-1 md:order-2">
+              <p className="text-xl md:text-2xl text-foreground leading-relaxed">
+                Careboks supports clinicians in explaining what matters most — calmly, clearly, and in everyday language patients can truly understand.
+              </p>
+            </div>
           </div>
         </div>
       </section>
