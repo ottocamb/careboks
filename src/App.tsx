@@ -9,6 +9,7 @@ import { Session } from "@supabase/supabase-js";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={session ? <Navigate to="/app" /> : <Auth />} />
             <Route path="/app" element={session ? <Index onLogout={handleLogout} /> : <Navigate to="/auth" />} />
+            <Route path="/account" element={session ? <Account onLogout={handleLogout} /> : <Navigate to="/auth" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -1,5 +1,6 @@
-import { Heart, Languages, LogOut } from "lucide-react";
+import { Heart, Languages, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate, useLocation } from "react-router-dom";
 interface MedicalHeaderProps {
   currentStep: number;
   totalSteps: number;
@@ -10,6 +11,10 @@ const MedicalHeader = ({
   totalSteps,
   onLogout
 }: MedicalHeaderProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAccountPage = location.pathname === '/account';
+  
   return <header className="bg-card border-b border-border shadow-md">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
@@ -35,16 +40,27 @@ const MedicalHeader = ({
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-sm font-medium text-foreground">
-                  Step {currentStep} of {totalSteps}
+              {currentStep > 0 && totalSteps > 0 && (
+                <div className="text-right">
+                  <div className="text-sm font-medium text-foreground">
+                    Step {currentStep} of {totalSteps}
+                  </div>
+                  <div className="w-32 h-2 bg-muted rounded-full mt-1">
+                    <div className="h-full bg-primary rounded-full transition-all duration-500" style={{
+                    width: `${currentStep / totalSteps * 100}%`
+                  }} />
+                  </div>
                 </div>
-                <div className="w-32 h-2 bg-muted rounded-full mt-1">
-                  <div className="h-full bg-primary rounded-full transition-all duration-500" style={{
-                  width: `${currentStep / totalSteps * 100}%`
-                }} />
-                </div>
-              </div>
+              )}
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate(isAccountPage ? '/app' : '/account')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {isAccountPage ? <Home className="h-4 w-4" /> : <User className="h-4 w-4" />}
+              </Button>
               
               <Button variant="ghost" size="sm" onClick={onLogout} className="text-muted-foreground hover:text-foreground">
                 <LogOut className="h-4 w-4" />

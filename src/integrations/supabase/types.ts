@@ -91,6 +91,53 @@ export type Database = {
           },
         ]
       }
+      clinician_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_primary: boolean | null
+          name: string
+          notes: string | null
+          phone: string | null
+          specialty: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          specialty?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          specialty?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinician_contacts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_cases: {
         Row: {
           completed_at: string | null
@@ -192,28 +239,69 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
-          full_name: string | null
+          first_name: string | null
           id: string
+          last_name: string | null
           role: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           email?: string | null
-          full_name?: string | null
+          first_name?: string | null
           id: string
+          last_name?: string | null
           role?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           email?: string | null
-          full_name?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           role?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      user_documents: {
+        Row: {
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
