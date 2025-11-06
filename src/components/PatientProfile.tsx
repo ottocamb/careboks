@@ -70,13 +70,17 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="age">Age</Label>
-              <Input
-                id="age"
-                type="number"
-                placeholder="67"
-                value={data.age}
-                onChange={(e) => setData(prev => ({ ...prev, age: e.target.value }))}
-              />
+              <Select value={data.age} onValueChange={(value) => setData(prev => ({ ...prev, age: value }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select age bracket" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="20-30">20-30 years old</SelectItem>
+                  <SelectItem value="30-45">30-45 years old</SelectItem>
+                  <SelectItem value="45-60">45-60 years old</SelectItem>
+                  <SelectItem value="60+">60+ years old</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
