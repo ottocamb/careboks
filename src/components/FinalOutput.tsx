@@ -1,17 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Printer, Download, Users, RotateCcw, Heart } from "lucide-react";
+import { useCasePersistence } from "@/hooks/useCasePersistence";
 
 interface FinalOutputProps {
+  caseId: string;
   finalText: string;
   onRestart: () => void;
 }
 
-const FinalOutput = ({ finalText, onRestart }: FinalOutputProps) => {
+const FinalOutput = ({ caseId, finalText, onRestart }: FinalOutputProps) => {
   const [showComprehensionTest, setShowComprehensionTest] = useState(false);
+  const { updateCase } = useCasePersistence();
+
+  useEffect(() => {
+    // Mark case as completed when final output is shown
+    const markCompleted = async () => {
+      await updateCase(caseId, { status: 'completed' });
+    };
+    markCompleted();
+  }, [caseId]);
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');

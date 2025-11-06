@@ -8,8 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { pdfToImageDataUrls } from "@/utils/pdfToImages";
 import { extractTextDirectly } from "@/utils/pdfTextExtraction";
+import { useCasePersistence } from "@/hooks/useCasePersistence";
 interface TechnicalNoteInputProps {
-  onNext: (note: string) => void;
+  onNext: (note: string, caseId: string) => void;
 }
 const TechnicalNoteInput = ({
   onNext
@@ -17,9 +18,8 @@ const TechnicalNoteInput = ({
   const [note, setNote] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const { createCase } = useCasePersistence();
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (uploadedFiles.length + files.length > 10) {
@@ -145,9 +145,30 @@ const TechnicalNoteInput = ({
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
-  const handleNext = () => {
+  const handleNext = async () => {
     if (note.trim()) {
-      onNext(note);
+      setIsProcessing(true);
+      const fileNames = uploadedFiles.map(f => f.name);
+      const { data, error } = await createCase(note, fileNames);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save case",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
+      }
+      
+      if (data) {
+        toast({
+          title: "Success",
+          description: "Case saved successfully"
+        });
+        onNext(note, data.id);
+      }
+      setIsProcessing(false);
     }
   };
   return <div className="max-w-4xl mx-auto space-y-6">

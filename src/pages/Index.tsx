@@ -27,6 +27,7 @@ interface IndexProps {
 
 const Index = ({ onLogout }: IndexProps) => {
   const [currentStep, setCurrentStep] = useState<Step>('input');
+  const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
   const [technicalNote, setTechnicalNote] = useState("");
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [aiDraft, setAiDraft] = useState("");
@@ -37,8 +38,9 @@ const Index = ({ onLogout }: IndexProps) => {
   const currentStepIndex = steps.indexOf(currentStep);
   const totalSteps = steps.length;
 
-  const handleTechnicalNoteSubmit = (note: string) => {
+  const handleTechnicalNoteSubmit = (note: string, caseId: string) => {
     setTechnicalNote(note);
+    setCurrentCaseId(caseId);
     setCurrentStep('profile');
   };
 
@@ -60,6 +62,7 @@ const Index = ({ onLogout }: IndexProps) => {
 
   const handleRestart = () => {
     setCurrentStep('input');
+    setCurrentCaseId(null);
     setTechnicalNote("");
     setPatientData(null);
     setAiDraft("");
@@ -87,23 +90,26 @@ const Index = ({ onLogout }: IndexProps) => {
           <TechnicalNoteInput onNext={handleTechnicalNoteSubmit} />
         )}
         
-        {currentStep === 'profile' && (
+        {currentStep === 'profile' && currentCaseId && (
           <PatientProfile 
+            caseId={currentCaseId}
             onNext={handlePatientProfileSubmit} 
             onBack={handleBack}
           />
         )}
         
-        {currentStep === 'processing' && patientData && (
+        {currentStep === 'processing' && patientData && currentCaseId && (
           <AIProcessing 
+            caseId={currentCaseId}
             onNext={handleAIProcessingComplete}
             patientData={patientData}
             technicalNote={technicalNote}
           />
         )}
         
-        {currentStep === 'approval' && (
+        {currentStep === 'approval' && currentCaseId && (
           <ClinicianApproval 
+            caseId={currentCaseId}
             draft={aiDraft}
             analysis={analysis}
             onApprove={handleClinicianApproval}
@@ -111,8 +117,9 @@ const Index = ({ onLogout }: IndexProps) => {
           />
         )}
         
-        {currentStep === 'output' && (
+        {currentStep === 'output' && currentCaseId && (
           <FinalOutput 
+            caseId={currentCaseId}
             finalText={finalText}
             onRestart={handleRestart}
           />

@@ -6,21 +6,24 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { UserCheck, Edit, CheckCircle, AlertTriangle, Printer, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCasePersistence } from "@/hooks/useCasePersistence";
 
 interface ClinicianApprovalProps {
+  caseId: string;
   draft: string;
   analysis?: any;
   onApprove: (finalText: string) => void;
   onBack: () => void;
 }
 
-const ClinicianApproval = ({ draft, analysis, onApprove, onBack }: ClinicianApprovalProps) => {
+const ClinicianApproval = ({ caseId, draft, analysis, onApprove, onBack }: ClinicianApprovalProps) => {
+  const { saveApproval, updateCase } = useCasePersistence();
   const [editedDraft, setEditedDraft] = useState(draft);
   const [isEditing, setIsEditing] = useState(false);
   const [clinicianName, setClinicianName] = useState("");
   const { toast } = useToast();
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!clinicianName.trim()) {
       toast({
         title: "Clinician approval required",
@@ -31,6 +34,31 @@ const ClinicianApproval = ({ draft, analysis, onApprove, onBack }: ClinicianAppr
     }
 
     const finalText = editedDraft + `\n\n---\nApproved by: ${clinicianName}\nDate: ${new Date().toLocaleDateString()}\nTime: ${new Date().toLocaleTimeString()}`;
+    
+    const { error: approvalError } = await saveApproval(caseId, finalText, `Approved by ${clinicianName}`);
+    if (approvalError) {
+      toast({
+        title: "Save failed",
+        description: "Failed to save approval",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const { error: updateError } = await updateCase(caseId, { status: 'approved' });
+    if (updateError) {
+      toast({
+        title: "Update failed",
+        description: "Failed to update case status",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Approval saved successfully"
+    });
     onApprove(finalText);
   };
 

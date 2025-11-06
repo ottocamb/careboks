@@ -5,14 +5,17 @@ import { Progress } from "@/components/ui/progress";
 import { Brain, BookOpen, Languages, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useCasePersistence } from "@/hooks/useCasePersistence";
 
 interface AIProcessingProps {
+  caseId: string;
   onNext: (draft: string, analysis?: any) => void;
   patientData: any;
   technicalNote: string;
 }
 
-const AIProcessing = ({ onNext, patientData, technicalNote }: AIProcessingProps) => {
+const AIProcessing = ({ caseId, onNext, patientData, technicalNote }: AIProcessingProps) => {
+  const { saveAIAnalysis, updateCase } = useCasePersistence();
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -463,6 +466,34 @@ Call immediately if:
 
       setAnalysis(data.analysis);
       const draft = generatePatientFriendlyDraft();
+      
+      // Save to database
+      const { error: analysisError } = await saveAIAnalysis(caseId, data.analysis, draft);
+      if (analysisError) {
+        toast({
+          title: "Save failed",
+          description: "Failed to save AI analysis",
+          variant: "destructive"
+        });
+        setIsAnalyzing(false);
+        return;
+      }
+
+      const { error: updateError } = await updateCase(caseId, { status: 'pending_approval' });
+      if (updateError) {
+        toast({
+          title: "Update failed",
+          description: "Failed to update case status",
+          variant: "destructive"
+        });
+        setIsAnalyzing(false);
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "AI analysis complete!"
+      });
       onNext(draft, data.analysis);
     } catch (error) {
       console.error("Error analyzing note:", error);

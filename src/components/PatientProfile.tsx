@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { User, Brain, Globe, Users } from "lucide-react";
+import { useCasePersistence } from "@/hooks/useCasePersistence";
+import { useToast } from "@/hooks/use-toast";
 
 interface PatientData {
   age: string;
@@ -21,11 +23,14 @@ interface PatientData {
 }
 
 interface PatientProfileProps {
+  caseId: string;
   onNext: (data: PatientData) => void;
   onBack: () => void;
 }
 
-const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
+const PatientProfile = ({ caseId, onNext, onBack }: PatientProfileProps) => {
+  const { savePatientProfile, updateCase } = useCasePersistence();
+  const { toast } = useToast();
   const [data, setData] = useState<PatientData>({
     age: "",
     sex: "",
@@ -48,8 +53,34 @@ const PatientProfile = ({ onNext, onBack }: PatientProfileProps) => {
     }));
   };
 
-  const handleNext = () => {
-    onNext(data);
+  const handleNext = async () => {
+    if (isValid) {
+      const { error: profileError } = await savePatientProfile(caseId, data);
+      if (profileError) {
+        toast({
+          title: "Error",
+          description: "Failed to save patient profile",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error: updateError } = await updateCase(caseId, { status: 'processing' });
+      if (updateError) {
+        toast({
+          title: "Error",
+          description: "Failed to update case status",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Patient profile saved"
+      });
+      onNext(data);
+    }
   };
 
   const isValid = data.age && data.sex && data.language && data.healthLiteracy && data.journeyType;
