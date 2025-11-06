@@ -18,8 +18,8 @@ const MedicalHeader = ({
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Doctor Bridge</h1>
-              <p className="text-sm text-muted-foreground">Patient Communication Tool</p>
+              <h1 className="text-2xl font-bold text-foreground">Carebox</h1>
+              <p className="text-sm text-muted-foreground">Your medical expertise, delivered with clarity</p>
             </div>
           </div>
           
