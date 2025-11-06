@@ -7,6 +7,7 @@ import { FileText, Upload, Shield, File, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { pdfToImageDataUrls } from "@/utils/pdfToImages";
+import { extractTextDirectly } from "@/utils/pdfTextExtraction";
 
 interface TechnicalNoteInputProps {
   onNext: (note: string) => void;
@@ -65,10 +66,22 @@ Patient education: fluid restriction 2L daily, low sodium diet <2g daily, medica
 
       for (const file of validFiles) {
         if (file.type === 'application/pdf') {
-          // Convert PDF pages to images client-side, then OCR each page via edge function
+          // Try direct text extraction first
+          const directText = await extractTextDirectly(file, 5);
+          
+          if (directText.trim().length > 100) {
+            // Success! We got text directly from the PDF
+            console.log(`Direct extraction successful for ${file.name}`);
+            combinedText += (combinedText ? '\n\n' : '') + 
+              `--- Extracted from ${file.name} ---\n${directText}`;
+            continue; // Move to next file
+          }
+          
+          // Fallback to OCR for scanned PDFs
+          console.log(`Falling back to OCR for ${file.name} (scanned document detected)`);
           let pageIndex = 0;
           try {
-            const images = await pdfToImageDataUrls(file, { maxPages: 5, scale: 1.6 });
+            const images = await pdfToImageDataUrls(file, { maxPages: 5, scale: 1.0 });
             for (const imgUrl of images) {
               pageIndex++;
               const { data, error } = await supabase.functions.invoke('extract-text-from-document', {
