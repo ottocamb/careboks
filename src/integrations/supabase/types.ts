@@ -14,7 +14,207 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_analyses: {
+        Row: {
+          ai_draft_text: string | null
+          analysis_data: Json | null
+          case_id: string
+          created_at: string
+          id: string
+          model_used: string | null
+        }
+        Insert: {
+          ai_draft_text?: string | null
+          analysis_data?: Json | null
+          case_id: string
+          created_at?: string
+          id?: string
+          model_used?: string | null
+        }
+        Update: {
+          ai_draft_text?: string | null
+          analysis_data?: Json | null
+          case_id?: string
+          created_at?: string
+          id?: string
+          model_used?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analyses_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "patient_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approvals: {
+        Row: {
+          approved_at: string
+          approved_by: string
+          approved_text: string
+          case_id: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          approved_at?: string
+          approved_by: string
+          approved_text: string
+          case_id: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string
+          approved_text?: string
+          case_id?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approvals_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "patient_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_cases: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          status: Database["public"]["Enums"]["case_status"]
+          technical_note: string | null
+          updated_at: string
+          uploaded_file_names: string[] | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          status?: Database["public"]["Enums"]["case_status"]
+          technical_note?: string | null
+          updated_at?: string
+          uploaded_file_names?: string[] | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          status?: Database["public"]["Enums"]["case_status"]
+          technical_note?: string | null
+          updated_at?: string
+          uploaded_file_names?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_cases_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_profiles: {
+        Row: {
+          age_bracket: string | null
+          case_id: string
+          comorbidities: string[] | null
+          created_at: string
+          has_accessibility_needs: boolean | null
+          health_literacy: string | null
+          id: string
+          include_relatives: boolean | null
+          journey_type: string | null
+          language: string | null
+          mental_state: string | null
+          risk_appetite: string | null
+          sex: string | null
+        }
+        Insert: {
+          age_bracket?: string | null
+          case_id: string
+          comorbidities?: string[] | null
+          created_at?: string
+          has_accessibility_needs?: boolean | null
+          health_literacy?: string | null
+          id?: string
+          include_relatives?: boolean | null
+          journey_type?: string | null
+          language?: string | null
+          mental_state?: string | null
+          risk_appetite?: string | null
+          sex?: string | null
+        }
+        Update: {
+          age_bracket?: string | null
+          case_id?: string
+          comorbidities?: string[] | null
+          created_at?: string
+          has_accessibility_needs?: boolean | null
+          health_literacy?: string | null
+          id?: string
+          include_relatives?: boolean | null
+          journey_type?: string | null
+          language?: string | null
+          mental_state?: string | null
+          risk_appetite?: string | null
+          sex?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_profiles_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "patient_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +223,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      case_status:
+        | "draft"
+        | "processing"
+        | "pending_approval"
+        | "approved"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +355,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      case_status: [
+        "draft",
+        "processing",
+        "pending_approval",
+        "approved",
+        "completed",
+      ],
+    },
   },
 } as const
