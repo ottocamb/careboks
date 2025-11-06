@@ -71,6 +71,10 @@ const Index = ({ onLogout }: IndexProps) => {
     }
   };
 
+  const handleBackToProfile = () => {
+    setCurrentStep('profile');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <MedicalHeader currentStep={currentStepIndex + 1} totalSteps={totalSteps} onLogout={onLogout} />
@@ -99,7 +103,7 @@ const Index = ({ onLogout }: IndexProps) => {
           <ClinicianApproval 
             draft={aiDraft}
             onApprove={handleClinicianApproval}
-            onBack={handleBack}
+            onBack={handleBackToProfile}
           />
         )}
         

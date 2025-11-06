@@ -140,7 +140,7 @@ const ClinicianApproval = ({ draft, onApprove, onBack }: ClinicianApprovalProps)
 
               <div className="flex justify-between">
                 <Button variant="outline" onClick={onBack}>
-                  Back to Processing
+                  Back to Patient Profile
                 </Button>
                 <div className="flex space-x-3">
                   <Button 
