@@ -155,7 +155,7 @@ const TechnicalNoteInput = ({
         <CardHeader>
           <div className="flex items-center space-x-2">
             <FileText className="h-5 w-5 text-primary" />
-            <CardTitle>Technical Clinical Note</CardTitle>
+            <CardTitle>Technical Clinical Documents</CardTitle>
           </div>
           <CardDescription>Enter the technical clinical documents that will be transformed into patient-friendly communication.</CardDescription>
         </CardHeader>
