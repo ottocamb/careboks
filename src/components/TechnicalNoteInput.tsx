@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { FileText, Upload, Shield, File, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { pdfToImageDataUrls } from "@/utils/pdfToImages";
 
 interface TechnicalNoteInputProps {
   onNext: (note: string) => void;
@@ -63,29 +64,63 @@ Patient education: fluid restriction 2L daily, low sodium diet <2g daily, medica
       let combinedText = note;
 
       for (const file of validFiles) {
-        const reader = new FileReader();
-        
-        const fileData = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+        if (file.type === 'application/pdf') {
+          // Convert PDF pages to images client-side, then OCR each page via edge function
+          let pageIndex = 0;
+          try {
+            const images = await pdfToImageDataUrls(file, { maxPages: 5, scale: 1.6 });
+            for (const imgUrl of images) {
+              pageIndex++;
+              const { data, error } = await supabase.functions.invoke('extract-text-from-document', {
+                body: { fileData: imgUrl, fileType: 'image/png' }
+              });
 
-        const { data, error } = await supabase.functions.invoke('extract-text-from-document', {
-          body: { fileData, fileType: file.type }
-        });
+              if (error) {
+                toast({
+                  title: "Extraction failed",
+                  description: `Could not extract text from ${file.name} (page ${pageIndex}). Please review and make corrections.`,
+                  variant: "destructive",
+                });
+                continue;
+              }
 
-        if (error) {
-          toast({
-            title: "Extraction failed",
-            description: `Could not extract text from ${file.name}. Please review and make corrections manually.`,
-            variant: "destructive",
+              if (data?.extractedText) {
+                combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} (page ${pageIndex}) ---\n${data.extractedText}`;
+              }
+            }
+          } catch (e) {
+            console.error('PDF processing error:', e);
+            toast({
+              title: "PDF processing error",
+              description: `We could not process ${file.name}. Please review and make corrections.`,
+              variant: "destructive",
+            });
+          }
+        } else {
+          // Image: send directly for OCR
+          const reader = new FileReader();
+          const fileData = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
           });
-          continue;
-        }
 
-        if (data?.extractedText) {
-          combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} ---\n${data.extractedText}`;
+          const { data, error } = await supabase.functions.invoke('extract-text-from-document', {
+            body: { fileData, fileType: file.type }
+          });
+
+          if (error) {
+            toast({
+              title: "Extraction failed",
+              description: `Could not extract text from ${file.name}. Please review and make corrections manually.`,
+              variant: "destructive",
+            });
+            continue;
+          }
+
+          if (data?.extractedText) {
+            combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} ---\n${data.extractedText}`;
+          }
         }
       }
 
