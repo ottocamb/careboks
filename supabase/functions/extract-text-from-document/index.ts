@@ -60,6 +60,13 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AI gateway error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
@@ -73,10 +80,8 @@ serve(async (req) => {
         );
       }
       
-      const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
       return new Response(
-        JSON.stringify({ error: 'Failed to extract text from document' }),
+        JSON.stringify({ error: `Failed to extract text: ${errorText}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
