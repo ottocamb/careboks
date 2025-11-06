@@ -114,7 +114,6 @@ Generate improved content for the section "${sectionTitle}" in ${profile.languag
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
         max_tokens: 1000,
       }),
     });
