@@ -3,9 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Brain, BookOpen, Languages, Check, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AIProcessingProps {
-  onNext: (draft: string) => void;
+  onNext: (draft: string, analysis?: any) => void;
   patientData: any;
   technicalNote: string;
 }
@@ -14,6 +16,9 @@ const AIProcessing = ({ onNext, patientData, technicalNote }: AIProcessingProps)
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { toast } = useToast();
 
   const steps = [
     { icon: BookOpen, label: "Analyzing clinical note", desc: "Extracting key medical information" },
@@ -433,9 +438,42 @@ Call immediately if:
     return draft;
   };
 
-  const handleContinue = () => {
-    const draft = generatePatientFriendlyDraft();
-    onNext(draft);
+  const handleContinue = async () => {
+    if (analysis) {
+      const draft = generatePatientFriendlyDraft();
+      onNext(draft, analysis);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-medical-note', {
+        body: { technicalNote, patientData }
+      });
+
+      if (error) {
+        toast({
+          title: "Analysis failed",
+          description: error.message || "Could not analyze medical note. Please try again.",
+          variant: "destructive"
+        });
+        setIsAnalyzing(false);
+        return;
+      }
+
+      setAnalysis(data.analysis);
+      const draft = generatePatientFriendlyDraft();
+      onNext(draft, data.analysis);
+    } catch (error) {
+      console.error("Error analyzing note:", error);
+      toast({
+        title: "Analysis error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -502,8 +540,19 @@ Call immediately if:
                   <Check className="h-5 w-5" />
                   <span className="font-medium">Draft generated successfully</span>
                 </div>
-                <Button onClick={handleContinue} className="flex items-center space-x-2">
-                  <span>Review Draft</span>
+                <Button 
+                  onClick={handleContinue} 
+                  disabled={isAnalyzing}
+                  className="flex items-center space-x-2"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Analyzing document...</span>
+                    </>
+                  ) : (
+                    <span>Review Draft</span>
+                  )}
                 </Button>
               </div>
             </div>

@@ -30,6 +30,7 @@ const Index = ({ onLogout }: IndexProps) => {
   const [technicalNote, setTechnicalNote] = useState("");
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [aiDraft, setAiDraft] = useState("");
+  const [analysis, setAnalysis] = useState<any>(null);
   const [finalText, setFinalText] = useState("");
 
   const steps: Step[] = ['input', 'profile', 'processing', 'approval', 'output'];
@@ -46,8 +47,9 @@ const Index = ({ onLogout }: IndexProps) => {
     setCurrentStep('processing');
   };
 
-  const handleAIProcessingComplete = (draft: string) => {
+  const handleAIProcessingComplete = (draft: string, analysisData?: any) => {
     setAiDraft(draft);
+    setAnalysis(analysisData);
     setCurrentStep('approval');
   };
 
@@ -61,6 +63,7 @@ const Index = ({ onLogout }: IndexProps) => {
     setTechnicalNote("");
     setPatientData(null);
     setAiDraft("");
+    setAnalysis(null);
     setFinalText("");
   };
 
@@ -102,6 +105,7 @@ const Index = ({ onLogout }: IndexProps) => {
         {currentStep === 'approval' && (
           <ClinicianApproval 
             draft={aiDraft}
+            analysis={analysis}
             onApprove={handleClinicianApproval}
             onBack={handleBackToProfile}
           />

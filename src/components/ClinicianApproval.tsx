@@ -4,16 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { UserCheck, Edit, CheckCircle, AlertTriangle, Printer } from "lucide-react";
+import { UserCheck, Edit, CheckCircle, AlertTriangle, Printer, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ClinicianApprovalProps {
   draft: string;
+  analysis?: any;
   onApprove: (finalText: string) => void;
   onBack: () => void;
 }
 
-const ClinicianApproval = ({ draft, onApprove, onBack }: ClinicianApprovalProps) => {
+const ClinicianApproval = ({ draft, analysis, onApprove, onBack }: ClinicianApprovalProps) => {
   const [editedDraft, setEditedDraft] = useState(draft);
   const [isEditing, setIsEditing] = useState(false);
   const [clinicianName, setClinicianName] = useState("");
@@ -165,6 +166,56 @@ const ClinicianApproval = ({ draft, onApprove, onBack }: ClinicianApprovalProps)
           </div>
         </CardContent>
       </Card>
+
+      {analysis && (
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Brain className="h-5 w-5 text-primary" />
+              <span>AI-Extracted Information & Physician Prompts</span>
+            </CardTitle>
+            <CardDescription>
+              Review extracted information and address any gaps identified by the AI
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {analysis.categories?.map((category: any, idx: number) => (
+              <div key={idx} className="border border-border rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-lg text-foreground">{category.name}</h3>
+                
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">📋 Extracted Information:</h4>
+                  {category.extractedInfo?.length > 0 ? (
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {category.extractedInfo.map((info: string, i: number) => (
+                        <li key={i}>{info}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No information found.</p>
+                  )}
+                </div>
+
+                <div className="bg-warning/5 border border-warning/20 rounded-md p-3">
+                  <h4 className="font-medium text-sm text-warning mb-2 flex items-center space-x-1">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>⚠️ Gaps & Physician Prompts:</span>
+                  </h4>
+                  {category.gaps?.length > 0 ? (
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {category.gaps.map((gap: string, i: number) => (
+                        <li key={i} className="text-foreground">{gap}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">All information complete.</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="bg-medical-light-green border-accent/20">
         <CardContent className="pt-6">
