@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Edit2, Check, X, AlertCircle } from "lucide-react";
+import { Edit2, Check, X, AlertCircle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SectionBoxProps {
@@ -13,6 +13,8 @@ interface SectionBoxProps {
   onEdit: (newContent: string) => void;
   themeColor: string;
   className?: string;
+  onRegenerate?: () => Promise<void>;
+  isRegenerating?: boolean;
 }
 
 export const SectionBox = ({
@@ -22,6 +24,8 @@ export const SectionBox = ({
   onEdit,
   themeColor,
   className,
+  onRegenerate,
+  isRegenerating = false,
 }: SectionBoxProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
@@ -94,15 +98,30 @@ export const SectionBox = ({
               </div>
             )}
 
-            <Button
-              onClick={() => setIsEditing(true)}
-              size="sm"
-              variant="outline"
-              className="w-full"
-            >
-              <Edit2 className="w-4 h-4 mr-1" />
-              Edit Section
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setIsEditing(true)}
+                size="sm"
+                variant="outline"
+                className="flex-1"
+              >
+                <Edit2 className="w-4 h-4 mr-1" />
+                Edit Section
+              </Button>
+              
+              {onRegenerate && (
+                <Button
+                  onClick={onRegenerate}
+                  size="sm"
+                  variant="outline"
+                  disabled={isRegenerating}
+                  className="flex-1"
+                >
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  {isRegenerating ? "Regenerating..." : "Regenerate with AI"}
+                </Button>
+              )}
+            </div>
           </>
         )}
       </CardContent>

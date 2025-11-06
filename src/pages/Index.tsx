@@ -106,11 +106,13 @@ const Index = ({ onLogout }: IndexProps) => {
           />
         )}
         
-        {currentStep === 'approval' && currentCaseId && (
+        {currentStep === 'approval' && currentCaseId && patientData && (
           <ClinicianApproval 
             caseId={currentCaseId}
             draft={aiDraft}
             analysis={analysis}
+            patientData={patientData}
+            technicalNote={technicalNote}
             onApprove={handleClinicianApproval}
             onBack={handleBackToProfile}
           />

@@ -24,13 +24,13 @@ CORE PRINCIPLES:
 
 OUTPUT STRUCTURE:
 You must generate content for exactly 7 sections in the specified language:
-1. What do I have? (The Illness)
-2. How should I live next? (Lifestyle Changes)
-3. How will the next 6 months look? (Short-Term Prognosis)
-4. What does this mean for my life? (Long-Term Consequences)
-5. My Medications
-6. My Contacts
-7. Warning Signs
+1. What do I have (The Illness)
+2. How should I live next (Lifestyle Changes)
+3. How the next 6 months of my life will look like (Short-Term Prognosis)
+4. What does it mean for my life (Long-Term Consequences)
+5. My medications
+6. Warning signs
+7. My contacts
 
 Each section must be clearly separated with:
 ═══════════════════════════════════════════════════
@@ -143,8 +143,8 @@ export const getSectionGuidelines = (language: string): string => {
       section3: "KUIDAS JÄRGMISED 6 KUUD VÄLJA NÄEVAD",
       section4: "MIDA SEE TÄHENDAB MINU ELULE",
       section5: "MINU RAVIMID",
-      section6: "MINU KONTAKTID",
-      section7: "HOIATAVAD MÄRGID"
+      section6: "HOIATAVAD MÄRGID",
+      section7: "MINU KONTAKTID"
     },
     russian: {
       section1: "ЧТО У МЕНЯ ЕСТЬ",
@@ -152,8 +152,8 @@ export const getSectionGuidelines = (language: string): string => {
       section3: "КАК БУДУТ ВЫГЛЯДЕТЬ СЛЕДУЮЩИЕ 6 МЕСЯЦЕВ",
       section4: "ЧТО ЭТО ЗНАЧИТ ДЛЯ МОЕЙ ЖИЗНИ",
       section5: "МОИ ЛЕКАРСТВА",
-      section6: "МОИ КОНТАКТЫ",
-      section7: "ПРЕДУПРЕЖДАЮЩИЕ ПРИЗНАКИ"
+      section6: "ПРЕДУПРЕЖДАЮЩИЕ ПРИЗНАКИ",
+      section7: "МОИ КОНТАКТЫ"
     },
     english: {
       section1: "WHAT DO I HAVE",
@@ -161,8 +161,8 @@ export const getSectionGuidelines = (language: string): string => {
       section3: "HOW THE NEXT 6 MONTHS OF MY LIFE WILL LOOK LIKE",
       section4: "WHAT DOES IT MEAN FOR MY LIFE",
       section5: "MY MEDICATIONS",
-      section6: "MY CONTACTS",
-      section7: "WARNING SIGNS"
+      section6: "WARNING SIGNS",
+      section7: "MY CONTACTS"
     }
   };
 
@@ -206,18 +206,18 @@ SECTION GUIDELINES:
    - Emphasize: Never stop without consulting doctor
    - If information is incomplete, note: "Your doctor will provide details"
 
-6. ${titles.section6}:
+ 6. ${titles.section6}:
+   - Clear list of symptoms requiring immediate action
+   - When to call emergency (112)
+   - When to contact doctor's office
+   - Be specific and concrete
+
+7. ${titles.section7}:
    - Cardiologist/primary physician with phone and email
    - Nurse hotline or support line
    - Pharmacy contact
    - Emergency number (112) with specific situations requiring immediate help
-   - Next appointment date if known
-
-7. ${titles.section7}:
-   - Clear list of symptoms requiring immediate action
-   - When to call emergency (112)
-   - When to contact doctor's office
-   - Be specific and concrete`;
+   - Next appointment date if known`;
 };
 
 export const getLanguageSpecificGuidelines = (language: string): string => {

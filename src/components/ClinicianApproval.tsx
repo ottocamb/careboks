@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
+import { supabase } from "@/integrations/supabase/client";
 import { Printer, ChevronLeft, CheckCircle2, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle } from "lucide-react";
 import { SectionBox } from "@/components/SectionBox";
 import { parseDraftIntoSections, reconstructDraft, ParsedSection } from "@/utils/draftParser";
@@ -13,6 +14,8 @@ interface ClinicianApprovalProps {
   caseId: string;
   draft: string;
   analysis?: any;
+  patientData: any;
+  technicalNote: string;
   onApprove: (finalText: string, clinicianName: string) => void;
   onBack: () => void;
 }
@@ -21,11 +24,14 @@ export const ClinicianApproval = ({
   caseId,
   draft,
   analysis,
+  patientData,
+  technicalNote,
   onApprove,
   onBack,
 }: ClinicianApprovalProps) => {
   const [sections, setSections] = useState<ParsedSection[]>([]);
   const [clinicianName, setClinicianName] = useState("");
+  const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const { toast } = useToast();
   const { saveApproval, updateCase } = useCasePersistence();
 
@@ -39,6 +45,46 @@ export const ClinicianApproval = ({
     const updated = [...sections];
     updated[index].content = newContent;
     setSections(updated);
+  };
+
+  const handleRegenerateSection = async (index: number) => {
+    setRegeneratingIndex(index);
+    try {
+      const { data, error } = await supabase.functions.invoke('regenerate-section', {
+        body: {
+          sectionIndex: index,
+          sectionTitle: sectionConfigs[index].title,
+          currentContent: sections[index]?.content || "",
+          analysis: analysis,
+          patientData: patientData,
+          technicalNote: technicalNote,
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Update the section with regenerated content
+      const updated = [...sections];
+      updated[index] = {
+        ...updated[index],
+        content: data.regeneratedContent
+      };
+      setSections(updated);
+      
+      toast({
+        title: "Section regenerated",
+        description: `"${sectionConfigs[index].title}" has been updated with AI-generated content`,
+      });
+    } catch (error) {
+      console.error("Regeneration error:", error);
+      toast({
+        title: "Regeneration failed",
+        description: "Could not regenerate section. Please try editing manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setRegeneratingIndex(null);
+    }
   };
 
   const handleApprove = async () => {
@@ -137,6 +183,8 @@ export const ClinicianApproval = ({
             title={config.title}
             content={sections[index]?.content || ""}
             onEdit={(newContent) => handleSectionEdit(index, newContent)}
+            onRegenerate={() => handleRegenerateSection(index)}
+            isRegenerating={regeneratingIndex === index}
             themeColor={config.themeColor}
           />
         ))}
@@ -148,6 +196,8 @@ export const ClinicianApproval = ({
         title={sectionConfigs[6].title}
         content={sections[6]?.content || ""}
         onEdit={(newContent) => handleSectionEdit(6, newContent)}
+        onRegenerate={() => handleRegenerateSection(6)}
+        isRegenerating={regeneratingIndex === 6}
         themeColor={sectionConfigs[6].themeColor}
       />
 
