@@ -154,7 +154,7 @@ const TechnicalNoteInput = ({
       if (error) {
         toast({
           title: "Error",
-          description: "Failed to save case",
+          description: error.message || "Failed to save case",
           variant: "destructive"
         });
         setIsProcessing(false);

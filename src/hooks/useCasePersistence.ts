@@ -27,6 +27,26 @@ export const useCasePersistence = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
+      // Ensure profile exists before creating case
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email || "",
+            first_name: "",
+            last_name: ""
+          });
+
+        if (profileError) throw profileError;
+      }
+
       const { data, error } = await supabase
         .from('patient_cases')
         .insert({
