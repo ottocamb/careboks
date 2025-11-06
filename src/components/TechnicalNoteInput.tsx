@@ -19,18 +19,6 @@ const TechnicalNoteInput = ({ onNext }: TechnicalNoteInputProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   
-  const sampleNote = `Patient: 67-year-old male with acute decompensated heart failure, NYHA Class III
-EF: 35% on echocardiogram
-BNP: 2,450 pg/mL (significantly elevated)
-Current medications: Furosemide 40mg BID, Metoprolol 25mg BID, Lisinopril 10mg daily
-Physical exam: JVD present, bilateral lower extremity edema +2, rales in bilateral lung bases
-Recent admission for volume overload, responding to IV diuretics
-Discharge plan: Continue oral diuretics, cardiology follow-up in 2 weeks, daily weights
-Patient education: fluid restriction 2L daily, low sodium diet <2g daily, medication compliance critical`;
-
-  const handleSampleLoad = () => {
-    setNote(sampleNote);
-  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -247,17 +235,8 @@ Patient education: fluid restriction 2L daily, low sodium diet <2g daily, medica
             </p>
           </div>
           
-          <div className="flex items-center justify-between pt-4 border-t border-border">
-            <Button 
-              variant="outline" 
-              onClick={handleSampleLoad}
-              className="flex items-center space-x-2"
-            >
-              <Upload className="h-4 w-4" />
-              <span>Load Sample Note</span>
-            </Button>
-            
-            <Button 
+          <div className="flex items-center justify-end pt-4 border-t border-border">
+            <Button
               onClick={handleNext}
               disabled={!note.trim() || isProcessing}
               className="flex items-center space-x-2"
