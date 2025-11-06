@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.analyze-medical-note]
 verify_jwt = false
+
+[functions.generate-patient-draft]
+verify_jwt = false
