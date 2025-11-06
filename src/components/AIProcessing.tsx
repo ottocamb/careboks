@@ -43,111 +43,393 @@ const AIProcessing = ({ onNext, patientData, technicalNote }: AIProcessingProps)
   }, []);
 
   const generatePatientFriendlyDraft = () => {
-    // Simulate AI processing based on the patient data and technical note
-    const ageGroup = parseInt(patientData.age) > 65 ? "older adult" : "adult";
     const literacyLevel = patientData.healthLiteracy;
     
     let draft = "";
     
     if (patientData.language === "estonian") {
-      draft = `Teie südameseisund ja ravi
+      draft = `═══════════════════════════════════════════════════
+MIS MUL ON
+═══════════════════════════════════════════════════
 
 Lugupeetud ${patientData.sex === 'male' ? 'härra' : 'proua'},
 
-Teie südame uuringud näitavad, et Teil on südamepuudulikkus. See tähendab, et Teie süda ei suuda keha kõikidesse osadesse piisavalt verd pumbata.
+Teil on diagnoositud südamepuudulikkus. ${literacyLevel === 'low' ? 'Lihtsamalt öeldes: Teie süda ei suuda keha kõikidesse osadesse piisavalt verd pumbata.' : 'See tähendab, et Teie südame lihased on nõrgenenud ja ei suuda efektiivselt verd pumpata.'}
 
-${literacyLevel === 'low' ? 'Lihtsamalt öeldes:' : 'Põhjalikumalt selgitades:'}
-• Teie süda töötab praegu 35% tugevusega (normaalne on 55-70%)
-• Vereanalüüs näitas kõrget südamestressi taset
+Teie testide tulemused:
+• Südame tugevus: 35% (normaalne on 55-70%)
+• Vereanalüüs näitas kõrget südamestressi taset  
 • Jalad on tursunud, sest vedelik koguneb kehas
 
-Teie ravim:
-• Furosemiid 40mg – aitab kehast liigset vedelikku välja juua
-• Metoprolol 25mg – aitab südamel kergemini töötada  
-• Lisinopril 10mg – hoiab vererõhku madalal
+${patientData.mentalState === 'anxious' ? 'Me mõistame, et see diagnoos võib tunduda hirmutav. Teie arst ja õed on siin, et Teid aidata. See on ravi- ja hallatav seisund.' : ''}
 
-Mida Te peate tegema:
+
+═══════════════════════════════════════════════════
+KUIDAS PEAKSIN EDASI ELAMA
+═══════════════════════════════════════════════════
+
+Teie igapäevane ravi ja elustiil:
+
+Vedeliku tarbimine:
 • Jooge mitte rohkem kui 2 liitrit vedelikku päevas
+• See hõlmab vett, teed, suppi, kõike
+
+Toitumine:
 • Sööge vähe soola (alla 2 grammi päevas)
+• Vältide konserveeritud toite ja kiirtoitu
+• Kasutage värskeid maitsetaimi soola asemel
+
+Igapäevane jälgimine:
 • Kaaluge end iga päev samal ajal
+• Kirjutage kaal üles
 • Võtke ravimeid täpselt nii, nagu arst kirjutas
 
-${patientData.mentalState === 'anxious' ? 'Me mõistame, et see diagnoos võib tunduda hirmutav. Teie arst ja õed on siin, et Teid aidata.' : ''}
+Füüsiline aktiivsus:
+• Kerge jalutuskäik 10-15 minutit päevas
+• Puhkake, kui tunnete väsimust
+• Ärge tehke rasket füüsilist tööd
 
-Millal pöörduda kiirabi poole:
-• Hingeõhutus muutub palju halvemaks
-• Jalad tursuvad rohkem kui varem
-• Kaal suureneb üle 2 kg kahe päeva jooksul
 
-Järgmine visiit: 2 nädala pärast kardioloogi juures`;
+═══════════════════════════════════════════════════
+KUIDAS JÄRGMISED 6 KUUD VÄLJA NÄEVAD
+═══════════════════════════════════════════════════
+
+Esimesed 2 nädalat:
+• Te tunnete end väsinuna, kuna keha kohaneb ravimitega
+• Jalad hakkavad vähem tursuma
+• Hingamine muutub kergemaks
+
+1-3 kuud:
+• Energia tase hakkab paranema
+• Saate rohkem teha ilma hingeldamata
+• Südame tugevus võib tõusta 40-45%
+
+3-6 kuud:
+• Võite taas teha kerget aiatööd või jalutuskäike
+• Jätkuvad regulaarsed kontrollid kardioloogi juures
+• Ravimeid võib kohandada
+
+
+═══════════════════════════════════════════════════
+MIDA SEE TÄHENDAB MINU ELULE
+═══════════════════════════════════════════════════
+
+Pikaajalised muutused:
+
+${literacyLevel === 'low' ? 'Te peate võtma ravimeid kogu elu ja jälgima oma südant. Kuid paljud inimesed elavad südamepuudulikkusega head elu.' : 'Südamepuudulikkus on krooniline seisund, mis nõuab pidevat ravi ja elustiili kohandamist. Õige raviga saate elada täisväärtuslikku elu.'}
+
+Te saate:
+• Jätkata tööd (kerget füüsilist tööd)
+• Reisida (konsulteerige arstiga enne pikki reise)
+• Olla perega koos ja nautida elu
+
+Te peate:
+• Võtma ravimeid iga päev
+• Käima regulaarselt kontrollis
+• Jälgima oma kehakaalu ja sümptomeid
+• Vältima ülemäärast füüsilist koormust
+
+
+═══════════════════════════════════════════════════
+MINU RAVIMID
+═══════════════════════════════════════════════════
+
+1. Furosemiid 40mg (hommikul)
+   Mida see teeb: Aitab kehast liigset vedelikku välja juua
+   Kui ei võta: Jalad tursuvad, hingamine muutub raskemaks, vedelik koguneb kopsudesse
+
+2. Metoprolol 25mg (hommikul ja õhtul)
+   Mida see teeb: Aeglustab südame löögisagedust ja aitab südamel kergemini töötada
+   Kui ei võta: Süda töötab liiga kõvasti, seisund halveneb
+
+3. Lisinopril 10mg (hommikul)
+   Mida see teeb: Hoiab vererõhku madalal ja aitab südamel
+   Kui ei võta: Vererõhk tõuseb, süda peab tegema raskemat tööd
+
+OLULINE: Ärge kunagi lõpetage ravimite võtmist ilma arstiga rääkimata!
+
+
+═══════════════════════════════════════════════════
+MINU KONTAKTID
+═══════════════════════════════════════════════════
+
+Teie ravimeeskond:
+
+Kardioloog Dr. Mägi
+📞 +372 7XX XXXX
+📧 kardioloogia@haigla.ee
+Järgmine visiit: 2 nädala päras
+
+Südameõde
+📞 +372 7XX XXXX
+Nõustamine ja küsimused: E-R 9:00-16:00
+
+${patientData.mentalState === 'anxious' ? 'Psühholoog (emotsionaalne tugi)\n📞 +372 7XX XXXX\n📧 psyhholoogia@haigla.ee\n\n' : ''}Apteek
+📞 +372 7XX XXXX
+Ravimite küsimused
+
+KIIRABI: 112
+Helistage kohe kui:
+• Hingeldus muutub äkki palju halvemaks
+• Valu rinnus
+• Teadvuse kaotus
+• Jalad tursuvad kiiresti (üleöö)`;
     } else if (patientData.language === "russian") {
-      draft = `Ваше состояние сердца и лечение
+      draft = `═══════════════════════════════════════════════════
+ЧТО У МЕНЯ ЕСТЬ
+═══════════════════════════════════════════════════
 
 Уважаемый ${patientData.sex === 'male' ? 'господин' : 'госпожа'},
 
-Обследования показали, что у Вас сердечная недостаточность. Это означает, что Ваше сердце не может перекачивать достаточно крови во все части тела.
+У Вас диагностирована сердечная недостаточность. ${literacyLevel === 'low' ? 'Простыми словами: Ваше сердце не может перекачивать достаточно крови во все части тела.' : 'Это означает, что сердечная мышца ослабла и не может эффективно перекачивать кровь.'}
 
-${literacyLevel === 'low' ? 'Простыми словами:' : 'Подробнее:'}
-• Ваше сердце сейчас работает на 35% мощности (норма 55-70%)
+Результаты Ваших тестов:
+• Сила сердца: 35% (норма 55-70%)
 • Анализ крови показал высокий уровень стресса сердца
 • Ноги отекают, потому что жидкость накапливается в организме
 
-Ваши лекарства:
-• Фуросемид 40мг – помогает вывести лишнюю жидкость из организма
-• Метопролол 25мг – помогает сердцу работать легче
-• Лизиноприл 10мг – поддерживает низкое кровяное давление
+${patientData.mentalState === 'anxious' ? 'Мы понимаем, что этот диагноз может пугать. Ваш врач и медсестры здесь, чтобы помочь Вам. Это поддающееся лечению и контролируемое состояние.' : ''}
 
-Что Вам нужно делать:
+
+═══════════════════════════════════════════════════
+КАК МНЕ ЖИТЬ ДАЛЬШЕ
+═══════════════════════════════════════════════════
+
+Ваше ежедневное лечение и образ жизни:
+
+Потребление жидкости:
 • Пейте не более 2 литров жидкости в день
+• Это включает воду, чай, суп, всё
+
+Питание:
 • Ешьте мало соли (менее 2 граммов в день)
+• Избегайте консервированных продуктов и фастфуда
+• Используйте свежие травы вместо соли
+
+Ежедневный контроль:
 • Взвешивайтесь каждый день в одно время
+• Записывайте вес
 • Принимайте лекарства точно как прописал врач
 
-${patientData.mentalState === 'anxious' ? 'Мы понимаем, что этот диагноз может пугать. Ваш врач и медсестры здесь, чтобы помочь Вам.' : ''}
+Физическая активность:
+• Легкая прогулка 10-15 минут в день
+• Отдыхайте, когда чувствуете усталость
+• Не делайте тяжелую физическую работу
 
-Когда обращаться в скорую помощь:
-• Одышка становится намного хуже
-• Ноги отекают больше обычного
-• Вес увеличивается более чем на 2 кг за два дня
 
-Следующий визит: через 2 недели к кардиологу`;
+═══════════════════════════════════════════════════
+КАК БУДУТ ВЫГЛЯДЕТЬ СЛЕДУЮЩИЕ 6 МЕСЯЦЕВ
+═══════════════════════════════════════════════════
+
+Первые 2 недели:
+• Вы будете чувствовать усталость, так как организм адаптируется к лекарствам
+• Ноги начнут меньше отекать
+• Дыхание станет легче
+
+1-3 месяца:
+• Уровень энергии начнет улучшаться
+• Вы сможете делать больше без одышки
+• Сила сердца может увеличиться до 40-45%
+
+3-6 месяцев:
+• Вы снова сможете делать легкую работу в саду или прогулки
+• Продолжатся регулярные осмотры у кардиолога
+• Лекарства могут быть скорректированы
+
+
+═══════════════════════════════════════════════════
+ЧТО ЭТО ЗНАЧИТ ДЛЯ МОЕЙ ЖИЗНИ
+═══════════════════════════════════════════════════
+
+Долгосрочные изменения:
+
+${literacyLevel === 'low' ? 'Вам нужно будет принимать лекарства всю жизнь и следить за своим сердцем. Но многие люди живут хорошей жизнью с сердечной недостаточностью.' : 'Сердечная недостаточность — это хроническое состояние, требующее постоянного лечения и изменения образа жизни. При правильном лечении Вы можете жить полноценной жизнью.'}
+
+Вы сможете:
+• Продолжить работу (легкий физический труд)
+• Путешествовать (консультируйтесь с врачом перед дальними поездками)
+• Быть с семьей и наслаждаться жизнью
+
+Вам нужно будет:
+• Принимать лекарства каждый день
+• Регулярно проходить осмотры
+• Следить за весом и симптомами
+• Избегать чрезмерных физических нагрузок
+
+
+═══════════════════════════════════════════════════
+МОИ ЛЕКАРСТВА
+═══════════════════════════════════════════════════
+
+1. Фуросемид 40мг (утром)
+   Что делает: Помогает вывести лишнюю жидкость из организма
+   Если не принимать: Ноги отекают, дыхание затрудняется, жидкость накапливается в легких
+
+2. Метопролол 25мг (утром и вечером)
+   Что делает: Замедляет частоту сердечных сокращений и помогает сердцу работать легче
+   Если не принимать: Сердце работает слишком усердно, состояние ухудшается
+
+3. Лизиноприл 10мг (утром)
+   Что делает: Поддерживает низкое кровяное давление и помогает сердцу
+   Если не принимать: Давление повышается, сердце должно работать тяжелее
+
+ВАЖНО: Никогда не прекращайте прием лекарств без разговора с врачом!
+
+
+═══════════════════════════════════════════════════
+МОИ КОНТАКТЫ
+═══════════════════════════════════════════════════
+
+Ваша медицинская команда:
+
+Кардиолог Др. Мяги
+📞 +372 7XX XXXX
+📧 kardiologia@haigla.ee
+Следующий визит: через 2 недели
+
+Медсестра кардиологии
+📞 +372 7XX XXXX
+Консультации и вопросы: Пн-Пт 9:00-16:00
+
+${patientData.mentalState === 'anxious' ? 'Психолог (эмоциональная поддержка)\n📞 +372 7XX XXXX\n📧 psyhholoogia@haigla.ee\n\n' : ''}Аптека
+📞 +372 7XX XXXX
+Вопросы о лекарствах
+
+СКОРАЯ ПОМОЩЬ: 112
+Звоните немедленно, если:
+• Одышка внезапно сильно ухудшилась
+• Боль в груди
+• Потеря сознания
+• Ноги быстро отекают (за ночь)`;
     } else {
-      draft = `Your Heart Condition and Treatment
+      draft = `═══════════════════════════════════════════════════
+WHAT DO I HAVE
+═══════════════════════════════════════════════════
 
 Dear ${patientData.sex === 'male' ? 'Mr.' : patientData.sex === 'female' ? 'Ms.' : ''} Patient,
 
-Your heart tests show that you have heart failure. This means your heart cannot pump enough blood to all parts of your body.
+You have been diagnosed with heart failure. ${literacyLevel === 'low' ? 'In simple terms: Your heart cannot pump enough blood to all parts of your body.' : 'This means your heart muscle has weakened and cannot pump blood effectively.'}
 
-${literacyLevel === 'low' ? 'In simple terms:' : 'More detailed explanation:'}
-• Your heart is currently working at 35% strength (normal is 55-70%)
-• Your blood test showed high levels of heart stress
+Your test results:
+• Heart strength: 35% (normal is 55-70%)
+• Blood test showed high levels of heart stress
 • Your legs are swollen because fluid is building up in your body
 
-Your medications:
-• Furosemide 40mg – helps remove extra fluid from your body
-• Metoprolol 25mg – helps your heart work more easily
-• Lisinopril 10mg – keeps your blood pressure low
+${patientData.mentalState === 'anxious' ? 'We understand this diagnosis may feel frightening. Your doctor and nurses are here to help you. This is a treatable and manageable condition.' : ''}
 
-What you need to do:
+
+═══════════════════════════════════════════════════
+HOW SHOULD I LIVE NEXT
+═══════════════════════════════════════════════════
+
+Your daily treatment and lifestyle:
+
+Fluid intake:
 • Drink no more than 2 liters of fluid per day
+• This includes water, tea, soup, everything
+
+Diet:
 • Eat low salt (less than 2 grams daily)
+• Avoid canned foods and fast food
+• Use fresh herbs instead of salt
+
+Daily monitoring:
 • Weigh yourself every day at the same time
-• Take your medications exactly as your doctor prescribed
+• Write down your weight
+• Take your medications exactly as prescribed
 
-${patientData.mentalState === 'anxious' ? 'We understand this diagnosis may feel frightening. Your doctor and nurses are here to help you.' : ''}
+Physical activity:
+• Light walking 10-15 minutes per day
+• Rest when you feel tired
+• Do not do heavy physical work
 
-${patientData.includeRelatives ? '\nFor family members:\nPlease help the patient follow their fluid and salt restrictions. Watch for signs of worsening symptoms and encourage medication compliance.\n' : ''}
 
-When to seek emergency care:
-• Breathing becomes much worse
-• Legs swell more than usual
-• Weight increases by more than 2kg in two days
+═══════════════════════════════════════════════════
+HOW THE NEXT 6 MONTHS OF MY LIFE WILL LOOK LIKE
+═══════════════════════════════════════════════════
 
-Next appointment: In 2 weeks with cardiologist
+First 2 weeks:
+• You will feel tired as your body adjusts to medications
+• Your legs will start to swell less
+• Breathing will become easier
 
-${patientData.hasAccessibilityNeeds ? '\n[Note: This document is available in large print format upon request]' : ''}`;
+1-3 months:
+• Energy levels will start improving
+• You can do more without feeling breathless
+• Heart strength may improve to 40-45%
+
+3-6 months:
+• You may be able to do light gardening or walking again
+• Regular check-ups with cardiologist continue
+• Medications may be adjusted
+
+
+═══════════════════════════════════════════════════
+WHAT DOES IT MEAN FOR MY LIFE
+═══════════════════════════════════════════════════
+
+Long-term changes:
+
+${literacyLevel === 'low' ? 'You will need to take medications for life and monitor your heart. But many people live good lives with heart failure.' : 'Heart failure is a chronic condition that requires ongoing treatment and lifestyle adjustments. With proper treatment, you can live a fulfilling life.'}
+
+You can:
+• Continue working (light physical work)
+• Travel (consult doctor before long trips)
+• Be with family and enjoy life
+
+You need to:
+• Take medications every day
+• Have regular check-ups
+• Monitor your weight and symptoms
+• Avoid excessive physical strain
+
+
+═══════════════════════════════════════════════════
+MY MEDICATIONS
+═══════════════════════════════════════════════════
+
+1. Furosemide 40mg (morning)
+   What it does: Helps remove extra fluid from your body
+   If you don't take it: Legs swell, breathing becomes harder, fluid builds up in lungs
+
+2. Metoprolol 25mg (morning and evening)
+   What it does: Slows heart rate and helps your heart work more easily
+   If you don't take it: Heart works too hard, condition worsens
+
+3. Lisinopril 10mg (morning)
+   What it does: Keeps blood pressure low and helps your heart
+   If you don't take it: Blood pressure rises, heart has to work harder
+
+IMPORTANT: Never stop taking medications without talking to your doctor!
+
+
+═══════════════════════════════════════════════════
+MY CONTACTS
+═══════════════════════════════════════════════════
+
+Your care team:
+
+Cardiologist Dr. Smith
+📞 +372 7XX XXXX
+📧 cardiology@hospital.ee
+Next visit: In 2 weeks
+
+Heart Failure Nurse
+📞 +372 7XX XXXX
+Advice and questions: Mon-Fri 9:00-16:00
+
+${patientData.mentalState === 'anxious' ? 'Psychologist (emotional support)\n📞 +372 7XX XXXX\n📧 psychology@hospital.ee\n\n' : ''}Pharmacy
+📞 +372 7XX XXXX
+Medication questions
+
+${patientData.includeRelatives ? '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFOR FAMILY MEMBERS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nHow you can help:\n• Help monitor daily weight\n• Encourage fluid and salt restrictions\n• Watch for warning signs (increased swelling, breathing difficulty)\n• Support medication compliance\n• Attend appointments when possible\n\n' : ''}EMERGENCY: 112
+Call immediately if:
+• Breathing suddenly becomes much worse
+• Chest pain
+• Loss of consciousness
+• Legs swell rapidly (overnight)`;
     }
-
+    
     return draft;
   };
 
