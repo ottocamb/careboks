@@ -3,7 +3,9 @@
 ## What Was Implemented
 
 ### ✅ Phase 1: New Single-Stage Edge Function
+
 **File: `supabase/functions/generate-patient-document-v2/index.ts`**
+
 - Created new edge function that generates patient documents in ONE AI call
 - Consolidated all prompts from the old two-stage system
 - Uses tool calling / structured output to enforce JSON schema
@@ -13,6 +15,7 @@
 - Model: `google/gemini-2.5-flash`
 
 **File: `supabase/functions/generate-patient-document-v2/prompts.ts`**
+
 - Merged content from `analyze-medical-note` and `generate-patient-draft`
 - All personalization logic (literacy, age, language, journey, mental state)
 - All section guidelines (what each of 7 sections should contain)
@@ -20,7 +23,9 @@
 - Language-specific guidelines for Estonian, Russian, English
 
 ### ✅ Phase 2: Validation Layer
+
 **File: `supabase/functions/generate-patient-document-v2/validation.ts`**
+
 - **Structural Validation:**
   - All 7 sections present and non-empty
   - Each section has minimum 50 characters
@@ -42,7 +47,9 @@
   - Returns clear error if both attempts fail
 
 ### ✅ Phase 3: Frontend Integration
+
 **File: `src/components/AIProcessing.tsx`**
+
 - Updated to support BOTH old and new pipelines
 - A/B test flag: `useSingleStage` (default: `true` = new version)
 - Toggle button to switch between v1 (legacy) and v2 (new) for testing
@@ -50,6 +57,7 @@
 - Keeps old two-stage logic for comparison
 
 **File: `src/utils/structuredDocumentParser.ts`**
+
 - New parser for structured JSON output
 - Maps JSON keys to UI sections
 - No more regex/string matching needed
@@ -57,11 +65,13 @@
 - Supports all 3 languages (Estonian, Russian, English)
 
 **File: `supabase/config.toml`**
+
 - Registered new `generate-patient-document-v2` function
 
 ## How to Use
 
 ### For Testing (Current Setup)
+
 1. The system defaults to **V2 (New)** single-stage pipeline
 2. Click the "V2 (New)" / "V1 (Legacy)" toggle button to switch pipelines
 3. Test both versions with the same input to compare:
@@ -71,6 +81,7 @@
    - Validation success rate
 
 ### What Happens in V2
+
 1. User submits technical note + patient profile
 2. **ONE** AI call generates complete document
 3. Structured JSON ensures all 7 sections present
@@ -80,6 +91,7 @@
 7. If validation passes → document ready for clinician review
 
 ### Benefits Over V1
+
 - ✅ **Faster**: One AI call instead of two (50% reduction)
 - ✅ **No information loss**: Full technical note context for generation
 - ✅ **Reliable parsing**: Guaranteed JSON structure, no string matching
@@ -90,21 +102,27 @@
 ## Next Steps (Not Yet Implemented)
 
 ### Phase 4: Update Section Regeneration
+
 **File: `supabase/functions/regenerate-section/index.ts`**
+
 - Update to use consolidated prompts from v2
 - Remove duplicated prompt logic
 - Can call main function and extract one section
 
 ### Phase 5: A/B Testing Metrics
+
 Add database logging to track:
+
 - Generation time comparison
 - Validation pass rate
 - Clinician edit rate
 - Approval time
 - User satisfaction
 
-### Phase 6: Full Migration (After 2 Weeks)
+### Phase 6: Full Migration
+
 Once v2 proves superior:
+
 1. Set `useSingleStage` to `true` permanently
 2. Remove toggle button
 3. Delete old functions:
@@ -115,6 +133,7 @@ Once v2 proves superior:
 ## Testing Checklist
 
 ### Test Cases to Run
+
 - [ ] English, low literacy, emergency journey
 - [ ] Estonian, high literacy, chronic condition
 - [ ] Russian, medium literacy, first-time patient
@@ -123,6 +142,7 @@ Once v2 proves superior:
 - [ ] Patient with mental health considerations
 
 ### Metrics to Compare (V1 vs V2)
+
 - [ ] Average generation time
 - [ ] Validation failure rate
 - [ ] Sections requiring clinician edits
@@ -130,6 +150,7 @@ Once v2 proves superior:
 - [ ] Clinician satisfaction rating
 
 ## Current Status
+
 ✅ **READY FOR TESTING**
 
 The new single-stage pipeline is fully implemented and ready for use. Toggle between V1/V2 to compare performance. All validation checks are active. Monitor console logs for detailed validation feedback.
