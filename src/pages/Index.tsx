@@ -5,6 +5,7 @@ import PatientProfile from "@/components/PatientProfile";
 import AIProcessing from "@/components/AIProcessing";
 import { ClinicianApproval } from "@/components/ClinicianApproval";
 import FinalOutput from "@/components/FinalOutput";
+import { Section } from "@/utils/structuredDocumentParser";
 
 type Step = 'input' | 'profile' | 'processing' | 'approval' | 'output';
 
@@ -30,6 +31,7 @@ const Index = ({ onLogout }: IndexProps) => {
   const [technicalNote, setTechnicalNote] = useState("");
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [aiDraft, setAiDraft] = useState("");
+  const [aiSections, setAiSections] = useState<Section[]>([]);
   const [analysis, setAnalysis] = useState<any>(null);
   const [finalText, setFinalText] = useState("");
 
@@ -48,9 +50,10 @@ const Index = ({ onLogout }: IndexProps) => {
     setCurrentStep('processing');
   };
 
-  const handleAIProcessingComplete = (draft: string, analysisData?: any) => {
+  const handleAIProcessingComplete = (draft: string, analysisData?: any, sectionsData?: Section[]) => {
     setAiDraft(draft);
     setAnalysis(analysisData);
+    setAiSections(sectionsData || []);
     setCurrentStep('approval');
   };
 
@@ -65,6 +68,7 @@ const Index = ({ onLogout }: IndexProps) => {
     setTechnicalNote("");
     setPatientData(null);
     setAiDraft("");
+    setAiSections([]);
     setAnalysis(null);
     setFinalText("");
   };
@@ -110,6 +114,7 @@ const Index = ({ onLogout }: IndexProps) => {
           <ClinicianApproval 
             caseId={currentCaseId}
             draft={aiDraft}
+            sections={aiSections}
             analysis={analysis}
             patientData={patientData}
             technicalNote={technicalNote}

@@ -1,3 +1,7 @@
+// ⚠️ DEPRECATED: This function is no longer used in production.
+// Replaced by generate-patient-document-v2 (single-stage pipeline)
+// Kept for historical reference only. Safe to delete after 2025-12-01.
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {

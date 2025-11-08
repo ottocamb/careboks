@@ -13,6 +13,7 @@ import { parseDraftIntoSections, reconstructDraft, ParsedSection } from "@/utils
 interface ClinicianApprovalProps {
   caseId: string;
   draft: string;
+  sections?: ParsedSection[];
   analysis?: any;
   patientData: any;
   technicalNote: string;
@@ -23,6 +24,7 @@ interface ClinicianApprovalProps {
 export const ClinicianApproval = ({
   caseId,
   draft,
+  sections: preParsedSections,
   analysis,
   patientData,
   technicalNote,
@@ -35,12 +37,24 @@ export const ClinicianApproval = ({
   const { toast } = useToast();
   const { saveApproval, updateCase } = useCasePersistence();
 
-  // Parse draft into sections on mount
+  // Use pre-parsed sections (V2) or parse from draft (V1)
   useEffect(() => {
-    const parsed = parseDraftIntoSections(draft);
-    console.log("Parsed sections:", parsed.map(s => ({ title: s.title, contentLength: s.content.length })));
-    setSections(parsed);
-  }, [draft]);
+    if (preParsedSections && preParsedSections.length > 0) {
+      console.log("Using pre-parsed sections (V2):", preParsedSections.map(s => ({ 
+        title: s.title, 
+        contentLength: s.content.length 
+      })));
+      setSections(preParsedSections);
+    } else {
+      console.log("Parsing draft text (V1 fallback)");
+      const parsed = parseDraftIntoSections(draft);
+      console.log("Parsed sections:", parsed.map(s => ({ 
+        title: s.title, 
+        contentLength: s.content.length 
+      })));
+      setSections(parsed);
+    }
+  }, [draft, preParsedSections]);
 
   const handleSectionEdit = (index: number, newContent: string) => {
     const updated = [...sections];
