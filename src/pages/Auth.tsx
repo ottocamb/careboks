@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import careboksLogo from "@/assets/careboks-logo.png";
+import { X } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -93,7 +94,15 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-lg relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <X className="h-4 w-4" />
+        </Button>
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <img src={careboksLogo} alt="Careboks" className="h-16 w-auto" />
