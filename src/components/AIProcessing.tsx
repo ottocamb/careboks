@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, FileText, Brain, Languages } from "lucide-react";
+import { CheckCircle2, Loader2, FileText, Brain, Languages, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
+import { parseStructuredDocument, structuredDocumentToText } from "@/utils/structuredDocumentParser";
 
 interface AIProcessingProps {
   caseId: string;
@@ -21,66 +22,109 @@ const AIProcessing = ({ caseId, onNext, patientData, technicalNote }: AIProcessi
   const [analysis, setAnalysis] = useState<any>(null);
   const [draft, setDraft] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [useSingleStage, setUseSingleStage] = useState<boolean>(true); // A/B test flag - default to new version
   const { toast } = useToast();
 
   const handleStartProcessing = async () => {
     if (step !== 'idle') return;
     
-    setStep('analyzing');
+    setStep(useSingleStage ? 'generating' : 'analyzing');
     setError('');
 
     try {
-      // Step 1: Analyze medical note
-      console.log("Starting medical note analysis...");
-      const { data: analysisData, error: analysisError } = await supabase.functions.invoke(
-        'analyze-medical-note',
-        {
-          body: { technicalNote, patientData }
-        }
-      );
-
-      if (analysisError) throw analysisError;
-      if (!analysisData?.analysis) throw new Error("No analysis data received");
-
-      console.log("Analysis complete:", analysisData.analysis);
-      setAnalysis(analysisData.analysis);
-      
-      // Step 2: Generate patient-friendly draft
-      setStep('generating');
-      console.log("Generating patient-friendly draft...");
-      
-      const { data: draftData, error: draftError } = await supabase.functions.invoke(
-        'generate-patient-draft',
-        {
-          body: {
-            analysis: analysisData.analysis,
-            patientData,
-            technicalNote
+      if (useSingleStage) {
+        // NEW SINGLE-STAGE PIPELINE
+        console.log("Starting single-stage document generation (v2)...");
+        
+        const { data: documentData, error: documentError } = await supabase.functions.invoke(
+          'generate-patient-document-v2',
+          {
+            body: { technicalNote, patientData }
           }
+        );
+
+        if (documentError) throw documentError;
+        if (!documentData?.document) throw new Error("No document data received");
+
+        console.log("Document generated successfully:", documentData);
+
+        // Parse structured JSON into sections
+        const sections = parseStructuredDocument(documentData.document, patientData.language);
+        const draftText = structuredDocumentToText(sections);
+
+        setDraft(draftText);
+        setStep('complete');
+
+        // Save to database (no separate analysis in v2)
+        await saveAIAnalysis(
+          caseId,
+          { method: 'single-stage-v2', validation: documentData.validation },
+          draftText,
+          documentData.model || 'google/gemini-2.5-flash'
+        );
+
+        await updateCase(caseId, { status: 'processing' });
+
+        if (documentData.validation?.warnings?.length > 0) {
+          console.warn("Validation warnings:", documentData.validation.warnings);
         }
-      );
 
-      if (draftError) throw draftError;
-      if (!draftData?.draft) throw new Error("No draft content received");
+        toast({
+          title: "Processing Complete",
+          description: "Patient-friendly document has been generated and validated.",
+        });
 
-      console.log("Draft generated successfully");
-      setDraft(draftData.draft);
-      setStep('complete');
+      } else {
+        // OLD TWO-STAGE PIPELINE (kept for A/B testing)
+        console.log("Starting medical note analysis (legacy)...");
+        const { data: analysisData, error: analysisError } = await supabase.functions.invoke(
+          'analyze-medical-note',
+          {
+            body: { technicalNote, patientData }
+          }
+        );
 
-      // Save to database
-      await saveAIAnalysis(
-        caseId,
-        analysisData.analysis,
-        draftData.draft,
-        draftData.model || 'google/gemini-2.5-flash'
-      );
+        if (analysisError) throw analysisError;
+        if (!analysisData?.analysis) throw new Error("No analysis data received");
 
-      await updateCase(caseId, { status: 'processing' });
+        console.log("Analysis complete:", analysisData.analysis);
+        setAnalysis(analysisData.analysis);
+        
+        setStep('generating');
+        console.log("Generating patient-friendly draft...");
+        
+        const { data: draftData, error: draftError } = await supabase.functions.invoke(
+          'generate-patient-draft',
+          {
+            body: {
+              analysis: analysisData.analysis,
+              patientData,
+              technicalNote
+            }
+          }
+        );
 
-      toast({
-        title: "Processing Complete",
-        description: "Patient-friendly draft has been generated and is ready for review.",
-      });
+        if (draftError) throw draftError;
+        if (!draftData?.draft) throw new Error("No draft content received");
+
+        console.log("Draft generated successfully");
+        setDraft(draftData.draft);
+        setStep('complete');
+
+        await saveAIAnalysis(
+          caseId,
+          analysisData.analysis,
+          draftData.draft,
+          draftData.model || 'google/gemini-2.5-flash'
+        );
+
+        await updateCase(caseId, { status: 'processing' });
+
+        toast({
+          title: "Processing Complete",
+          description: "Patient-friendly draft has been generated and is ready for review.",
+        });
+      }
 
     } catch (err: any) {
       console.error("Error during AI processing:", err);
@@ -91,6 +135,8 @@ const AIProcessing = ({ caseId, onNext, patientData, technicalNote }: AIProcessi
         errorMessage = "Rate limit exceeded. Please try again later.";
       } else if (err.message?.includes("Payment required")) {
         errorMessage = "Payment required. Please add credits to your workspace.";
+      } else if (err.message?.includes("AI generation incomplete")) {
+        errorMessage = "AI validation failed. Please try regenerating.";
       } else if (err.message) {
         errorMessage = err.message;
       }
@@ -114,69 +160,115 @@ const AIProcessing = ({ caseId, onNext, patientData, technicalNote }: AIProcessi
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Processing Medical Note</CardTitle>
-          <CardDescription>
-            AI is analyzing the clinical note and generating a personalized patient communication
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Processing Medical Note</CardTitle>
+              <CardDescription>
+                AI is analyzing the clinical note and generating a personalized patient communication
+              </CardDescription>
+            </div>
+            {step === 'idle' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setUseSingleStage(!useSingleStage)}
+              >
+                {useSingleStage ? '✨ V2 (New)' : '📋 V1 (Legacy)'}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Processing Status */}
           <div className="space-y-4">
-            {/* Step 1: Analysis */}
-            <div className={`flex items-start space-x-3 p-4 rounded-lg border ${
-              step === 'analyzing' ? 'bg-primary/5 border-primary/20' :
-              ['generating', 'complete'].includes(step) ? 'bg-muted/50 border-muted' :
-              'border-muted opacity-50'
-            }`}>
-              <div className="mt-0.5">
-                {['generating', 'complete'].includes(step) ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                ) : step === 'analyzing' ? (
-                  <Loader2 className="h-5 w-5 text-primary animate-spin" />
-                ) : (
-                  <FileText className="h-5 w-5" />
-                )}
+            {useSingleStage ? (
+              // SINGLE-STAGE UI
+              <div className={`flex items-start space-x-3 p-4 rounded-lg border ${
+                step === 'generating' ? 'bg-primary/5 border-primary/20' :
+                step === 'complete' ? 'bg-muted/50 border-muted' :
+                'border-muted opacity-50'
+              }`}>
+                <div className="mt-0.5">
+                  {step === 'complete' ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  ) : step === 'generating' ? (
+                    <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                  ) : (
+                    <Sparkles className="h-5 w-5" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-medium">Generating Validated Patient Document</p>
+                  <p className="text-sm text-muted-foreground">
+                    Single-stage AI generation with built-in quality validation
+                  </p>
+                  {step === 'complete' && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      ✓ Document generated and validated ({draft.length} characters)
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Analyzing Clinical Note</p>
-                <p className="text-sm text-muted-foreground">
-                  Extracting medical information into 7 categories
-                </p>
-                {['generating', 'complete'].includes(step) && analysis && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    ✓ {analysis.categories?.length || 7} categories extracted
+            ) : (
+              // TWO-STAGE UI (legacy)
+              <>
+                {/* Step 1: Analysis */}
+                <div className={`flex items-start space-x-3 p-4 rounded-lg border ${
+                  step === 'analyzing' ? 'bg-primary/5 border-primary/20' :
+                  ['generating', 'complete'].includes(step) ? 'bg-muted/50 border-muted' :
+                  'border-muted opacity-50'
+                }`}>
+                  <div className="mt-0.5">
+                    {['generating', 'complete'].includes(step) ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    ) : step === 'analyzing' ? (
+                      <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                    ) : (
+                      <FileText className="h-5 w-5" />
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium">Analyzing Clinical Note</p>
+                    <p className="text-sm text-muted-foreground">
+                      Extracting medical information into 7 categories
+                    </p>
+                    {['generating', 'complete'].includes(step) && analysis && (
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        ✓ {analysis.categories?.length || 7} categories extracted
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-            {/* Step 2: Draft Generation */}
-            <div className={`flex items-start space-x-3 p-4 rounded-lg border ${
-              step === 'generating' ? 'bg-primary/5 border-primary/20' :
-              step === 'complete' ? 'bg-muted/50 border-muted' :
-              'border-muted opacity-50'
-            }`}>
-              <div className="mt-0.5">
-                {step === 'complete' ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                ) : step === 'generating' ? (
-                  <Loader2 className="h-5 w-5 text-primary animate-spin" />
-                ) : (
-                  <Brain className="h-5 w-5" />
-                )}
-              </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Generating Patient-Friendly Draft</p>
-                <p className="text-sm text-muted-foreground">
-                  Personalizing content for patient profile
-                </p>
-                {step === 'complete' && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    ✓ Draft generated ({draft.length} characters)
+                {/* Step 2: Draft Generation */}
+                <div className={`flex items-start space-x-3 p-4 rounded-lg border ${
+                  step === 'generating' ? 'bg-primary/5 border-primary/20' :
+                  step === 'complete' ? 'bg-muted/50 border-muted' :
+                  'border-muted opacity-50'
+                }`}>
+                  <div className="mt-0.5">
+                    {step === 'complete' ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    ) : step === 'generating' ? (
+                      <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                    ) : (
+                      <Brain className="h-5 w-5" />
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium">Generating Patient-Friendly Draft</p>
+                    <p className="text-sm text-muted-foreground">
+                      Personalizing content for patient profile
+                    </p>
+                    {step === 'complete' && (
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        ✓ Draft generated ({draft.length} characters)
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Patient Profile Summary */}

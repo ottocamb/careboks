@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.regenerate-section]
 verify_jwt = false
+
+[functions.generate-patient-document-v2]
+verify_jwt = false
