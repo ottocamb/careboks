@@ -24,31 +24,31 @@ export const parseStructuredDocument = (doc: StructuredDocument, language: strin
   // Define section titles based on language
   const sectionTitles = {
     estonian: [
-      "MIS MUL ON",
-      "KUIDAS PEAKSIN EDASI ELAMA",
-      "KUIDAS JÄRGMISED 6 KUUD VÄLJA NÄEVAD",
-      "MIDA SEE TÄHENDAB MINU ELULE",
-      "MINU RAVIMID",
-      "HOIATAVAD MÄRGID",
-      "MINU KONTAKTID"
+      "Mis mul on",
+      "Kuidas peaksin edasi elama",
+      "Kuidas järgmised 6 kuud välja näevad",
+      "Mida see tähendab minu elule",
+      "Minu ravimid",
+      "Hoiatavad märgid",
+      "Minu kontaktid"
     ],
     russian: [
-      "ЧТО У МЕНЯ ЕСТЬ",
-      "КАК МНЕ ЖИТЬ ДАЛЬШЕ",
-      "КАК БУДУТ ВЫГЛЯДЕТЬ СЛЕДУЮЩИЕ 6 МЕСЯЦЕВ",
-      "ЧТО ЭТО ЗНАЧИТ ДЛЯ МОЕЙ ЖИЗНИ",
-      "МОИ ЛЕКАРСТВА",
-      "ПРЕДУПРЕЖДАЮЩИЕ ПРИЗНАКИ",
-      "МОИ КОНТАКТЫ"
+      "Что у меня есть",
+      "Как мне жить дальше",
+      "Как будут выглядеть следующие 6 месяцев",
+      "Что это значит для моей жизни",
+      "Мои лекарства",
+      "Предупреждающие признаки",
+      "Мои контакты"
     ],
     english: [
-      "WHAT DO I HAVE",
-      "HOW SHOULD I LIVE NEXT",
-      "HOW THE NEXT 6 MONTHS OF MY LIFE WILL LOOK LIKE",
-      "WHAT DOES IT MEAN FOR MY LIFE",
-      "MY MEDICATIONS",
-      "WARNING SIGNS",
-      "MY CONTACTS"
+      "What do I have",
+      "How should I live next",
+      "How the next 6 months of my life will look like",
+      "What does it mean for my life",
+      "My medications",
+      "Warning signs",
+      "My contacts"
     ]
   };
 

@@ -38,6 +38,7 @@ export const ClinicianApproval = ({
   // Parse draft into sections on mount
   useEffect(() => {
     const parsed = parseDraftIntoSections(draft);
+    console.log("Parsed sections:", parsed.map(s => ({ title: s.title, contentLength: s.content.length })));
     setSections(parsed);
   }, [draft]);
 
