@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Heart, Lock } from "lucide-react";
+import { Heart, Lock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   onLogin: () => void;
@@ -13,6 +14,7 @@ const Login = ({ onLogin }: LoginProps) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +42,15 @@ const Login = ({ onLogin }: LoginProps) => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-lg relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <X className="h-4 w-4" />
+        </Button>
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="p-3 bg-primary rounded-lg">
