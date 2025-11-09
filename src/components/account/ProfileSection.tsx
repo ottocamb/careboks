@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Languages } from "lucide-react";
 
 const ProfileSection = () => {
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,8 @@ const ProfileSection = () => {
     first_name: "",
     last_name: "",
     email: "",
-    role: ""
+    role: "",
+    language: "est"
   });
 
   useEffect(() => {
@@ -55,14 +56,16 @@ const ProfileSection = () => {
           first_name: "",
           last_name: "",
           email: user.email || "",
-          role: ""
+          role: "",
+          language: "est"
         });
       } else {
         setProfile({
           first_name: data.first_name || "",
           last_name: data.last_name || "",
           email: data.email || user.email || "",
-          role: data.role || ""
+          role: data.role || "",
+          language: data.language || "est"
         });
       }
     } catch (error: any) {
@@ -88,7 +91,8 @@ const ProfileSection = () => {
         .update({
           first_name: profile.first_name,
           last_name: profile.last_name,
-          role: profile.role
+          role: profile.role,
+          language: profile.language
         })
         .eq('id', user.id);
 
@@ -174,6 +178,35 @@ const ProfileSection = () => {
             <SelectContent>
               <SelectItem value="doctor">Doctor</SelectItem>
               <SelectItem value="nurse">Nurse</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="language">Preferred Language</Label>
+          <Select value={profile.language} onValueChange={(value) => setProfile({ ...profile, language: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="est">
+                <div className="flex items-center gap-2">
+                  <Languages className="h-4 w-4" />
+                  <span>Estonian (EST)</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="rus">
+                <div className="flex items-center gap-2">
+                  <Languages className="h-4 w-4" />
+                  <span>Russian (RUS)</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="eng">
+                <div className="flex items-center gap-2">
+                  <Languages className="h-4 w-4" />
+                  <span>English (ENG)</span>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>

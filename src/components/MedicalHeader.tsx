@@ -25,16 +25,6 @@ const MedicalHeader = ({
           </div>
           
           <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Languages className="h-4 w-4" />
-              <span>EST • RUS • ENG</span>
-            </div>
-            
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              
-              
-            </div>
-            
             <div className="flex items-center space-x-4">
               {currentStep > 0 && totalSteps > 0 && (
                 <div className="text-right">
