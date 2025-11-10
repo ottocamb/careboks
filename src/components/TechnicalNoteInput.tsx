@@ -20,27 +20,6 @@ const TechnicalNoteInput = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const { createCase } = useCasePersistence();
-
-  const formatDocumentHeader = (
-    fileName: string,
-    docNumber: number,
-    totalDocs: number,
-    method: 'Direct' | 'OCR',
-    pageCount?: number
-  ) => {
-    let header = `\n========================================\n`;
-    header += `📄 DOCUMENT ${docNumber} of ${totalDocs}: ${fileName}\n`;
-    header += `Method: ${method === 'Direct' ? 'Direct Text Extraction' : 'OCR (Scanned Document)'}\n`;
-    if (pageCount) {
-      header += `Pages: ${pageCount}\n`;
-    }
-    header += `========================================\n\n`;
-    return header;
-  };
-
-  const formatDocumentFooter = (docNumber: number) => {
-    return `\n\n========================================\n✓ END OF DOCUMENT ${docNumber}\n========================================\n\n`;
-  };
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (uploadedFiles.length + files.length > 10) {
@@ -67,7 +46,6 @@ const TechnicalNoteInput = ({
     setIsProcessing(true);
     try {
       let combinedText = note;
-      let docNumber = 0;
       for (const file of validFiles) {
         if (file.type === 'application/pdf') {
           // Try direct text extraction first
@@ -75,21 +53,20 @@ const TechnicalNoteInput = ({
           if (directText.trim().length > 100) {
             // Success! We got text directly from the PDF
             console.log(`Direct extraction successful for ${file.name}`);
-            docNumber++;
-            const header = formatDocumentHeader(file.name, docNumber, validFiles.length, 'Direct');
-            combinedText += (combinedText ? '' : '') + header + directText + formatDocumentFooter(docNumber);
+            combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} ---\n${directText}`;
             continue; // Move to next file
           }
 
           // Fallback to OCR for scanned PDFs
           console.log(`Falling back to OCR for ${file.name} (scanned document detected)`);
-          let extractedPages: string[] = [];
+          let pageIndex = 0;
           try {
             const images = await pdfToImageDataUrls(file, {
               maxPages: 5,
               scale: 1.0
             });
             for (const imgUrl of images) {
+              pageIndex++;
               const {
                 data,
                 error
@@ -102,23 +79,14 @@ const TechnicalNoteInput = ({
               if (error) {
                 toast({
                   title: "Extraction failed",
-                  description: `Could not extract text from ${file.name} (page ${extractedPages.length + 1}). Please review and make corrections.`,
+                  description: `Could not extract text from ${file.name} (page ${pageIndex}). Please review and make corrections.`,
                   variant: "destructive"
                 });
                 continue;
               }
               if (data?.extractedText) {
-                extractedPages.push(data.extractedText);
+                combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} (page ${pageIndex}) ---\n${data.extractedText}`;
               }
-            }
-            
-            if (extractedPages.length > 0) {
-              docNumber++;
-              const header = formatDocumentHeader(file.name, docNumber, validFiles.length, 'OCR', extractedPages.length);
-              const pagesText = extractedPages.map((text, idx) => 
-                `--- Page ${idx + 1} ---\n${text}`
-              ).join('\n\n');
-              combinedText += (combinedText ? '' : '') + header + pagesText + formatDocumentFooter(docNumber);
             }
           } catch (e) {
             console.error('PDF processing error:', e);
@@ -154,9 +122,7 @@ const TechnicalNoteInput = ({
             continue;
           }
           if (data?.extractedText) {
-            docNumber++;
-            const header = formatDocumentHeader(file.name, docNumber, validFiles.length, 'OCR');
-            combinedText += (combinedText ? '' : '') + header + data.extractedText + formatDocumentFooter(docNumber);
+            combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} ---\n${data.extractedText}`;
           }
         }
       }
