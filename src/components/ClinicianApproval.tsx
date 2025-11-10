@@ -248,7 +248,7 @@ export const ClinicianApproval = ({
           <div className="flex gap-3 pt-2">
             <Button onClick={onBack} variant="outline" className="flex-1">
               <ChevronLeft className="w-4 h-4 mr-1" />
-              Back
+              Patient Profile
             </Button>
             <Button onClick={handlePrintPreview} variant="outline" className="flex-1">
               <Printer className="w-4 h-4 mr-1" />
@@ -256,7 +256,7 @@ export const ClinicianApproval = ({
             </Button>
             <Button onClick={handleApprove} className="flex-1">
               <CheckCircle2 className="w-4 h-4 mr-1" />
-              Approve & Finalize
+              Sign with Smart ID
             </Button>
           </div>
         </CardContent>
