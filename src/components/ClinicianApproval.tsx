@@ -17,7 +17,7 @@ interface ClinicianApprovalProps {
   analysis?: any;
   patientData: any;
   technicalNote: string;
-  onApprove: (finalText: string, clinicianName: string) => void;
+  onApprove: (finalText: string, clinicianName: string, sections: ParsedSection[]) => void;
   onBack: () => void;
 }
 
@@ -125,7 +125,7 @@ export const ClinicianApproval = ({
         description: "Patient communication has been finalized",
       });
 
-      onApprove(finalText, clinicianName);
+      onApprove(finalText, clinicianName, sections);
     } catch (error) {
       console.error("Error approving document:", error);
       toast({

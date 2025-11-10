@@ -5,7 +5,7 @@ import PatientProfile from "@/components/PatientProfile";
 import AIProcessing from "@/components/AIProcessing";
 import { ClinicianApproval } from "@/components/ClinicianApproval";
 import FinalOutput from "@/components/FinalOutput";
-import { Section } from "@/utils/structuredDocumentParser";
+import { ParsedSection } from "@/utils/draftParser";
 
 type Step = 'input' | 'profile' | 'processing' | 'approval' | 'output';
 
@@ -31,9 +31,10 @@ const Index = ({ onLogout }: IndexProps) => {
   const [technicalNote, setTechnicalNote] = useState("");
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [aiDraft, setAiDraft] = useState("");
-  const [aiSections, setAiSections] = useState<Section[]>([]);
+  const [aiSections, setAiSections] = useState<ParsedSection[]>([]);
   const [analysis, setAnalysis] = useState<any>(null);
   const [finalText, setFinalText] = useState("");
+  const [approvedSections, setApprovedSections] = useState<ParsedSection[]>([]);
 
   const steps: Step[] = ['input', 'profile', 'processing', 'approval', 'output'];
   const currentStepIndex = steps.indexOf(currentStep);
@@ -50,15 +51,16 @@ const Index = ({ onLogout }: IndexProps) => {
     setCurrentStep('processing');
   };
 
-  const handleAIProcessingComplete = (draft: string, analysisData?: any, sectionsData?: Section[]) => {
+  const handleAIProcessingComplete = (draft: string, analysisData?: any, sectionsData?: ParsedSection[]) => {
     setAiDraft(draft);
     setAnalysis(analysisData);
     setAiSections(sectionsData || []);
     setCurrentStep('approval');
   };
 
-  const handleClinicianApproval = (approvedText: string, clinicianName: string) => {
+  const handleClinicianApproval = (approvedText: string, clinicianName: string, sections: ParsedSection[]) => {
     setFinalText(approvedText);
+    setApprovedSections(sections);
     setCurrentStep('output');
   };
 
@@ -71,6 +73,7 @@ const Index = ({ onLogout }: IndexProps) => {
     setAiSections([]);
     setAnalysis(null);
     setFinalText("");
+    setApprovedSections([]);
   };
 
   const handleBack = () => {
@@ -116,7 +119,7 @@ const Index = ({ onLogout }: IndexProps) => {
           <ClinicianApproval 
             caseId={currentCaseId}
             draft={aiDraft}
-            sections={aiSections}
+            sections={approvedSections.length > 0 ? approvedSections : aiSections}
             analysis={analysis}
             patientData={patientData}
             technicalNote={technicalNote}
@@ -130,6 +133,7 @@ const Index = ({ onLogout }: IndexProps) => {
             caseId={currentCaseId}
             finalText={finalText}
             onRestart={handleRestart}
+            onBack={() => setCurrentStep('approval')}
           />
         )}
       </main>

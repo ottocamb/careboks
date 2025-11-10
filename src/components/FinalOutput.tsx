@@ -3,16 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Printer, Download, Users, RotateCcw, Heart } from "lucide-react";
+import { CheckCircle, Printer, Download, Users, RotateCcw, Heart, ChevronLeft } from "lucide-react";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
 
 interface FinalOutputProps {
   caseId: string;
   finalText: string;
   onRestart: () => void;
+  onBack: () => void;
 }
 
-const FinalOutput = ({ caseId, finalText, onRestart }: FinalOutputProps) => {
+const FinalOutput = ({ caseId, finalText, onRestart, onBack }: FinalOutputProps) => {
   const [showComprehensionTest, setShowComprehensionTest] = useState(false);
   const { updateCase } = useCasePersistence();
 
@@ -122,6 +123,11 @@ const FinalOutput = ({ caseId, finalText, onRestart }: FinalOutputProps) => {
           </div>
 
           <div className="flex flex-wrap gap-3 justify-center">
+            <Button onClick={onBack} variant="outline" className="flex items-center space-x-2">
+              <ChevronLeft className="h-4 w-4" />
+              <span>Review & Edit Patient Communication</span>
+            </Button>
+            
             <Button onClick={handlePrint} className="flex items-center space-x-2">
               <Printer className="h-4 w-4" />
               <span>Print for Patient</span>
