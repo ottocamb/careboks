@@ -7,11 +7,13 @@ interface MedicalHeaderProps {
   currentStep: number;
   totalSteps: number;
   onLogout: () => void;
+  onLogoClick?: () => void;
 }
 const MedicalHeader = ({
   currentStep,
   totalSteps,
-  onLogout
+  onLogout,
+  onLogoClick
 }: MedicalHeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,7 +23,12 @@ const MedicalHeader = ({
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src={careboksLogo} alt="Careboks" className="h-10 w-auto" />
+            <img 
+              src={careboksLogo} 
+              alt="Careboks" 
+              className="h-10 w-auto cursor-pointer" 
+              onClick={onLogoClick}
+            />
           </div>
           
           <div className="flex items-center space-x-6">

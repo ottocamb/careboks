@@ -87,9 +87,20 @@ const Index = ({ onLogout }: IndexProps) => {
     setCurrentStep('profile');
   };
 
+  const handleLogoClick = () => {
+    if (currentStepIndex >= 1) {
+      setCurrentStep('input');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <MedicalHeader currentStep={currentStepIndex + 1} totalSteps={totalSteps} onLogout={onLogout} />
+      <MedicalHeader 
+        currentStep={currentStepIndex + 1} 
+        totalSteps={totalSteps} 
+        onLogout={onLogout}
+        onLogoClick={handleLogoClick}
+      />
       
       <main className="container mx-auto px-6 py-8">
         {currentStep === 'input' && (
