@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { FileText, Upload, Shield, File, X, Loader2 } from "lucide-react";
+import { FileText, Upload, Shield, File, X, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { pdfToImageDataUrls } from "@/utils/pdfToImages";
@@ -21,6 +21,7 @@ const TechnicalNoteInput = ({
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [extractedFileNames, setExtractedFileNames] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { createCase } = useCasePersistence();
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,22 +64,30 @@ const TechnicalNoteInput = ({
     }
 
     setIsExtracting(true);
+    const newExtractedFiles = new Set(extractedFileNames);
+    
     try {
       let combinedText = note;
+      console.log('Starting text extraction. Initial note length:', combinedText.length);
+      
       for (const file of uploadedFiles) {
+        console.log(`Processing file: ${file.name}`);
+        
         if (file.type === 'application/pdf') {
           // Try direct text extraction first
           const directText = await extractTextDirectly(file, 5);
           if (directText.trim().length > 100) {
             // Success! We got text directly from the PDF
-            console.log(`Direct extraction successful for ${file.name}`);
+            console.log(`Direct extraction successful for ${file.name}, extracted ${directText.length} characters`);
             combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} ---\n${directText}`;
+            newExtractedFiles.add(file.name);
             continue; // Move to next file
           }
 
           // Fallback to OCR for scanned PDFs
           console.log(`Falling back to OCR for ${file.name} (scanned document detected)`);
           let pageIndex = 0;
+          let fileExtracted = false;
           try {
             const images = await pdfToImageDataUrls(file, {
               maxPages: 5,
@@ -104,8 +113,13 @@ const TechnicalNoteInput = ({
                 continue;
               }
               if (data?.extractedText) {
+                console.log(`OCR extracted ${data.extractedText.length} characters from ${file.name} page ${pageIndex}`);
                 combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} (page ${pageIndex}) ---\n${data.extractedText}`;
+                fileExtracted = true;
               }
+            }
+            if (fileExtracted) {
+              newExtractedFiles.add(file.name);
             }
           } catch (e) {
             console.error('PDF processing error:', e);
@@ -141,14 +155,22 @@ const TechnicalNoteInput = ({
             continue;
           }
           if (data?.extractedText) {
+            console.log(`Image OCR extracted ${data.extractedText.length} characters from ${file.name}`);
             combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} ---\n${data.extractedText}`;
+            newExtractedFiles.add(file.name);
           }
         }
       }
+      
+      console.log('Extraction complete. Final text length:', combinedText.length);
+      console.log('Setting note with extracted text...');
       setNote(combinedText);
+      setExtractedFileNames(newExtractedFiles);
+      
+      const extractedCount = newExtractedFiles.size;
       toast({
         title: "Text extracted",
-        description: "Please review and edit the extracted text before continuing."
+        description: `Extracted text from ${extractedCount}/${uploadedFiles.length} file(s). ${combinedText.length} characters total.`
       });
     } catch (error) {
       console.error('Error processing files:', error);
@@ -162,7 +184,13 @@ const TechnicalNoteInput = ({
     }
   };
   const removeFile = (index: number) => {
+    const fileName = uploadedFiles[index].name;
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    setExtractedFileNames(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(fileName);
+      return newSet;
+    });
   };
   const handleNext = async () => {
     if (note.trim()) {
@@ -206,15 +234,24 @@ const TechnicalNoteInput = ({
           </div>
 
           {uploadedFiles.length > 0 && <div className="space-y-2">
-              <Label>Uploaded Documents ({uploadedFiles.length}/10)</Label>
+              <Label>Uploaded Documents ({uploadedFiles.length}/10) - {extractedFileNames.size} extracted</Label>
               <div className="flex flex-wrap gap-2">
-                {uploadedFiles.map((file, index) => <div key={index} className="flex items-center gap-2 bg-medical-light-blue px-3 py-2 rounded-md text-sm">
-                    <File className="h-4 w-4 text-primary" />
-                    <span className="max-w-[200px] truncate">{file.name}</span>
-                    <button onClick={() => removeFile(index)} className="text-muted-foreground hover:text-foreground" disabled={isProcessing}>
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>)}
+                {uploadedFiles.map((file, index) => {
+                  const isExtracted = extractedFileNames.has(file.name);
+                  return (
+                    <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm ${isExtracted ? 'bg-green-100 dark:bg-green-950' : 'bg-medical-light-blue'}`}>
+                      {isExtracted ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <File className="h-4 w-4 text-primary" />
+                      )}
+                      <span className="max-w-[200px] truncate">{file.name}</span>
+                      <button onClick={() => removeFile(index)} className="text-muted-foreground hover:text-foreground" disabled={isProcessing || isExtracting}>
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>}
           
