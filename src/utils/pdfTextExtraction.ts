@@ -1,7 +1,8 @@
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
-// Use CDN for worker
-GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+// Use local worker to ensure version compatibility
+GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export async function extractTextDirectly(file: File, maxPages = 5): Promise<string> {
   try {
