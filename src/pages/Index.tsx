@@ -107,6 +107,7 @@ const Index = ({ onLogout }: IndexProps) => {
             onNext={handleAIProcessingComplete}
             patientData={patientData}
             technicalNote={technicalNote}
+            onBack={handleBack}
           />
         )}
         

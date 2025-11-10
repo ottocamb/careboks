@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, FileText, Brain, Languages, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2, FileText, Brain, Languages, Sparkles, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
@@ -12,11 +12,12 @@ interface AIProcessingProps {
   onNext: (draft: string, analysis?: any, sections?: Section[]) => void;
   patientData: any;
   technicalNote: string;
+  onBack: () => void;
 }
 
 type ProcessingStep = 'idle' | 'analyzing' | 'generating' | 'complete' | 'error';
 
-const AIProcessing = ({ caseId, onNext, patientData, technicalNote }: AIProcessingProps) => {
+const AIProcessing = ({ caseId, onNext, patientData, technicalNote, onBack }: AIProcessingProps) => {
   const { saveAIAnalysis, updateCase } = useCasePersistence();
   const [step, setStep] = useState<ProcessingStep>('idle');
   const [sections, setSections] = useState<Section[]>([]);
@@ -186,12 +187,18 @@ const AIProcessing = ({ caseId, onNext, patientData, technicalNote }: AIProcessi
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             {step === 'idle' && (
-              <Button onClick={handleStartProcessing} size="lg" className="w-full">
-                <Brain className="mr-2 h-4 w-4" />
-                Start AI Processing
-              </Button>
+              <>
+                <Button onClick={onBack} variant="outline" size="lg">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
+                <Button onClick={handleStartProcessing} size="lg" className="flex-1">
+                  <Brain className="mr-2 h-4 w-4" />
+                  Start AI Processing
+                </Button>
+              </>
             )}
             
             {['analyzing', 'generating'].includes(step) && (
