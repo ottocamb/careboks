@@ -100,7 +100,10 @@ export const SectionBox = ({
 
             <div className="flex gap-2">
               <Button
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setEditedContent(content);
+                  setIsEditing(true);
+                }}
                 size="sm"
                 variant="outline"
                 className="flex-1"
