@@ -182,7 +182,7 @@ const TechnicalNoteInput = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="technical-note">Clinical Note Content</Label>
+            <Label htmlFor="technical-note">Clinical Notes</Label>
             <Textarea id="technical-note" placeholder="Enter technical clinical note here or upload documents below..." value={note} onChange={e => setNote(e.target.value)} className="min-h-[300px] font-mono text-sm" disabled={isProcessing} />
           </div>
 
