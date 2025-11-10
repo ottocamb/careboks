@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { FileText, Upload, Shield, File, X, Loader2, CheckCircle2 } from "lucide-react";
@@ -230,7 +230,12 @@ const TechnicalNoteInput = ({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="technical-note">Clinical Notes</Label>
-            <Textarea id="technical-note" placeholder="Enter technical clinical note here or upload documents below..." value={note} onChange={e => setNote(e.target.value)} className="min-h-[300px] font-mono text-sm" disabled={isProcessing} />
+            <RichTextEditor 
+              value={note} 
+              onChange={setNote}
+              placeholder="Enter technical clinical note here or upload documents below..."
+              disabled={isProcessing}
+            />
           </div>
 
           {uploadedFiles.length > 0 && <div className="space-y-2">
