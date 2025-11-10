@@ -63,14 +63,26 @@ const TechnicalNoteInput = ({
       return;
     }
 
+    // Filter out files that have already been extracted
+    const filesToProcess = uploadedFiles.filter(file => !extractedFileNames.has(file.name));
+    
+    if (filesToProcess.length === 0) {
+      toast({
+        title: "All files already extracted",
+        description: "All uploaded files have already been processed.",
+      });
+      return;
+    }
+
     setIsExtracting(true);
     const newExtractedFiles = new Set(extractedFileNames);
     
     try {
       let combinedText = note;
       console.log('Starting text extraction. Initial note length:', combinedText.length);
+      console.log(`Processing ${filesToProcess.length} new file(s), skipping ${extractedFileNames.size} already extracted`);
       
-      for (const file of uploadedFiles) {
+      for (const file of filesToProcess) {
         console.log(`Processing file: ${file.name}`);
         
         if (file.type === 'application/pdf') {
@@ -167,10 +179,11 @@ const TechnicalNoteInput = ({
       setNote(combinedText);
       setExtractedFileNames(newExtractedFiles);
       
-      const extractedCount = newExtractedFiles.size;
+      const extractedCount = filesToProcess.length;
+      const totalExtracted = newExtractedFiles.size;
       toast({
         title: "Text extracted",
-        description: `Extracted text from ${extractedCount}/${uploadedFiles.length} file(s). ${combinedText.length} characters total.`
+        description: `Extracted text from ${extractedCount} new file(s). Total: ${totalExtracted}/${uploadedFiles.length} files extracted. ${combinedText.length} characters total.`
       });
     } catch (error) {
       console.error('Error processing files:', error);
