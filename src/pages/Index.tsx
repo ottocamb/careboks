@@ -90,7 +90,7 @@ const Index = ({ onLogout }: IndexProps) => {
       
       <main className="container mx-auto px-6 py-8">
         {currentStep === 'input' && (
-          <TechnicalNoteInput onNext={handleTechnicalNoteSubmit} />
+          <TechnicalNoteInput onNext={handleTechnicalNoteSubmit} initialNote={technicalNote} />
         )}
         
         {currentStep === 'profile' && currentCaseId && (

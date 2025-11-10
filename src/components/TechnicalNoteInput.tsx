@@ -11,11 +11,13 @@ import { extractTextDirectly } from "@/utils/pdfTextExtraction";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
 interface TechnicalNoteInputProps {
   onNext: (note: string, caseId: string) => void;
+  initialNote?: string;
 }
 const TechnicalNoteInput = ({
-  onNext
+  onNext,
+  initialNote
 }: TechnicalNoteInputProps) => {
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(initialNote || "");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();

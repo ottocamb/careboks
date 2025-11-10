@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User, Brain, Globe, Users } from "lucide-react";
+import { User, Brain, Globe, Users, ArrowLeft } from "lucide-react";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
 import { useToast } from "@/hooks/use-toast";
 
@@ -223,7 +223,8 @@ const PatientProfile = ({ caseId, onNext, onBack, initialData }: PatientProfileP
 
           <div className="flex justify-between pt-6 border-t border-border">
             <Button variant="outline" onClick={onBack}>
-              Back to Clinical Note
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Clinical Documents
             </Button>
             <Button onClick={handleNext} disabled={!isValid}>
               Generate AI Draft
