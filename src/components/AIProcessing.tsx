@@ -192,7 +192,7 @@ const AIProcessing = ({ caseId, onNext, patientData, technicalNote, onBack }: AI
               <>
                 <Button onClick={onBack} variant="outline" size="lg">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back
+                  Patient Profile
                 </Button>
                 <Button onClick={handleStartProcessing} size="lg" className="flex-1">
                   <Brain className="mr-2 h-4 w-4" />

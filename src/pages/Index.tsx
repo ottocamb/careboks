@@ -98,6 +98,7 @@ const Index = ({ onLogout }: IndexProps) => {
             caseId={currentCaseId}
             onNext={handlePatientProfileSubmit} 
             onBack={handleBack}
+            initialData={patientData || undefined}
           />
         )}
         

@@ -25,12 +25,13 @@ interface PatientProfileProps {
   caseId: string;
   onNext: (data: PatientData) => void;
   onBack: () => void;
+  initialData?: PatientData;
 }
 
-const PatientProfile = ({ caseId, onNext, onBack }: PatientProfileProps) => {
+const PatientProfile = ({ caseId, onNext, onBack, initialData }: PatientProfileProps) => {
   const { savePatientProfile, updateCase } = useCasePersistence();
   const { toast } = useToast();
-  const [data, setData] = useState<PatientData>({
+  const [data, setData] = useState<PatientData>(initialData || {
     age: "",
     sex: "",
     language: "",
