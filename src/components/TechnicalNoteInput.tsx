@@ -20,6 +20,7 @@ const TechnicalNoteInput = ({
   const [note, setNote] = useState(initialNote || "");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const { toast } = useToast();
   const { createCase } = useCasePersistence();
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,10 +46,26 @@ const TechnicalNoteInput = ({
     });
     if (validFiles.length === 0) return;
     setUploadedFiles(prev => [...prev, ...validFiles]);
-    setIsProcessing(true);
+    toast({
+      title: "Files uploaded",
+      description: `${validFiles.length} file(s) added. Click "Get Text from Documents" to extract text.`
+    });
+  };
+
+  const handleExtractText = async () => {
+    if (uploadedFiles.length === 0) {
+      toast({
+        title: "No files uploaded",
+        description: "Please upload documents first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsExtracting(true);
     try {
       let combinedText = note;
-      for (const file of validFiles) {
+      for (const file of uploadedFiles) {
         if (file.type === 'application/pdf') {
           // Try direct text extraction first
           const directText = await extractTextDirectly(file, 5);
@@ -141,7 +158,7 @@ const TechnicalNoteInput = ({
         variant: "destructive"
       });
     } finally {
-      setIsProcessing(false);
+      setIsExtracting(false);
     }
   };
   const removeFile = (index: number) => {
@@ -204,24 +221,48 @@ const TechnicalNoteInput = ({
           <div className="space-y-2">
             <Label htmlFor="file-upload">Upload PDF or Images (Max 10)</Label>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" className="flex-1" disabled={isProcessing || uploadedFiles.length >= 10} onClick={() => document.getElementById('file-upload')?.click()}>
-                {isProcessing ? <>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="flex-1" 
+                disabled={isProcessing || isExtracting || uploadedFiles.length >= 10} 
+                onClick={() => document.getElementById('file-upload')?.click()}
+              >
+                <Upload className="h-4 w-4" />
+                <span>Upload Documents</span>
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="default" 
+                className="flex-1"
+                disabled={isProcessing || isExtracting || uploadedFiles.length === 0}
+                onClick={handleExtractText}
+              >
+                {isExtracting ? (
+                  <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Extracting text...</span>
-                  </> : <>
-                    <Upload className="h-4 w-4" />
-                    <span>Upload Documents</span>
-                  </>}
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4" />
+                    <span>Get Text from Documents</span>
+                  </>
+                )}
               </Button>
+              
               <input id="file-upload" type="file" accept="application/pdf,image/*" multiple onChange={handleFileUpload} className="hidden" />
             </div>
             <p className="text-xs text-muted-foreground">
-              Supported formats: PDF, JPG, PNG. Text will be extracted and shown above for your review.
+              {uploadedFiles.length === 0 
+                ? "Upload documents first, then click 'Get Text from Documents' to extract text." 
+                : "Click 'Get Text from Documents' to extract text from uploaded files."}
             </p>
           </div>
           
           <div className="flex items-center justify-end pt-4 border-t border-border">
-            <Button onClick={handleNext} disabled={!note.trim() || isProcessing} className="flex items-center space-x-2">
+            <Button onClick={handleNext} disabled={!note.trim() || isProcessing || isExtracting} className="flex items-center space-x-2">
               <span>Continue to Patient Profile</span>
             </Button>
           </div>
