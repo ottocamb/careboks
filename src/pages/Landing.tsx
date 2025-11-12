@@ -48,7 +48,7 @@ const Landing = () => {
             </div>
             <div className="order-1 md:order-2">
               <p className="text-xl md:text-2xl text-foreground leading-relaxed">
-                Careboks supports clinicians in explaining what matters most — calmly, clearly, and in everyday language patients can truly understand.
+                Careboks supports clinicians in explaining what matters most. Calmly, clearly, and in everyday language that patients can truly understand.
               </p>
             </div>
           </div>
