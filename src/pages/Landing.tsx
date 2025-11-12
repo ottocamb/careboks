@@ -23,7 +23,7 @@ const Landing = () => {
           <h2 className="text-5xl font-bold text-foreground mb-6">Careboks</h2>
           <p className="text-2xl text-foreground mb-4">Your medical expertise, delivered with clarity.</p>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Carebox helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format — reducing misunderstandings and improving confidence throughout the care journey.
+            Carebox helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format, reducing misunderstandings and improving confidence throughout the care journey.
           </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" onClick={() => navigate("/auth")}>
@@ -44,11 +44,7 @@ const Landing = () => {
         <div className="container mx-auto max-w-5xl">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="order-2 md:order-1">
-              <img 
-                src={clinicianPatientPhoto} 
-                alt="Clinician explaining medical information to patient" 
-                className="w-full h-auto rounded-2xl object-cover aspect-[4/3]"
-              />
+              <img src={clinicianPatientPhoto} alt="Clinician explaining medical information to patient" className="w-full h-auto rounded-2xl object-cover aspect-[4/3]" />
             </div>
             <div className="order-1 md:order-2">
               <p className="text-xl md:text-2xl text-foreground leading-relaxed">
