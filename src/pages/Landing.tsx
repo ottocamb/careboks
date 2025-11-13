@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import careboksLogo from "@/assets/careboks-logo.png";
 import clinicianPatientPhoto from "@/assets/careboks-photo-1800.jpg";
+import heroLogo from "@/assets/hero-logo.png";
+import heroLeftCards from "@/assets/hero-left-cards.png";
+import heroRightCards from "@/assets/hero-right-cards.png";
 const Landing = () => {
   const navigate = useNavigate();
   return <div className="min-h-screen bg-background">
@@ -13,28 +16,56 @@ const Landing = () => {
           <div className="flex items-center space-x-3">
             <img src={careboksLogo} alt="Careboks" className="h-10 w-auto" />
           </div>
-          <Button onClick={() => navigate("/auth")}>Login</Button>
+          <Button onClick={() => navigate("/auth")}>Access System</Button>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto text-center max-w-4xl">
-          <h2 className="text-5xl font-bold text-foreground mb-6">Careboks</h2>
-          <p className="text-2xl text-foreground mb-4">Your medical expertise, delivered with clarity.</p>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Carebox helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format, reducing misunderstandings and improving confidence throughout the care journey.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/auth")}>
-              Request Pilot
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => document.getElementById("output-example")?.scrollIntoView({
-            behavior: "smooth"
-          })}>
-              See Example Output
-            </Button>
+      <section className="py-20 px-6 relative overflow-hidden">
+        <div className="container mx-auto max-w-7xl">
+          <div className="relative flex items-center justify-center min-h-[600px]">
+            {/* Left Floating Cards */}
+            <img 
+              src={heroLeftCards} 
+              alt="" 
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-72 lg:w-96 floating-cards hidden lg:block"
+              aria-hidden="true"
+            />
+            
+            {/* Center Content */}
+            <div className="text-center max-w-2xl mx-auto z-10 px-6">
+              <img 
+                src={heroLogo} 
+                alt="Careboks Logo" 
+                className="w-24 h-24 mx-auto mb-8"
+              />
+              <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6">Careboks</h1>
+              <p className="text-xl lg:text-2xl text-foreground mb-4 font-medium">
+                Your medical expertise, delivered with clarity.
+              </p>
+              <p className="text-base lg:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+                Careboks helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format, reducing misunderstandings and improving confidence throughout the care journey.
+              </p>
+              <div className="flex gap-4 justify-center flex-wrap">
+                <Button size="lg" onClick={() => navigate("/auth")}>
+                  Request Pilot
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <Button size="lg" variant="outline" onClick={() => document.getElementById("output-example")?.scrollIntoView({
+                  behavior: "smooth"
+                })}>
+                  See Example Output
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Floating Cards */}
+            <img 
+              src={heroRightCards} 
+              alt="" 
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-72 lg:w-96 floating-cards hidden lg:block"
+              aria-hidden="true"
+            />
           </div>
         </div>
       </section>
