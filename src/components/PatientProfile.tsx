@@ -188,7 +188,7 @@ const PatientProfile = ({ caseId, onNext, onBack, initialData }: PatientProfileP
           <div className="space-y-4">
             <Label>Comorbidities</Label>
             <div className="grid grid-cols-2 gap-4">
-              {['Diabetes', 'Hypertension', 'COPD', 'Kidney Disease', 'Depression'].map(condition => (
+              {['Depression'].map(condition => (
                 <div key={condition} className="flex items-center space-x-2">
                   <Checkbox
                     id={condition}
