@@ -27,7 +27,7 @@ const Landing = () => {
             <img 
               src={heroLeftCards} 
               alt="" 
-              className="absolute left-0 top-1/3 -translate-y-1/3 w-72 lg:w-96 floating-cards hidden lg:block"
+              className="absolute left-0 top-[28%] -translate-y-[28%] w-64 lg:w-80 hidden lg:block"
               aria-hidden="true"
             />
             
@@ -62,7 +62,7 @@ const Landing = () => {
             <img 
               src={heroRightCards} 
               alt="" 
-              className="absolute right-0 top-1/3 -translate-y-1/3 w-72 lg:w-96 floating-cards hidden lg:block"
+              className="absolute right-0 top-[28%] -translate-y-[28%] w-64 lg:w-80 hidden lg:block"
               aria-hidden="true"
             />
           </div>
