@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
 import { supabase } from "@/integrations/supabase/client";
-import { Printer, ChevronLeft, CheckCircle2, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle } from "lucide-react";
+import { Printer, ChevronLeft, CheckCircle2, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle, Loader2 } from "lucide-react";
 import { SectionBox } from "@/components/SectionBox";
 import { parseDraftIntoSections, reconstructDraft, ParsedSection } from "@/utils/draftParser";
+import { parseStructuredDocument, structuredDocumentToText, Section } from "@/utils/structuredDocumentParser";
 
 interface ClinicianApprovalProps {
   caseId: string;
@@ -34,12 +35,19 @@ export const ClinicianApproval = ({
   const [sections, setSections] = useState<ParsedSection[]>([]);
   const [clinicianName, setClinicianName] = useState("");
   const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState("");
   const { toast } = useToast();
-  const { saveApproval, updateCase } = useCasePersistence();
+  const { saveApproval, updateCase, saveAIAnalysis } = useCasePersistence();
 
-  // Use pre-parsed sections (V2) or parse from draft (V1)
+
+  // Auto-start generation if no draft/sections provided
   useEffect(() => {
-    if (preParsedSections && preParsedSections.length > 0) {
+    const shouldGenerate = !draft && (!preParsedSections || preParsedSections.length === 0);
+    
+    if (shouldGenerate) {
+      handleStartGeneration();
+    } else if (preParsedSections && preParsedSections.length > 0) {
       console.log("Using pre-parsed sections (V2):", preParsedSections.map(s => ({ 
         title: s.title, 
         contentLength: s.content.length 
@@ -54,7 +62,77 @@ export const ClinicianApproval = ({
       })));
       setSections(parsed);
     }
-  }, [draft, preParsedSections]);
+  }, []);
+
+  const handleStartGeneration = async () => {
+    setIsGenerating(true);
+    setGenerationError('');
+
+    try {
+      console.log("Starting V2 document generation...");
+      
+      const { data: documentData, error: documentError } = await supabase.functions.invoke(
+        'generate-patient-document-v2',
+        {
+          body: { technicalNote, patientData }
+        }
+      );
+
+      if (documentError) throw documentError;
+      if (!documentData?.document) throw new Error("No document data received");
+
+      console.log("Document generated successfully:", documentData);
+
+      // Parse structured JSON into sections and store
+      const parsedSections = parseStructuredDocument(documentData.document, patientData.language);
+      setSections(parsedSections);
+
+      // Generate text for database storage
+      const draftText = structuredDocumentToText(parsedSections);
+
+      // Save to database
+      await saveAIAnalysis(
+        caseId,
+        { method: 'v2-single-stage', validation: documentData.validation },
+        draftText,
+        documentData.model || 'google/gemini-2.5-flash'
+      );
+
+      await updateCase(caseId, { status: 'processing' });
+
+      if (documentData.validation?.warnings?.length > 0) {
+        console.warn("Validation warnings:", documentData.validation.warnings);
+      }
+
+      toast({
+        title: "Document Generated",
+        description: "Patient-friendly document is ready for review.",
+      });
+
+    } catch (err: any) {
+      console.error("Error during AI generation:", err);
+      
+      let errorMessage = "An error occurred during generation";
+      if (err.message?.includes("Rate limit")) {
+        errorMessage = "Rate limit exceeded. Please try again later.";
+      } else if (err.message?.includes("Payment required")) {
+        errorMessage = "Payment required. Please add credits to your workspace.";
+      } else if (err.message?.includes("AI generation incomplete")) {
+        errorMessage = "AI validation failed. Please try regenerating.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setGenerationError(errorMessage);
+      toast({
+        title: "Generation Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSectionEdit = (index: number, newContent: string) => {
     const updated = [...sections];
@@ -173,6 +251,79 @@ export const ClinicianApproval = ({
     { title: "Warning signs", icon: <AlertTriangle />, themeColor: "text-red-600" },
     { title: "My contacts", icon: <Phone />, themeColor: "text-teal-600" },
   ];
+
+
+  // Show loading state while generating
+  if (isGenerating) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-6">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              Generating Patient Document
+            </CardTitle>
+            <CardDescription>
+              AI is creating a personalized, patient-friendly explanation based on your technical note...
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                <p className="text-muted-foreground">This may take a moment...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state with retry option
+  if (generationError) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-6">
+        <Card className="shadow-card border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Generation Failed</CardTitle>
+            <CardDescription>{generationError}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-4">
+              <Button onClick={onBack} variant="outline">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Profile
+              </Button>
+              <Button onClick={handleStartGeneration}>
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show approval UI when sections are ready
+  if (sections.length === 0) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-6">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>No Content Available</CardTitle>
+            <CardDescription>Unable to load document sections.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={onBack} variant="outline">
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Go Back
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
