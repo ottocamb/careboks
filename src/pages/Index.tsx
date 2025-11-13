@@ -2,12 +2,11 @@ import { useState } from "react";
 import MedicalHeader from "@/components/MedicalHeader";
 import TechnicalNoteInput from "@/components/TechnicalNoteInput";
 import PatientProfile from "@/components/PatientProfile";
-import AIProcessing from "@/components/AIProcessing";
 import { ClinicianApproval } from "@/components/ClinicianApproval";
 import FinalOutput from "@/components/FinalOutput";
 import { ParsedSection } from "@/utils/draftParser";
 
-type Step = 'input' | 'profile' | 'processing' | 'approval' | 'output';
+type Step = 'input' | 'profile' | 'approval' | 'output';
 
 interface PatientData {
   age: string;
@@ -36,7 +35,7 @@ const Index = ({ onLogout }: IndexProps) => {
   const [finalText, setFinalText] = useState("");
   const [approvedSections, setApprovedSections] = useState<ParsedSection[]>([]);
 
-  const steps: Step[] = ['input', 'profile', 'processing', 'approval', 'output'];
+  const steps: Step[] = ['input', 'profile', 'approval', 'output'];
   const currentStepIndex = steps.indexOf(currentStep);
   const totalSteps = steps.length;
 
@@ -48,7 +47,7 @@ const Index = ({ onLogout }: IndexProps) => {
 
   const handlePatientProfileSubmit = (data: PatientData) => {
     setPatientData(data);
-    setCurrentStep('processing');
+    setCurrentStep('approval');
   };
 
   const handleAIProcessingComplete = (draft: string, analysisData?: any, sectionsData?: ParsedSection[]) => {
@@ -113,16 +112,6 @@ const Index = ({ onLogout }: IndexProps) => {
             onNext={handlePatientProfileSubmit} 
             onBack={handleBack}
             initialData={patientData || undefined}
-          />
-        )}
-        
-        {currentStep === 'processing' && patientData && currentCaseId && (
-          <AIProcessing 
-            caseId={currentCaseId}
-            onNext={handleAIProcessingComplete}
-            patientData={patientData}
-            technicalNote={technicalNote}
-            onBack={handleBack}
           />
         )}
         
