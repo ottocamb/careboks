@@ -1,20 +1,20 @@
 /**
  * Consolidated Medical Communicator Prompts - Single-Stage Version
- * 
+ *
  * This file contains all prompt logic for the new single-stage pipeline that generates
  * patient documents directly without separate analysis step.
  */
 
 export interface PatientProfile {
   age: number;
-  sex: 'male' | 'female' | 'other';
-  healthLiteracy: 'low' | 'medium' | 'high';
-  language: 'estonian' | 'russian' | 'english';
-  journeyType?: 'elective' | 'emergency' | 'chronic' | 'first-time';
+  sex: "male" | "female" | "other";
+  healthLiteracy: "low" | "medium" | "high";
+  language: "estonian" | "russian" | "english";
+  journeyType?: "elective" | "emergency" | "chronic" | "first-time";
   mentalState?: string;
   comorbidities?: string;
   smokingStatus?: string;
-  riskAppetite?: 'minimal' | 'moderate' | 'detailed';
+  riskAppetite?: "minimal" | "moderate" | "detailed";
 }
 
 export const SYSTEM_PROMPT = `You are an expert medical communicator specializing in translating complex clinical information into clear, empathetic, patient-friendly explanations.
@@ -25,6 +25,7 @@ YOUR ROLE:
 - Maintain clinical accuracy while prioritizing clarity
 - Never speculate or add information not present in the source material
 - Acknowledge uncertainty clearly when information is incomplete
+- Never mention the doctor in sentences like "Your doctor will help you..."
 
 CORE PRINCIPLES:
 1. CLARITY OVER JARGON: Use simple, everyday language
@@ -32,16 +33,16 @@ CORE PRINCIPLES:
 3. ACCURACY: Never hallucinate medical facts; work only with provided information
 4. PERSONALIZATION: Adapt tone, vocabulary, and depth based on patient profile
 5. SAFETY FIRST: Emphasize critical information (medications, warning signs, contacts)
-6. ACKNOWLEDGE GAPS: When uncertain, say "We don't yet know; your doctor will guide you"
+6. ACKNOWLEDGE GAPS: When uncertain, say "We don't yet know"
 
 OUTPUT STRUCTURE:
 You must generate content for exactly 7 sections. Use the structured output tool to ensure all sections are present.`;
 
 export const getPersonalizationInstructions = (profile: PatientProfile): string => {
   let instructions = `\nPERSONALIZATION REQUIREMENTS:\n`;
-  
+
   // Health Literacy Adaptations
-  if (profile.healthLiteracy === 'low') {
+  if (profile.healthLiteracy === "low") {
     instructions += `
 HEALTH LITERACY (LOW):
 - Use very simple vocabulary (5th-grade reading level)
@@ -51,7 +52,7 @@ HEALTH LITERACY (LOW):
 - Use concrete examples: "the size of your fist" instead of "approximately 300g"
 - Break complex ideas into small steps
 - Repeat key points in different ways`;
-  } else if (profile.healthLiteracy === 'medium') {
+  } else if (profile.healthLiteracy === "medium") {
     instructions += `
 HEALTH LITERACY (MEDIUM):
 - Use clear, straightforward language
@@ -86,7 +87,7 @@ AGE (OLDER):
 
   // Mental State Adaptations
   if (profile.mentalState) {
-    if (profile.mentalState.toLowerCase().includes('anxious')) {
+    if (profile.mentalState.toLowerCase().includes("anxious")) {
       instructions += `\n
 MENTAL STATE (ANXIOUS):
 - Use calm, reassuring tone
@@ -94,7 +95,7 @@ MENTAL STATE (ANXIOUS):
 - Emphasize what IS known and controllable
 - Avoid alarming language
 - Highlight support resources`;
-    } else if (profile.mentalState.toLowerCase().includes('depressed')) {
+    } else if (profile.mentalState.toLowerCase().includes("depressed")) {
       instructions += `\n
 MENTAL STATE (DEPRESSED):
 - Use clear, structured communication
@@ -105,20 +106,20 @@ MENTAL STATE (DEPRESSED):
   }
 
   // Journey Type
-  if (profile.journeyType === 'emergency') {
+  if (profile.journeyType === "emergency") {
     instructions += `\n
 JOURNEY TYPE (EMERGENCY):
 - Acknowledge the sudden nature of the situation
 - Provide more reassurance and structure
 - Emphasize immediate next steps clearly
 - Address potential anxiety about unexpected diagnosis`;
-  } else if (profile.journeyType === 'first-time') {
+  } else if (profile.journeyType === "first-time") {
     instructions += `\n
 JOURNEY TYPE (FIRST-TIME):
 - Assume no prior medical knowledge
 - Explain everything from basics
 - Normalize the experience ("Many people with this condition...")`;
-  } else if (profile.journeyType === 'chronic') {
+  } else if (profile.journeyType === "chronic") {
     instructions += `\n
 JOURNEY TYPE (CHRONIC):
 - Build on existing knowledge
@@ -127,13 +128,13 @@ JOURNEY TYPE (CHRONIC):
   }
 
   // Risk Appetite
-  if (profile.riskAppetite === 'minimal') {
+  if (profile.riskAppetite === "minimal") {
     instructions += `\n
 INFORMATION DEPTH (MINIMAL):
 - Brief, essential information only
 - Focus on immediate actions required
 - Avoid overwhelming details about complications`;
-  } else if (profile.riskAppetite === 'detailed') {
+  } else if (profile.riskAppetite === "detailed") {
     instructions += `\n
 INFORMATION DEPTH (DETAILED):
 - Comprehensive explanations
@@ -153,7 +154,7 @@ export const getSectionGuidelines = (language: string): string => {
       section4: "MIDA SEE TÄHENDAB MINU ELULE",
       section5: "MINU RAVIMID",
       section6: "HOIATAVAD MÄRGID",
-      section7: "MINU KONTAKTID"
+      section7: "MINU KONTAKTID",
     },
     russian: {
       section1: "ЧТО У МЕНЯ ЕСТЬ",
@@ -162,7 +163,7 @@ export const getSectionGuidelines = (language: string): string => {
       section4: "ЧТО ЭТО ЗНАЧИТ ДЛЯ МОЕЙ ЖИЗНИ",
       section5: "МОИ ЛЕКАРСТВА",
       section6: "ПРЕДУПРЕЖДАЮЩИЕ ПРИЗНАКИ",
-      section7: "МОИ КОНТАКТЫ"
+      section7: "МОИ КОНТАКТЫ",
     },
     english: {
       section1: "WHAT DO I HAVE",
@@ -171,8 +172,8 @@ export const getSectionGuidelines = (language: string): string => {
       section4: "WHAT DOES IT MEAN FOR MY LIFE",
       section5: "MY MEDICATIONS",
       section6: "WARNING SIGNS",
-      section7: "MY CONTACTS"
-    }
+      section7: "MY CONTACTS",
+    },
   };
 
   const titles = sectionTitles[language as keyof typeof sectionTitles] || sectionTitles.english;
@@ -181,7 +182,6 @@ export const getSectionGuidelines = (language: string): string => {
 SECTION GUIDELINES:
 
 1. ${titles.section1} (What do I have):
-   - Start with a respectful greeting
    - State the diagnosis in plain language
    - Provide a simple explanation of what it means
    - Include relevant test results in understandable terms
@@ -213,7 +213,7 @@ SECTION GUIDELINES:
      * What it does (in simple terms)
      * What happens if not taken
    - Emphasize: Never stop without consulting doctor
-   - If information is incomplete, note: "Your doctor will provide details"
+   - If information is incomplete, note: "Ask your doctor or nurse for more details"
 
 6. ${titles.section6} (Warning signs):
    - Clear list of symptoms requiring immediate action
@@ -232,7 +232,7 @@ SECTION GUIDELINES:
 };
 
 export const getLanguageSpecificGuidelines = (language: string): string => {
-  if (language === 'estonian') {
+  if (language === "estonian") {
     return `
 ESTONIAN LANGUAGE GUIDELINES:
 - Use formal "Teie" (you) form for respect
@@ -240,7 +240,7 @@ ESTONIAN LANGUAGE GUIDELINES:
 - Cultural preference for modest, clear communication
 - Avoid overly emotional or dramatic language
 - Phone format: +372 XXX XXXX`;
-  } else if (language === 'russian') {
+  } else if (language === "russian") {
     return `
 RUSSIAN LANGUAGE GUIDELINES:
 - Use formal "Вы" (you) form
@@ -263,7 +263,7 @@ export const SAFETY_RULES = `
 CRITICAL SAFETY RULES:
 
 1. NEVER SPECULATE:
-   - If medication details are missing → "Your doctor will provide specific medication instructions"
+   - If medication details are missing → "Please ask your doctor or nurse for specific medication instructions"
    - If prognosis is unclear → "We don't yet know; your doctor will guide you"
    - If contacts are incomplete → "Your care team will provide contact information"
 
