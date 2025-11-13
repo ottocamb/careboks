@@ -9,26 +9,25 @@ import heroLeftCards from "@/assets/hero-left-cards.png";
 import heroRightCards from "@/assets/hero-right-cards.png";
 const Landing = () => {
   const navigate = useNavigate();
-  return <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src={careboksLogo} alt="Careboks" className="h-10 w-auto" />
-          </div>
-          <Button onClick={() => navigate("/auth")}>Access System</Button>
-        </div>
-      </header>
-
+  return <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="py-20 px-6 relative overflow-hidden">
         <div className="container mx-auto max-w-7xl">
+          {/* Login Button */}
+          <Button 
+            onClick={() => navigate("/auth")}
+            className="absolute top-6 right-6 z-20"
+            variant="outline"
+          >
+            Login
+          </Button>
+
           <div className="relative flex items-center justify-center min-h-[600px]">
             {/* Left Floating Cards */}
             <img 
               src={heroLeftCards} 
               alt="" 
-              className="absolute left-0 top-1/2 -translate-y-1/2 w-72 lg:w-96 floating-cards hidden lg:block"
+              className="absolute left-0 top-1/3 -translate-y-1/3 w-72 lg:w-96 floating-cards hidden lg:block"
               aria-hidden="true"
             />
             
@@ -63,7 +62,7 @@ const Landing = () => {
             <img 
               src={heroRightCards} 
               alt="" 
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-72 lg:w-96 floating-cards hidden lg:block"
+              className="absolute right-0 top-1/3 -translate-y-1/3 w-72 lg:w-96 floating-cards hidden lg:block"
               aria-hidden="true"
             />
           </div>
