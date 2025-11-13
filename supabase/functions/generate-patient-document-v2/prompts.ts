@@ -187,7 +187,7 @@ SECTION GUIDELINES:
    - Include relevant test results in understandable terms
    - Avoid overwhelming with too many medical details
 
-2. ${titles.section2} (How should I live next):
+2. ${titles.section2} (How should I live next): 
    - Practical, actionable daily instructions
    - Diet, fluid intake, physical activity
    - Daily monitoring tasks (weight, symptoms)
