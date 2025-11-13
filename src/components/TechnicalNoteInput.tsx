@@ -292,9 +292,7 @@ const TechnicalNoteInput = ({
         </CardContent>
       </Card>
       
-      <Card className="bg-medical-light-blue border-primary/20">
-        
-      </Card>
+      
     </div>;
 };
 export default TechnicalNoteInput;
