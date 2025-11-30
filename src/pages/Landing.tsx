@@ -14,57 +14,37 @@ const Landing = () => {
       <section className="py-20 px-6 relative overflow-hidden">
         <div className="container mx-auto max-w-7xl">
           {/* Login Button */}
-          <Button 
-            onClick={() => navigate("/auth")}
-            className="absolute top-6 right-6 z-20"
-            variant="outline"
-          >
+          <Button onClick={() => navigate("/auth")} className="absolute top-6 right-6 z-20" variant="outline">
             Login
           </Button>
 
           <div className="relative flex items-center justify-center min-h-[600px]">
             {/* Left Floating Cards */}
-            <img 
-              src={heroLeftCards} 
-              alt="" 
-              className="absolute left-0 top-[28%] -translate-y-[28%] w-64 lg:w-80 hidden lg:block"
-              aria-hidden="true"
-            />
+            <img src={heroLeftCards} alt="" className="absolute left-0 top-[28%] -translate-y-[28%] w-64 lg:w-80 hidden lg:block" aria-hidden="true" />
             
             {/* Center Content */}
             <div className="text-center max-w-2xl mx-auto z-10 px-6">
-              <img 
-                src={heroLogo} 
-                alt="Careboks Logo" 
-                className="w-24 h-24 mx-auto mb-8"
-              />
+              <img src={heroLogo} alt="Careboks Logo" className="w-24 h-24 mx-auto mb-8" />
               <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6">Careboks</h1>
               <p className="text-xl lg:text-2xl text-foreground mb-4 font-medium">
                 Your medical expertise, delivered with clarity.
               </p>
-              <p className="text-base lg:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-                Careboks helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format, reducing misunderstandings and improving confidence throughout the care journey.
-              </p>
+              <p className="text-base lg:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">Careboks helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format, reducing misunderstandings and improving confidence in the care journey.</p>
               <div className="flex gap-4 justify-center flex-wrap">
                 <Button size="lg" onClick={() => navigate("/auth")}>
                   Request Pilot
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline" onClick={() => document.getElementById("output-example")?.scrollIntoView({
-                  behavior: "smooth"
-                })}>
+                behavior: "smooth"
+              })}>
                   See Example Output
                 </Button>
               </div>
             </div>
 
             {/* Right Floating Cards */}
-            <img 
-              src={heroRightCards} 
-              alt="" 
-              className="absolute right-0 top-[28%] -translate-y-[28%] w-64 lg:w-80 hidden lg:block"
-              aria-hidden="true"
-            />
+            <img src={heroRightCards} alt="" className="absolute right-0 top-[28%] -translate-y-[28%] w-64 lg:w-80 hidden lg:block" aria-hidden="true" />
           </div>
         </div>
       </section>
