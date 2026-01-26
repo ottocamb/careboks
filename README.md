@@ -1,73 +1,217 @@
-# Welcome to your Lovable project
+# CareBoks - AI Communication Tool for Cardiac Patients
 
-## Project info
+A proof-of-concept tool that transforms complex technical clinical notes into clear, personalised, patient-friendly explanations of cardiac conditions.
 
-**URL**: https://lovable.dev/projects/423bb879-b2c1-4d85-a117-0bbe70a9ea66
+## 🎯 Project Vision
 
-## How can I edit this code?
+CareBoks adapts medical content to patient attributes (age, sex, health literacy, comorbidities, language, etc.) and ensures clinical safety via mandatory clinician approval before communication.
 
-There are several ways of editing your application.
+**Supported Languages:** Estonian, Russian, English
 
-**Use Lovable**
+## 🏗️ Architecture Overview
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/423bb879-b2c1-4d85-a117-0bbe70a9ea66) and start prompting.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend (React + Vite)                  │
+├─────────────────────────────────────────────────────────────────┤
+│  Pages                    │  Components                          │
+│  ├── Landing.tsx          │  ├── TechnicalNoteInput.tsx         │
+│  ├── Auth.tsx             │  ├── PatientProfile.tsx             │
+│  ├── Index.tsx (Main)     │  ├── ClinicianApproval.tsx          │
+│  ├── Account.tsx          │  ├── FinalOutput.tsx                │
+│  └── NotFound.tsx         │  └── ui/ (shadcn components)        │
+├─────────────────────────────────────────────────────────────────┤
+│                      Backend (Lovable Cloud)                     │
+├─────────────────────────────────────────────────────────────────┤
+│  Edge Functions                                                  │
+│  ├── generate-patient-document-v2  (AI document generation)    │
+│  ├── regenerate-section            (Single section regeneration)│
+│  └── extract-text-from-document    (OCR/PDF text extraction)   │
+├─────────────────────────────────────────────────────────────────┤
+│  Database Tables                                                 │
+│  ├── profiles              (User accounts)                      │
+│  ├── patient_cases         (Case management)                    │
+│  ├── patient_profiles      (Patient attributes)                 │
+│  ├── ai_analyses           (AI-generated drafts)                │
+│  ├── approvals             (Clinician approvals)                │
+│  ├── clinician_contacts    (Contact directory)                  │
+│  └── user_documents        (Uploaded files)                     │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📁 Project Structure
 
-**Use your preferred IDE**
+```
+src/
+├── assets/                  # Static images and logos
+├── components/
+│   ├── ui/                  # shadcn/ui components
+│   ├── account/             # Account management sections
+│   ├── TechnicalNoteInput   # Step 1: Note input with OCR
+│   ├── PatientProfile       # Step 2: Patient attributes
+│   ├── ClinicianApproval    # Step 3: AI review & approval
+│   ├── FinalOutput          # Step 4: Print & teach-back
+│   ├── SectionBox           # Reusable content section
+│   ├── RichTextEditor       # TipTap-based editor
+│   └── MedicalHeader        # Navigation header
+├── hooks/
+│   ├── useCasePersistence   # Database CRUD operations
+│   └── use-toast            # Toast notifications
+├── integrations/
+│   └── supabase/            # Auto-generated Supabase client
+├── pages/
+│   ├── Index.tsx            # Main 4-step workflow
+│   ├── Landing.tsx          # Public landing page
+│   ├── Auth.tsx             # Authentication
+│   ├── Account.tsx          # User settings
+│   └── NotFound.tsx         # 404 page
+├── utils/
+│   ├── draftParser          # V1 markdown parsing
+│   ├── structuredDocumentParser # V2 JSON parsing
+│   ├── pdfTextExtraction    # Native PDF text extraction
+│   └── pdfToImages          # PDF to images for OCR
+└── lib/
+    └── utils.ts             # Tailwind utilities
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+supabase/
+└── functions/
+    ├── generate-patient-document-v2/
+    │   ├── index.ts         # Main handler
+    │   ├── prompts.ts       # AI prompt templates
+    │   └── validation.ts    # Input validation
+    ├── regenerate-section/
+    │   └── index.ts         # Section regeneration
+    └── extract-text-from-document/
+        └── index.ts         # OCR processing
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🔄 Application Workflow
 
-Follow these steps:
+### 4-Step Document Generation Process
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+1. **Technical Note Input** (`TechnicalNoteInput.tsx`)
+   - Paste clinical notes or upload PDF/images
+   - Automatic OCR for scanned documents
+   - Creates a new patient case in database
+
+2. **Patient Profile** (`PatientProfile.tsx`)
+   - Collect patient attributes for personalisation
+   - Age, sex, language, health literacy
+   - Journey type, comorbidities, accessibility needs
+
+3. **Clinician Approval** (`ClinicianApproval.tsx`)
+   - AI generates personalised patient document
+   - 6 structured sections with rich text editing
+   - Section-by-section regeneration capability
+   - Mandatory clinician review and approval
+
+4. **Final Output** (`FinalOutput.tsx`)
+   - Print-ready A4 document
+   - Teach-back comprehension questions
+   - Case completion and archiving
+
+## 📊 Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| `profiles` | User accounts with name, email, role, language |
+| `patient_cases` | Case tracking with status workflow |
+| `patient_profiles` | Patient attributes linked to cases |
+| `ai_analyses` | Stored AI drafts and analysis data |
+| `approvals` | Clinician approval records with audit trail |
+| `clinician_contacts` | Hospital contact directory |
+| `user_documents` | Uploaded file metadata |
+
+### Case Status Flow
+```
+draft → processing → pending_approval → approved → completed
+```
+
+## 🛠️ Technology Stack
+
+- **Frontend:** React 18, Vite, TypeScript
+- **Styling:** Tailwind CSS, shadcn/ui
+- **Rich Text:** TipTap editor
+- **Backend:** Lovable Cloud (Supabase)
+- **AI:** Google Gemini via Lovable AI
+- **PDF Processing:** pdf.js, OCR via edge functions
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and npm
+- Git
+
+### Local Development
+
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Environment Variables
 
-**Use GitHub Codespaces**
+The following variables are automatically configured by Lovable Cloud:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `VITE_SUPABASE_URL` - Backend API URL
+- `VITE_SUPABASE_PUBLISHABLE_KEY` - Public API key
+- `VITE_SUPABASE_PROJECT_ID` - Project identifier
 
-## What technologies are used for this project?
+## 🔐 Security Features
 
-This project is built with:
+- **Row Level Security (RLS)** on all tables
+- Users can only access their own cases and data
+- Clinician approval required before patient communication
+- Audit trail for all approvals
+- No unapproved outputs reach patients
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📝 Output Document Sections
 
-## How can I deploy this project?
+The AI generates 6 personalised sections:
 
-Simply open [Lovable](https://lovable.dev/projects/423bb879-b2c1-4d85-a117-0bbe70a9ea66) and click on Share -> Publish.
+1. **What do I have** - Plain-language diagnosis explanation
+2. **How should I live next** - Lifestyle changes and physical activity
+3. **Next 6 months** - Short-term recovery expectations
+4. **What it means for my life** - Long-term consequences
+5. **My medications** - Drug list with purpose and importance
+6. **My contacts** - Relevant hospital contacts
 
-## Can I connect a custom domain to my Lovable project?
+## 🎨 Design System
 
-Yes, you can!
+Uses semantic Tailwind tokens defined in `index.css`:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- `--background`, `--foreground` - Base colors
+- `--primary`, `--secondary` - Brand colors
+- `--muted`, `--accent` - Supporting colors
+- `--destructive` - Error/warning states
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📚 Key Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `@supabase/supabase-js` | Backend client |
+| `@tanstack/react-query` | Data fetching |
+| `@tiptap/react` | Rich text editing |
+| `pdfjs-dist` | PDF text extraction |
+| `lucide-react` | Icons |
+| `sonner` | Toast notifications |
+
+## 🔗 Links
+
+- **Preview:** https://id-preview--423bb879-b2c1-4d85-a117-0bbe70a9ea66.lovable.app
+- **Published:** https://careboks.lovable.app
+- **Lovable Project:** https://lovable.dev/projects/423bb879-b2c1-4d85-a117-0bbe70a9ea66
+
+## 📄 License
+
+This project is a proof-of-concept for healthcare communication improvement.
