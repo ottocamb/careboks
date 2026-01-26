@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Clinician Approval Component
+ * 
+ * Third step of the patient communication workflow. Handles:
+ * - AI document generation (if not already generated)
+ * - Section-by-section review and editing
+ * - AI regeneration of individual sections
+ * - Print preview functionality
+ * - Final clinician approval with signature
+ * 
+ * @module components/ClinicianApproval
+ */
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,19 +22,71 @@ import { supabase } from "@/integrations/supabase/client";
 import { Printer, ChevronLeft, CheckCircle2, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle, Loader2 } from "lucide-react";
 import { SectionBox } from "@/components/SectionBox";
 import { parseDraftIntoSections, reconstructDraft, ParsedSection } from "@/utils/draftParser";
-import { parseStructuredDocument, structuredDocumentToText, Section } from "@/utils/structuredDocumentParser";
+import { parseStructuredDocument, structuredDocumentToText } from "@/utils/structuredDocumentParser";
 
+/**
+ * Props for the ClinicianApproval component
+ */
 interface ClinicianApprovalProps {
+  /** ID of the current case */
   caseId: string;
+  /** Pre-generated draft text (optional, for v1 pipeline) */
   draft: string;
+  /** Pre-parsed sections (optional, for v2 pipeline) */
   sections?: ParsedSection[];
+  /** Analysis metadata from AI */
   analysis?: any;
+  /** Patient profile data for personalization */
   patientData: any;
+  /** Original technical note */
   technicalNote: string;
+  /** Callback when document is approved */
   onApprove: (finalText: string, clinicianName: string, sections: ParsedSection[]) => void;
+  /** Callback to return to previous step */
   onBack: () => void;
 }
 
+/**
+ * Section configuration for display
+ */
+interface SectionConfig {
+  /** Section title */
+  title: string;
+  /** Icon component */
+  icon: React.ReactNode;
+  /** Tailwind color class */
+  themeColor: string;
+}
+
+/** Section display configurations */
+const SECTION_CONFIGS: SectionConfig[] = [
+  { title: "What do I have", icon: <Heart />, themeColor: "text-blue-600" },
+  { title: "How should I live next", icon: <Activity />, themeColor: "text-green-600" },
+  { title: "How the next 6 months of my life will look like", icon: <Calendar />, themeColor: "text-purple-600" },
+  { title: "What does it mean for my life", icon: <Sparkles />, themeColor: "text-yellow-600" },
+  { title: "My medications", icon: <Pill />, themeColor: "text-orange-600" },
+  { title: "Warning signs", icon: <AlertTriangle />, themeColor: "text-red-600" },
+  { title: "My contacts", icon: <Phone />, themeColor: "text-teal-600" },
+];
+
+/**
+ * Clinician Approval Component
+ * 
+ * Allows clinicians to review, edit, and approve AI-generated
+ * patient communication documents before delivery.
+ * 
+ * @example
+ * ```tsx
+ * <ClinicianApproval
+ *   caseId="123-abc"
+ *   draft=""
+ *   patientData={patientProfile}
+ *   technicalNote={clinicalNote}
+ *   onApprove={handleApproval}
+ *   onBack={() => goToPatientProfile()}
+ * />
+ * ```
+ */
 export const ClinicianApproval = ({
   caseId,
   draft,
@@ -32,16 +97,19 @@ export const ClinicianApproval = ({
   onApprove,
   onBack,
 }: ClinicianApprovalProps) => {
+  // State
   const [sections, setSections] = useState<ParsedSection[]>([]);
   const [clinicianName, setClinicianName] = useState("");
   const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState("");
+  
   const { toast } = useToast();
   const { saveApproval, updateCase, saveAIAnalysis } = useCasePersistence();
 
-
-  // Auto-start generation if no draft/sections provided
+  /**
+   * Initialize sections from props or trigger generation
+   */
   useEffect(() => {
     const shouldGenerate = !draft && (!preParsedSections || preParsedSections.length === 0);
     
@@ -64,6 +132,9 @@ export const ClinicianApproval = ({
     }
   }, []);
 
+  /**
+   * Generates patient document using v2 AI pipeline
+   */
   const handleStartGeneration = async () => {
     setIsGenerating(true);
     setGenerationError('');
@@ -73,9 +144,7 @@ export const ClinicianApproval = ({
       
       const { data: documentData, error: documentError } = await supabase.functions.invoke(
         'generate-patient-document-v2',
-        {
-          body: { technicalNote, patientData }
-        }
+        { body: { technicalNote, patientData } }
       );
 
       if (documentError) throw documentError;
@@ -83,7 +152,7 @@ export const ClinicianApproval = ({
 
       console.log("Document generated successfully:", documentData);
 
-      // Parse structured JSON into sections and store
+      // Parse structured JSON into sections
       const parsedSections = parseStructuredDocument(documentData.document, patientData.language);
       setSections(parsedSections);
 
@@ -134,19 +203,26 @@ export const ClinicianApproval = ({
     }
   };
 
+  /**
+   * Updates a section's content after editing
+   */
   const handleSectionEdit = (index: number, newContent: string) => {
     const updated = [...sections];
     updated[index].content = newContent;
     setSections(updated);
   };
 
+  /**
+   * Regenerates a single section using AI
+   */
   const handleRegenerateSection = async (index: number) => {
     setRegeneratingIndex(index);
+    
     try {
       const { data, error } = await supabase.functions.invoke('regenerate-section', {
         body: {
           sectionIndex: index,
-          sectionTitle: sectionConfigs[index].title,
+          sectionTitle: SECTION_CONFIGS[index].title,
           currentContent: sections[index]?.content || "",
           analysis: analysis,
           patientData: patientData,
@@ -156,7 +232,7 @@ export const ClinicianApproval = ({
       
       if (error) throw error;
       
-      // Update the section with regenerated content
+      // Update section with regenerated content
       const updated = [...sections];
       updated[index] = {
         ...updated[index],
@@ -166,7 +242,7 @@ export const ClinicianApproval = ({
       
       toast({
         title: "Section regenerated",
-        description: `"${sectionConfigs[index].title}" has been updated with AI-generated content`,
+        description: `"${SECTION_CONFIGS[index].title}" has been updated with AI-generated content`,
       });
     } catch (error) {
       console.error("Regeneration error:", error);
@@ -180,6 +256,9 @@ export const ClinicianApproval = ({
     }
   };
 
+  /**
+   * Approves document and saves to database
+   */
   const handleApprove = async () => {
     if (!clinicianName.trim()) {
       toast({
@@ -191,10 +270,7 @@ export const ClinicianApproval = ({
     }
 
     try {
-      // Reconstruct full text from sections
       const finalText = reconstructDraft(sections);
-
-      // Save approval
       await saveApproval(caseId, finalText, clinicianName);
       await updateCase(caseId, { status: "approved" });
 
@@ -214,46 +290,38 @@ export const ClinicianApproval = ({
     }
   };
 
+  /**
+   * Opens print preview in new window
+   */
   const handlePrintPreview = () => {
     const finalText = reconstructDraft(sections);
     const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Patient Communication</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-              h1 { color: #1a365d; border-bottom: 3px solid #3182ce; padding-bottom: 10px; }
-              h2 { color: #2d3748; margin-top: 30px; }
-              p { line-height: 1.6; color: #4a5568; }
-              .separator { border-top: 2px dashed #cbd5e0; margin: 20px 0; }
-            </style>
-          </head>
-          <body>
-            ${finalText.replace(/\n/g, "<br>")}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
+    
+    if (!printWindow) return;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Patient Communication</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+            h1 { color: #1a365d; border-bottom: 3px solid #3182ce; padding-bottom: 10px; }
+            h2 { color: #2d3748; margin-top: 30px; }
+            p { line-height: 1.6; color: #4a5568; }
+            .separator { border-top: 2px dashed #cbd5e0; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          ${finalText.replace(/\n/g, "<br>")}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
   };
 
-  // Define section configurations with hardcoded titles
-  const sectionConfigs = [
-    { title: "What do I have", icon: <Heart />, themeColor: "text-blue-600" },
-    { title: "How should I live next", icon: <Activity />, themeColor: "text-green-600" },
-    { title: "How the next 6 months of my life will look like", icon: <Calendar />, themeColor: "text-purple-600" },
-    { title: "What does it mean for my life", icon: <Sparkles />, themeColor: "text-yellow-600" },
-    { title: "My medications", icon: <Pill />, themeColor: "text-orange-600" },
-    { title: "Warning signs", icon: <AlertTriangle />, themeColor: "text-red-600" },
-    { title: "My contacts", icon: <Phone />, themeColor: "text-teal-600" },
-  ];
-
-
-  // Show loading state while generating
+  // Loading state
   if (isGenerating) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -267,7 +335,7 @@ export const ClinicianApproval = ({
               AI is creating a personalized, patient-friendly explanation based on your technical note...
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div className="flex items-center justify-center py-12">
               <div className="text-center space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
@@ -280,7 +348,7 @@ export const ClinicianApproval = ({
     );
   }
 
-  // Show error state with retry option
+  // Error state
   if (generationError) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -289,7 +357,7 @@ export const ClinicianApproval = ({
             <CardTitle className="text-destructive">Generation Failed</CardTitle>
             <CardDescription>{generationError}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div className="flex gap-4">
               <Button onClick={onBack} variant="outline">
                 <ChevronLeft className="mr-2 h-4 w-4" />
@@ -305,7 +373,7 @@ export const ClinicianApproval = ({
     );
   }
 
-  // Show approval UI when sections are ready
+  // Empty state
   if (sections.length === 0) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -325,6 +393,7 @@ export const ClinicianApproval = ({
     );
   }
 
+  // Main approval UI
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -340,9 +409,9 @@ export const ClinicianApproval = ({
         </CardHeader>
       </Card>
 
-      {/* Seven Section Boxes */}
+      {/* Section Grid (first 6 sections) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {sectionConfigs.slice(0, 6).map((config, index) => (
+        {SECTION_CONFIGS.slice(0, 6).map((config, index) => (
           <SectionBox
             key={index}
             icon={config.icon}
@@ -356,15 +425,15 @@ export const ClinicianApproval = ({
         ))}
       </div>
 
-      {/* My Contacts - Full Width */}
+      {/* Contacts Section (full width) */}
       <SectionBox
-        icon={sectionConfigs[6].icon}
-        title={sectionConfigs[6].title}
+        icon={SECTION_CONFIGS[6].icon}
+        title={SECTION_CONFIGS[6].title}
         content={sections[6]?.content || ""}
         onEdit={(newContent) => handleSectionEdit(6, newContent)}
         onRegenerate={() => handleRegenerateSection(6)}
         isRegenerating={regeneratingIndex === 6}
-        themeColor={sectionConfigs[6].themeColor}
+        themeColor={SECTION_CONFIGS[6].themeColor}
       />
 
       {/* Clinical Safety Reminders */}
@@ -372,7 +441,7 @@ export const ClinicianApproval = ({
         <CardHeader>
           <CardTitle className="text-lg text-amber-900">Clinical Safety Reminders</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent>
           <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
             <li>Verify all medication names, doses, and instructions are accurate</li>
             <li>Ensure emergency contact information is complete and correct</li>

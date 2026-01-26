@@ -1,32 +1,107 @@
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+/**
+ * @fileoverview Case Persistence Hook
+ * 
+ * Custom hook providing database operations for patient case management.
+ * Handles CRUD operations for:
+ * - Patient cases
+ * - Patient profiles
+ * - AI analyses
+ * - Clinical approvals
+ * 
+ * All operations are scoped to the authenticated user via RLS policies.
+ * 
+ * @module hooks/useCasePersistence
+ */
 
+import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Case status enumeration matching database enum
+ */
+export type CaseStatus = 'draft' | 'processing' | 'pending_approval' | 'approved' | 'completed';
+
+/**
+ * Data structure for patient case updates
+ */
 export interface CaseData {
+  /** Case ID (optional for updates) */
   id?: string;
+  /** Technical clinical note content */
   technicalNote?: string;
+  /** Names of uploaded files */
   uploadedFileNames?: string[];
-  status?: 'draft' | 'processing' | 'pending_approval' | 'approved' | 'completed';
+  /** Current case status */
+  status?: CaseStatus;
 }
 
+/**
+ * Patient profile data structure for personalization
+ */
 export interface PatientProfileData {
+  /** Age bracket (e.g., "20-30", "60+") */
   age: string;
+  /** Biological sex */
   sex: string;
+  /** Preferred language */
   language: string;
+  /** Health literacy level */
   healthLiteracy: string;
+  /** Patient journey type */
   journeyType: string;
+  /** Risk communication preference */
   riskAppetite: string;
+  /** Whether patient has accessibility needs */
   hasAccessibilityNeeds: boolean;
+  /** Whether to include content for caregivers */
   includeRelatives: boolean;
+  /** List of comorbidities */
   comorbidities: string[];
 }
 
+/**
+ * Standard response type for hook operations
+ */
+interface OperationResult<T> {
+  data: T | null;
+  error: Error | null;
+}
+
+/**
+ * Case Persistence Hook
+ * 
+ * Provides database operations for the patient communication workflow.
+ * All operations respect RLS policies for data security.
+ * 
+ * @returns Object containing database operation functions
+ * 
+ * @example
+ * ```tsx
+ * const { createCase, savePatientProfile, saveApproval } = useCasePersistence();
+ * 
+ * const { data, error } = await createCase(technicalNote, fileNames);
+ * if (error) {
+ *   console.error('Failed to create case:', error);
+ * }
+ * ```
+ */
 export const useCasePersistence = () => {
-  const createCase = async (technicalNote: string, uploadedFileNames: string[]) => {
+  /**
+   * Creates a new patient case with technical note
+   * Ensures user profile exists before creating case
+   * 
+   * @param technicalNote - The clinical note content
+   * @param uploadedFileNames - Array of uploaded file names
+   * @returns Created case data or error
+   */
+  const createCase = async (
+    technicalNote: string,
+    uploadedFileNames: string[]
+  ): Promise<OperationResult<any>> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Ensure profile exists before creating case
+      // Ensure profile exists before creating case (required by FK)
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
@@ -65,12 +140,29 @@ export const useCasePersistence = () => {
     }
   };
 
-  const updateCase = async (caseId: string, updates: Partial<CaseData>) => {
+  /**
+   * Updates an existing patient case
+   * 
+   * @param caseId - The case ID to update
+   * @param updates - Partial case data to update
+   * @returns Updated case data or error
+   */
+  const updateCase = async (
+    caseId: string,
+    updates: Partial<CaseData>
+  ): Promise<OperationResult<any>> => {
     try {
-      const updateData: any = {};
-      if (updates.technicalNote !== undefined) updateData.technical_note = updates.technicalNote;
-      if (updates.uploadedFileNames !== undefined) updateData.uploaded_file_names = updates.uploadedFileNames;
-      if (updates.status) updateData.status = updates.status;
+      const updateData: Record<string, any> = {};
+      
+      if (updates.technicalNote !== undefined) {
+        updateData.technical_note = updates.technicalNote;
+      }
+      if (updates.uploadedFileNames !== undefined) {
+        updateData.uploaded_file_names = updates.uploadedFileNames;
+      }
+      if (updates.status) {
+        updateData.status = updates.status;
+      }
 
       const { data, error } = await supabase
         .from('patient_cases')
@@ -87,7 +179,17 @@ export const useCasePersistence = () => {
     }
   };
 
-  const savePatientProfile = async (caseId: string, profileData: PatientProfileData) => {
+  /**
+   * Saves patient profile data for a case
+   * 
+   * @param caseId - The case ID to associate profile with
+   * @param profileData - Patient profile data
+   * @returns Saved profile data or error
+   */
+  const savePatientProfile = async (
+    caseId: string,
+    profileData: PatientProfileData
+  ): Promise<OperationResult<any>> => {
     try {
       const { data, error } = await supabase
         .from('patient_profiles')
@@ -114,7 +216,21 @@ export const useCasePersistence = () => {
     }
   };
 
-  const saveAIAnalysis = async (caseId: string, analysisData: any, aiDraftText: string, modelUsed: string = 'gemini-2.5-pro') => {
+  /**
+   * Saves AI analysis results for a case
+   * 
+   * @param caseId - The case ID
+   * @param analysisData - Structured analysis metadata
+   * @param aiDraftText - Generated text content
+   * @param modelUsed - AI model identifier
+   * @returns Saved analysis data or error
+   */
+  const saveAIAnalysis = async (
+    caseId: string,
+    analysisData: any,
+    aiDraftText: string,
+    modelUsed: string = 'gemini-2.5-pro'
+  ): Promise<OperationResult<any>> => {
     try {
       const { data, error } = await supabase
         .from('ai_analyses')
@@ -135,7 +251,19 @@ export const useCasePersistence = () => {
     }
   };
 
-  const saveApproval = async (caseId: string, approvedText: string, notes?: string) => {
+  /**
+   * Saves clinician approval for a case
+   * 
+   * @param caseId - The case ID
+   * @param approvedText - Final approved text content
+   * @param notes - Optional approval notes
+   * @returns Saved approval data or error
+   */
+  const saveApproval = async (
+    caseId: string,
+    approvedText: string,
+    notes?: string
+  ): Promise<OperationResult<any>> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
@@ -159,7 +287,13 @@ export const useCasePersistence = () => {
     }
   };
 
-  const loadCase = async (caseId: string) => {
+  /**
+   * Loads a complete case with all related data
+   * 
+   * @param caseId - The case ID to load
+   * @returns Case data with profiles, analyses, and approvals
+   */
+  const loadCase = async (caseId: string): Promise<OperationResult<any>> => {
     try {
       const { data, error } = await supabase
         .from('patient_cases')
@@ -180,7 +314,13 @@ export const useCasePersistence = () => {
     }
   };
 
-  const getCaseHistory = async (limit: number = 10) => {
+  /**
+   * Retrieves case history for the current user
+   * 
+   * @param limit - Maximum number of cases to retrieve
+   * @returns Array of cases ordered by creation date
+   */
+  const getCaseHistory = async (limit: number = 10): Promise<OperationResult<any[]>> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");

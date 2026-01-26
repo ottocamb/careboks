@@ -1,24 +1,43 @@
+/**
+ * @fileoverview PDF Text Extraction Utility
+ * 
+ * Extracts text content from PDF documents using pdf.js library.
+ * Handles both native text PDFs (direct extraction) and preserves
+ * text formatting (bold, italic) when detectable from font metadata.
+ * 
+ * For scanned/image-based PDFs, use pdfToImages.ts with OCR instead.
+ * 
+ * @module utils/pdfTextExtraction
+ */
+
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
-// Use local worker to ensure version compatibility
+// Configure pdf.js worker for async processing
 GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
+/**
+ * Text item extracted from PDF with positioning info
+ */
 interface TextItem {
+  /** Actual text content */
   str: string;
+  /** Transformation matrix [scaleX, skewX, skewY, scaleY, translateX, translateY] */
   transform: number[];
+  /** Width of the text in PDF units */
   width: number;
+  /** Height of the text in PDF units */
   height: number;
+  /** Font name used for this text */
   fontName?: string;
 }
 
-interface TextStyle {
-  fontFamily: string;
-  ascent: number;
-  descent: number;
-  vertical: boolean;
-}
-
+/**
+ * Detects if font name indicates bold styling
+ * 
+ * @param fontName - Font name from PDF metadata
+ * @returns True if font appears to be bold
+ */
 function isBoldFont(fontName: string): boolean {
   if (!fontName) return false;
   const lowerFont = fontName.toLowerCase();
@@ -29,6 +48,12 @@ function isBoldFont(fontName: string): boolean {
          lowerFont.includes('extrabold');
 }
 
+/**
+ * Detects if font name indicates italic styling
+ * 
+ * @param fontName - Font name from PDF metadata
+ * @returns True if font appears to be italic
+ */
 function isItalicFont(fontName: string): boolean {
   if (!fontName) return false;
   const lowerFont = fontName.toLowerCase();
@@ -37,6 +62,13 @@ function isItalicFont(fontName: string): boolean {
          lowerFont.includes('cursive');
 }
 
+/**
+ * Wraps text in HTML formatting tags based on font style
+ * 
+ * @param text - Text content
+ * @param fontName - Font name for style detection
+ * @returns Text wrapped in appropriate HTML tags
+ */
 function applyFormatting(text: string, fontName?: string): string {
   if (!fontName || !text) return text;
   
@@ -54,6 +86,15 @@ function applyFormatting(text: string, fontName?: string): string {
   return text;
 }
 
+/**
+ * Processes PDF text content into formatted HTML
+ * 
+ * Reconstructs text flow by analyzing Y positions (lines)
+ * and X positions (word spacing), preserving document structure.
+ * 
+ * @param textContent - Raw text content from pdf.js
+ * @returns Formatted HTML string with paragraph tags
+ */
 function extractFormattedText(textContent: any): string {
   const items = textContent.items.filter((item: any) => 'str' in item) as TextItem[];
   const styles = textContent.styles || {};
@@ -81,6 +122,9 @@ function extractFormattedText(textContent: any): string {
   let currentFontName: string | undefined = undefined;
   let currentFormatBuffer: string[] = [];
 
+  /**
+   * Flushes accumulated formatted text to current line
+   */
   const flushFormatBuffer = () => {
     if (currentFormatBuffer.length > 0) {
       const text = currentFormatBuffer.join(' ');
@@ -90,7 +134,7 @@ function extractFormattedText(textContent: any): string {
     }
   };
 
-  sortedItems.forEach((item, index) => {
+  sortedItems.forEach((item) => {
     const y = item.transform[5];
     const x = item.transform[4];
     const height = item.height || 12;
@@ -101,7 +145,6 @@ function extractFormattedText(textContent: any): string {
 
     // Detect new line (Y position changed significantly)
     if (lastY !== null && Math.abs(y - lastY) > 2) {
-      // Flush any buffered formatted text
       flushFormatBuffer();
       
       // Check for paragraph break (extra vertical spacing)
@@ -130,7 +173,6 @@ function extractFormattedText(textContent: any): string {
     // Add spacing between words on the same line
     if (lastX !== null && lastY !== null && Math.abs(y - lastY) <= 2) {
       const horizontalGap = x - lastX;
-      // Add space if there's a gap
       if (horizontalGap > height * 0.3 && currentFormatBuffer.length > 0) {
         currentFormatBuffer.push(' ');
       }
@@ -160,6 +202,25 @@ function extractFormattedText(textContent: any): string {
   return formattedText;
 }
 
+/**
+ * Extracts text directly from a PDF file
+ * 
+ * Uses pdf.js to extract embedded text content from PDFs.
+ * Best for native text-based PDFs. For scanned documents,
+ * returns minimal content - use OCR fallback in that case.
+ * 
+ * @param file - PDF file to extract text from
+ * @param maxPages - Maximum number of pages to process (default: 5)
+ * @returns HTML-formatted text content with preserved formatting
+ * 
+ * @example
+ * ```ts
+ * const text = await extractTextDirectly(pdfFile, 5);
+ * if (text.length < 100) {
+ *   // Likely a scanned PDF, fall back to OCR
+ * }
+ * ```
+ */
 export async function extractTextDirectly(file: File, maxPages = 5): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
