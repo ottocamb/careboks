@@ -1,86 +1,76 @@
 
-# Fix Print Layout to Match Figma Design
+# Fix Print Layout Grid Structure
 
-## Issues to Fix
+## Root Cause
 
-| Issue | Current State | Fix |
-|-------|--------------|-----|
-| **Layout** | Single column, stacked sections | Two-column grid layout on both pages |
-| **QR Codes** | Two QR codes displayed | Only ONE QR code in footer |
-| **Print Fragmentation** | Sections break across pages | Clean page breaks between Page 1 and Page 2 |
-| **Decorative Elements** | None | Heart/stethoscope illustrations in corners |
+The CSS Grid is not properly distributing sections across the two-column layout because:
 
----
+1. The grid row assignments are missing for `.print-page-1-left` - it defaults to auto placement instead of spanning rows 1-2
+2. The grid-template-rows uses `auto auto auto` which doesn't properly allocate space for the left column's two stacked sections
+3. Similar issues exist in the Page 2 grid structure
 
-## Figma Design Structure
+## Changes Required
 
-### Page 1 Layout (Two Columns)
-```text
-+------------------------------------------+
-|  "Your next steps       [♥ illustration] |
-|   after discharge"        [Careboks logo]|
-+-------------------+----------------------+
-| WHAT DO I HAVE?   | HOW SHOULD I LIVE?   |
-| (teal border)     | Activity & pacing    |
-|                   | Daily habits         |
-+-------------------+ Diet & fluids        |
-| HOW THE NEXT 6    | Alcohol & smoking    |
-| MONTHS WILL LOOK  | Weight & self-checks |
-| (teal border)     | Social & emotional   |
-+-------------------+----------------------+
-| WHAT DOES IT MEAN FOR MY LIFE?           |
-| (teal border - full width)               |
-+------------------------------------------+
+### 1. Fix src/styles/print.css - Grid Layout Rules
+
+Update the Page 1 grid to properly span rows:
+
+```css
+.print-page-1-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr auto;  /* Two equal rows for columns, auto for full-width */
+  gap: 8pt;
+  height: calc(100% - 60pt);
+}
+
+.print-page-1-left {
+  grid-column: 1;
+  grid-row: 1 / 3;  /* ADD THIS: Span rows 1 and 2 */
+  display: flex;
+  flex-direction: column;
+  gap: 8pt;
+}
+
+.print-page-1-right {
+  grid-column: 2;
+  grid-row: 1 / 3;  /* Span rows 1 and 2 */
+}
+
+.print-page-1-full {
+  grid-column: 1 / -1;
+  grid-row: 3;  /* ADD THIS: Explicitly place in row 3 */
+}
 ```
 
-### Page 2 Layout (Two Columns + Footer)
-```text
-+------------------------------------------+
-| [♥ illustration]            [Careboks]   |
-+-------------------+----------------------+
-| MY MEDICATIONS    | WARNING SIGNS        |
-| (pink border)     | (red background)     |
-|                   |                      |
-+-------------------+----------------------+
-|                   | MY CONTACTS          |
-|                   | (teal background)    |
-+-------------------+----------------------+
-| [Feedback QR]     | Signed by            |
-|                   | Dr. Name, Date       |
-+------------------------------------------+
+Update the Page 2 grid similarly:
+
+```css
+.print-page-2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 8pt;
+  height: calc(100% - 80pt);
+}
+
+.print-page-2-left {
+  grid-column: 1;
+  grid-row: 1 / -1;  /* Span all rows */
+}
+
+.print-page-2-right {
+  grid-column: 2;
+  grid-row: 1 / -1;  /* Span all rows */
+  display: flex;
+  flex-direction: column;
+  gap: 8pt;
+}
 ```
 
----
+### 2. Verify PrintableDocument.tsx Structure
 
-## Implementation Changes
-
-### 1. Update src/styles/print.css
-- Add two-column CSS Grid layouts for both pages
-- Add stronger page break controls to prevent fragmentation
-- Define grid areas for precise section positioning
-- Set explicit A4 page heights (297mm)
-
-### 2. Update src/components/print/PrintableDocument.tsx
-- Restructure from single-column to two-column grid layout
-- Page 1: Left column (What I Have + 6 Months) | Right column (How to Live)
-- Page 2: Left column (Medications) | Right column (Warnings + Contacts)
-- Add page wrapper divs with proper break controls
-
-### 3. Update src/components/print/PrintHeader.tsx
-- Add decorative illustration support (heart/stethoscope in corners)
-- Keep Careboks logo in top-right position
-
-### 4. Update src/components/print/PrintFooter.tsx
-- Keep single QR code pointing to existing `/document/:accessToken` URL
-- Update label to match Figma design
-
-### 5. Update src/pages/PrintPreview.tsx
-- Remove the extra QR code card from the preview UI (lines ~198-216)
-- Keep only the QR code in the actual printed document footer
-
-### 6. Update src/pages/PatientDocument.tsx
-- Remove QR code display (since this IS the destination page)
-- Keep print button for patients
+The component structure is correct but we should verify sections are being passed with content. Add debug logging if needed.
 
 ---
 
@@ -88,74 +78,43 @@
 
 | File | Changes |
 |------|---------|
-| `src/styles/print.css` | Add two-column grid layouts, fix page break rules |
-| `src/components/print/PrintableDocument.tsx` | Restructure to two-column grid matching Figma |
-| `src/components/print/PrintHeader.tsx` | Add decorative illustration support |
-| `src/components/print/PrintFooter.tsx` | Keep single QR code, update styling |
-| `src/pages/PrintPreview.tsx` | Remove extra QR code card from UI |
-| `src/pages/PatientDocument.tsx` | Remove redundant QR display |
+| `src/styles/print.css` | Fix grid-row assignments for left column, add explicit row placement for full-width section |
 
 ---
 
-## CSS Grid Structure
+## CSS Grid Visual Fix
 
-### Page 1 Grid
-```css
-.print-page-1-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr auto;
-  gap: 12pt;
-}
+### Before (Broken)
+```text
++------------------+------------------+
+| What I Have      | How to Live      |
+| (row 1 only)     | (spans 1-2)      |
++------------------+                  |
+| 6 Months         |                  |
+| (pushed to row 2)|                  |
++------------------+------------------+
+| Life Impact (row 3 - auto)         |
++------------------------------------+
 ```
 
-### Page 2 Grid
-```css
-.print-page-2-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 12pt;
-}
-```
-
----
-
-## Print Fragmentation Fix
-
-```css
-@media print {
-  .print-page {
-    height: 297mm;
-    width: 210mm;
-    overflow: hidden;
-    page-break-after: always;
-    page-break-inside: avoid;
-  }
-  
-  .print-section {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-}
+### After (Fixed)
+```text
++------------------+------------------+
+| What I Have      | How to Live      |
+| +                | (spans rows 1-2) |
+| 6 Months         |                  |
+| (both in left    |                  |
+|  column, row 1-2)|                  |
++------------------+------------------+
+| Life Impact (full width, row 3)    |
++------------------------------------+
 ```
 
 ---
 
-## QR Code Behavior
-- Single QR code in footer only
-- Links to existing public patient page: `/document/:accessToken`
-- Patients can view and print from that page
-- No new download endpoint needed
+## Implementation
 
----
-
-## Implementation Order
-
-1. Update `print.css` with grid layouts and page break fixes
-2. Restructure `PrintableDocument.tsx` to two-column layout
-3. Update `PrintHeader.tsx` with decoration support
-4. Clean up `PrintFooter.tsx` styling
-5. Remove extra QR from `PrintPreview.tsx`
-6. Remove QR from `PatientDocument.tsx`
-7. Test print output for consistent A4 formatting
+1. Update `.print-page-1-left` to add `grid-row: 1 / 3`
+2. Update `.print-page-1-full` to add `grid-row: 3`
+3. Update `.print-page-2-right` to span all rows properly
+4. Test print output to verify layout matches Figma design
