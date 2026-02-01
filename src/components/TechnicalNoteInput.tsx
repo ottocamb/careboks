@@ -38,6 +38,8 @@ interface TechnicalNoteInputProps {
   onNext: (note: string, caseId: string) => void;
   /** Pre-filled note content (optional, for editing existing cases) */
   initialNote?: string;
+  /** Existing case ID for edit mode (optional, null means create new case) */
+  caseId?: string | null;
 }
 
 /**
@@ -57,7 +59,8 @@ interface TechnicalNoteInputProps {
  */
 const TechnicalNoteInput = ({
   onNext,
-  initialNote = ""
+  initialNote = "",
+  caseId = null
 }: TechnicalNoteInputProps) => {
   // Form state
   const [note, setNote] = useState(initialNote);
@@ -71,7 +74,7 @@ const TechnicalNoteInput = ({
   const [extractedFileNames, setExtractedFileNames] = useState<Set<string>>(new Set());
   
   const { toast } = useToast();
-  const { createCase } = useCasePersistence();
+  const { createCase, updateCase } = useCasePersistence();
 
   /**
    * Handles file upload from input element
@@ -298,7 +301,7 @@ const TechnicalNoteInput = ({
   };
 
   /**
-   * Creates a new case and proceeds to the next step
+   * Creates a new case or updates existing case, then proceeds to next step
    */
   const handleNext = async () => {
     if (!note.trim()) return;
@@ -306,24 +309,48 @@ const TechnicalNoteInput = ({
     setIsProcessing(true);
     const fileNames = uploadedFiles.map(f => f.name);
     
-    const { data, error } = await createCase(note, fileNames);
-    
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save case",
-        variant: "destructive"
+    // If we have an existing case ID, update it; otherwise create new
+    if (caseId) {
+      const { error } = await updateCase(caseId, {
+        technicalNote: note,
+        uploadedFileNames: fileNames
       });
-      setIsProcessing(false);
-      return;
-    }
-    
-    if (data) {
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update case",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
+      }
+      
       toast({
         title: "Success",
-        description: "Case saved successfully"
+        description: "Case updated successfully"
       });
-      onNext(note, data.id);
+      onNext(note, caseId);
+    } else {
+      const { data, error } = await createCase(note, fileNames);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save case",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
+      }
+      
+      if (data) {
+        toast({
+          title: "Success",
+          description: "Case saved successfully"
+        });
+        onNext(note, data.id);
+      }
     }
     
     setIsProcessing(false);
