@@ -11,6 +11,8 @@ import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
+import PrintPreview from "./pages/PrintPreview";
+import PatientDocument from "./pages/PatientDocument";
 
 const queryClient = new QueryClient();
 
@@ -53,7 +55,9 @@ const App = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={session ? <Navigate to="/app" /> : <Auth />} />
             <Route path="/app" element={session ? <Index onLogout={handleLogout} /> : <Navigate to="/auth" />} />
+            <Route path="/app/print-preview/:caseId" element={session ? <PrintPreview /> : <Navigate to="/auth" />} />
             <Route path="/account" element={session ? <Account onLogout={handleLogout} /> : <Navigate to="/auth" />} />
+            <Route path="/document/:accessToken" element={<PatientDocument />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

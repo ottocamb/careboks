@@ -265,6 +265,66 @@ export type Database = {
         }
         Relationships: []
       }
+      published_documents: {
+        Row: {
+          access_token: string
+          case_id: string
+          clinician_name: string
+          created_by: string
+          expires_at: string | null
+          hospital_name: string | null
+          id: string
+          is_active: boolean
+          patient_language: string
+          published_at: string
+          sections_data: Json
+          view_count: number
+        }
+        Insert: {
+          access_token: string
+          case_id: string
+          clinician_name: string
+          created_by: string
+          expires_at?: string | null
+          hospital_name?: string | null
+          id?: string
+          is_active?: boolean
+          patient_language?: string
+          published_at?: string
+          sections_data: Json
+          view_count?: number
+        }
+        Update: {
+          access_token?: string
+          case_id?: string
+          clinician_name?: string
+          created_by?: string
+          expires_at?: string | null
+          hospital_name?: string | null
+          id?: string
+          is_active?: boolean
+          patient_language?: string
+          published_at?: string
+          sections_data?: Json
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_documents_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "patient_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "published_documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_documents: {
         Row: {
           file_name: string
@@ -308,7 +368,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_published_document_by_token: {
+        Args: { token: string }
+        Returns: {
+          clinician_name: string
+          hospital_name: string
+          id: string
+          patient_language: string
+          published_at: string
+          sections_data: Json
+        }[]
+      }
     }
     Enums: {
       case_status:
