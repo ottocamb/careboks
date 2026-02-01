@@ -3,10 +3,11 @@ import MedicalHeader from "@/components/MedicalHeader";
 import TechnicalNoteInput from "@/components/TechnicalNoteInput";
 import PatientProfile from "@/components/PatientProfile";
 import { ClinicianApproval } from "@/components/ClinicianApproval";
+import { Feedback } from "@/components/Feedback";
 import FinalOutput from "@/components/FinalOutput";
 import { ParsedSection } from "@/utils/draftParser";
 
-type Step = 'input' | 'profile' | 'approval' | 'output';
+type Step = 'input' | 'profile' | 'approval' | 'feedback' | 'output';
 
 interface PatientData {
   age: string;
@@ -35,7 +36,7 @@ const Index = ({ onLogout }: IndexProps) => {
   const [finalText, setFinalText] = useState("");
   const [approvedSections, setApprovedSections] = useState<ParsedSection[]>([]);
 
-  const steps: Step[] = ['input', 'profile', 'approval', 'output'];
+  const steps: Step[] = ['input', 'profile', 'approval', 'feedback', 'output'];
   const currentStepIndex = steps.indexOf(currentStep);
   const totalSteps = steps.length;
 
@@ -60,7 +61,11 @@ const Index = ({ onLogout }: IndexProps) => {
   const handleClinicianApproval = (approvedText: string, clinicianName: string, sections: ParsedSection[]) => {
     setFinalText(approvedText);
     setApprovedSections(sections);
-    setCurrentStep('output');
+    setCurrentStep('feedback');
+  };
+
+  const handleFeedbackBack = () => {
+    setCurrentStep('approval');
   };
 
   const handleRestart = () => {
@@ -125,6 +130,13 @@ const Index = ({ onLogout }: IndexProps) => {
             technicalNote={technicalNote}
             onApprove={handleClinicianApproval}
             onBack={handleBackToProfile}
+          />
+        )}
+
+        {currentStep === 'feedback' && (
+          <Feedback 
+            onBack={handleFeedbackBack}
+            onRestart={handleRestart}
           />
         )}
         

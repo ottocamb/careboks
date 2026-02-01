@@ -452,9 +452,12 @@ export const ClinicianApproval = ({
         </CardContent>
       </Card>
 
-      {/* Approval Controls */}
+      {/* Approving Clinician */}
       <Card>
-        <CardContent className="pt-6 space-y-4">
+        <CardHeader>
+          <CardTitle className="text-lg">Approving Clinician</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-2">
             <Label htmlFor="clinician-name">Approving Clinician Name *</Label>
             <Input
@@ -464,8 +467,16 @@ export const ClinicianApproval = ({
               placeholder="Dr. Jane Smith"
             />
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="flex gap-3 pt-2">
+      {/* Action Buttons */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3">
             <Button onClick={onBack} variant="outline" className="flex-1">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Patient Profile
@@ -476,7 +487,7 @@ export const ClinicianApproval = ({
             </Button>
             <Button onClick={handleApprove} className="flex-1">
               <CheckCircle2 className="w-4 h-4 mr-1" />
-              Sign with Smart ID
+              Feedback
             </Button>
           </div>
         </CardContent>
