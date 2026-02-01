@@ -3,6 +3,7 @@
  * 
  * Public route accessible via access token for patients
  * to view their care document without authentication.
+ * This is the destination page - no QR code displayed here.
  */
 
 import { useState, useEffect } from 'react';
@@ -109,7 +110,7 @@ export default function PatientDocument() {
         </div>
       </div>
 
-      {/* Printable Document */}
+      {/* Printable Document - No QR code since this IS the destination page */}
       <PrintableDocument
         sections={sections}
         language={document.patient_language}

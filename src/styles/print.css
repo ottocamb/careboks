@@ -2,6 +2,7 @@
  * Print-specific styles for patient document template
  * 
  * Design based on Figma: Two-page A4 layout with color-coded sections
+ * Two-column grid layout matching the exact Figma design
  * Optimized for accessibility and clinical readability
  */
 
@@ -22,11 +23,13 @@
 /* A4 page container */
 .print-page {
   width: 210mm;
-  min-height: 297mm;
-  padding: 15mm;
+  height: 297mm;
+  padding: 12mm 15mm;
   margin: 0 auto;
   background: hsl(var(--print-bg));
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Screen preview styling */
@@ -52,6 +55,8 @@
   html, body {
     width: 210mm;
     height: 297mm;
+    margin: 0;
+    padding: 0;
   }
   
   .no-print {
@@ -60,10 +65,11 @@
   
   .print-page {
     width: 210mm;
-    min-height: 297mm;
-    padding: 15mm;
+    height: 297mm;
+    padding: 12mm 15mm;
     margin: 0;
     page-break-after: always;
+    page-break-inside: avoid;
     box-shadow: none;
   }
   
@@ -83,48 +89,111 @@
   }
 }
 
-/* Typography - A4 optimized */
+/* ============================================
+   TWO-COLUMN GRID LAYOUTS (Figma Design)
+   ============================================ */
+
+/* Page 1 Grid: 
+   Left Column: What I Have + 6 Months
+   Right Column: How to Live
+   Full Width: Life Impact
+*/
+.print-page-1-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 10pt;
+  height: calc(100% - 80pt); /* Account for header */
+}
+
+.print-page-1-left {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10pt;
+}
+
+.print-page-1-right {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+.print-page-1-full {
+  grid-column: 1 / -1;
+}
+
+/* Page 2 Grid:
+   Left Column: Medications (full height)
+   Right Column: Warnings + Contacts
+*/
+.print-page-2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 10pt;
+  height: calc(100% - 100pt); /* Account for header and footer */
+}
+
+.print-page-2-left {
+  grid-column: 1;
+  grid-row: 1 / -1;
+}
+
+.print-page-2-right {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10pt;
+}
+
+/* ============================================
+   TYPOGRAPHY - A4 optimized
+   ============================================ */
+
 .print-title {
-  font-size: 24pt;
+  font-size: 22pt;
   font-weight: 700;
   color: hsl(var(--print-text));
   line-height: 1.2;
 }
 
 .print-subtitle {
-  font-size: 12pt;
+  font-size: 11pt;
   color: hsl(var(--print-text-light));
   line-height: 1.4;
 }
 
 .print-section-header {
-  font-size: 14pt;
+  font-size: 12pt;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 8pt;
+  margin-bottom: 6pt;
 }
 
 .print-body {
-  font-size: 11pt;
-  line-height: 1.6;
+  font-size: 10pt;
+  line-height: 1.5;
   color: hsl(var(--print-text));
 }
 
 .print-body-large {
-  font-size: 12pt;
+  font-size: 11pt;
   line-height: 1.5;
 }
 
-/* Section styling variants */
+/* ============================================
+   SECTION STYLING VARIANTS
+   ============================================ */
+
 .print-section {
-  margin-bottom: 16pt;
-  padding: 12pt 16pt;
-  border-radius: 8pt;
+  padding: 10pt 12pt;
+  border-radius: 6pt;
+  height: fit-content;
 }
 
 .print-section--teal {
-  border-left: 4pt solid hsl(var(--print-teal));
+  border-left: 3pt solid hsl(var(--print-teal));
   background: hsl(var(--print-teal-light));
 }
 
@@ -133,7 +202,7 @@
 }
 
 .print-section--pink {
-  border-left: 4pt solid hsl(var(--print-pink));
+  border-left: 3pt solid hsl(var(--print-pink));
   background: hsl(var(--print-pink-light));
 }
 
@@ -172,30 +241,48 @@
   color: white;
 }
 
-/* Lifestyle subsections grid */
+/* Full height section for medications */
+.print-section--full-height {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.print-section--full-height .print-body {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ============================================
+   LIFESTYLE SUBSECTIONS
+   ============================================ */
+
 .print-lifestyle-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12pt;
+  grid-template-columns: 1fr;
+  gap: 8pt;
 }
 
 .print-lifestyle-item {
-  padding: 8pt 12pt;
+  padding: 6pt 10pt;
   background: hsl(0 0% 98%);
-  border-radius: 6pt;
+  border-radius: 4pt;
   border: 1pt solid hsl(var(--print-border));
 }
 
 .print-lifestyle-item h4 {
-  font-size: 10pt;
+  font-size: 9pt;
   font-weight: 600;
   color: hsl(var(--print-teal));
-  margin-bottom: 4pt;
+  margin-bottom: 3pt;
 }
 
-/* Medication list styling */
+/* ============================================
+   MEDICATION LIST STYLING
+   ============================================ */
+
 .print-medication-item {
-  padding: 8pt 0;
+  padding: 6pt 0;
   border-bottom: 1pt solid hsl(var(--print-border));
 }
 
@@ -204,23 +291,26 @@
 }
 
 .print-medication-name {
-  font-size: 12pt;
+  font-size: 11pt;
   font-weight: 600;
   color: hsl(var(--print-text));
 }
 
 .print-medication-consequence {
-  font-size: 10pt;
+  font-size: 9pt;
   color: hsl(var(--print-pink));
   font-style: italic;
-  margin-top: 4pt;
+  margin-top: 3pt;
 }
 
-/* Contact item styling */
+/* ============================================
+   CONTACT STYLING
+   ============================================ */
+
 .print-contact-item {
   display: flex;
   justify-content: space-between;
-  padding: 6pt 0;
+  padding: 5pt 0;
   border-bottom: 1pt solid hsl(0 0% 100% / 0.2);
 }
 
@@ -230,12 +320,15 @@
 
 .print-contact-emergency {
   background: hsl(0 0% 0% / 0.2);
-  padding: 8pt 12pt;
-  border-radius: 6pt;
-  margin-top: 8pt;
+  padding: 6pt 10pt;
+  border-radius: 4pt;
+  margin-top: 6pt;
 }
 
-/* Warning list styling */
+/* ============================================
+   WARNING LIST STYLING
+   ============================================ */
+
 .print-warning-list {
   list-style: none;
   padding: 0;
@@ -244,8 +337,8 @@
 
 .print-warning-list li {
   position: relative;
-  padding-left: 20pt;
-  margin-bottom: 6pt;
+  padding-left: 16pt;
+  margin-bottom: 5pt;
 }
 
 .print-warning-list li::before {
@@ -255,31 +348,53 @@
   top: 0;
 }
 
-/* Header styling */
+/* ============================================
+   HEADER STYLING
+   ============================================ */
+
 .print-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20pt;
-  padding-bottom: 12pt;
+  margin-bottom: 12pt;
+  padding-bottom: 10pt;
   border-bottom: 2pt solid hsl(var(--print-teal));
+  position: relative;
 }
 
 .print-header-logo {
-  height: 40pt;
+  height: 32pt;
   width: auto;
 }
 
 .print-header-date {
-  font-size: 10pt;
+  font-size: 9pt;
   color: hsl(var(--print-text-light));
   text-align: right;
 }
 
-/* Footer styling */
+/* Page 2 mini header */
+.print-header-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12pt;
+  padding-bottom: 8pt;
+  border-bottom: 1pt solid hsl(var(--print-border));
+}
+
+.print-header-mini-logo {
+  height: 24pt;
+  width: auto;
+}
+
+/* ============================================
+   FOOTER STYLING
+   ============================================ */
+
 .print-footer {
-  margin-top: 20pt;
-  padding-top: 12pt;
+  margin-top: auto;
+  padding-top: 10pt;
   border-top: 1pt solid hsl(var(--print-border));
   display: flex;
   justify-content: space-between;
@@ -287,19 +402,19 @@
 }
 
 .print-signature {
-  font-size: 11pt;
+  font-size: 10pt;
 }
 
 .print-signature-label {
-  font-size: 9pt;
+  font-size: 8pt;
   color: hsl(var(--print-text-light));
-  margin-bottom: 4pt;
+  margin-bottom: 3pt;
 }
 
 .print-signature-line {
-  width: 150pt;
+  width: 120pt;
   border-bottom: 1pt solid hsl(var(--print-text));
-  padding-bottom: 4pt;
+  padding-bottom: 3pt;
 }
 
 .print-qr-container {
@@ -307,27 +422,45 @@
 }
 
 .print-qr-label {
-  font-size: 8pt;
+  font-size: 7pt;
   color: hsl(var(--print-text-light));
-  margin-top: 4pt;
+  margin-top: 3pt;
 }
 
-/* Decorative elements */
+/* ============================================
+   DECORATIVE ELEMENTS
+   ============================================ */
+
 .print-decoration {
   position: absolute;
-  opacity: 0.1;
+  opacity: 0.08;
   pointer-events: none;
 }
 
-/* Markdown content styling within print sections */
+.print-decoration--top-right {
+  top: 8mm;
+  right: 60mm;
+  font-size: 48pt;
+}
+
+.print-decoration--top-left {
+  top: 8mm;
+  left: 12mm;
+  font-size: 36pt;
+}
+
+/* ============================================
+   MARKDOWN CONTENT STYLING
+   ============================================ */
+
 .print-body ul,
 .print-body ol {
-  padding-left: 16pt;
-  margin: 6pt 0;
+  padding-left: 14pt;
+  margin: 4pt 0;
 }
 
 .print-body li {
-  margin-bottom: 4pt;
+  margin-bottom: 3pt;
 }
 
 .print-body strong {
@@ -335,9 +468,24 @@
 }
 
 .print-body p {
-  margin-bottom: 8pt;
+  margin-bottom: 6pt;
 }
 
 .print-body p:last-child {
   margin-bottom: 0;
+}
+
+/* Compact body for dense sections */
+.print-body--compact ul,
+.print-body--compact ol {
+  padding-left: 12pt;
+  margin: 2pt 0;
+}
+
+.print-body--compact li {
+  margin-bottom: 2pt;
+}
+
+.print-body--compact p {
+  margin-bottom: 4pt;
 }

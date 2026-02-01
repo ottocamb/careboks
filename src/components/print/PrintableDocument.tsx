@@ -2,8 +2,8 @@
  * @fileoverview Main printable document layout component
  * 
  * Assembles all print sections into a two-page A4 layout
- * matching the Figma design. Used for both print preview
- * and public patient view.
+ * with two-column grid matching the exact Figma design.
+ * Used for both print preview and public patient view.
  */
 
 import { PrintHeader } from './PrintHeader';
@@ -12,6 +12,7 @@ import { PrintMedications } from './PrintMedications';
 import { PrintWarnings } from './PrintWarnings';
 import { PrintContacts } from './PrintContacts';
 import { PrintFooter } from './PrintFooter';
+import carebloksLogo from '@/assets/careboks-logo.png';
 import '@/styles/print.css';
 
 export interface DocumentSection {
@@ -39,9 +40,9 @@ interface PrintableDocumentProps {
 /**
  * Renders the complete printable patient document
  * 
- * Layout matches Figma design with:
- * - Page 1: Header, What I Have, 6 Months, How to Live, Life Impact
- * - Page 2: Medications, Warnings, Contacts, Footer
+ * Layout matches Figma design with two-column grid:
+ * - Page 1: Header, [Left: What I Have + 6 Months] | [Right: How to Live], [Full: Life Impact]
+ * - Page 2: Mini Header, [Left: Medications] | [Right: Warnings + Contacts], Footer with QR
  */
 export const PrintableDocument = ({
   sections,
@@ -65,68 +66,103 @@ export const PrintableDocument = ({
   
   return (
     <div className="print-container">
-      {/* Page 1 */}
+      {/* ==================== PAGE 1 ==================== */}
       <div className="print-page">
+        {/* Decorative heart illustration */}
+        <span className="print-decoration print-decoration--top-right">❤️</span>
+        
         <PrintHeader 
           language={language} 
           date={date}
           hospitalName={hospitalName}
         />
         
-        {/* What do I have - Teal */}
-        <PrintSection
-          title={sectionTitles[0]}
-          content={sections[0]?.content || ''}
-          variant="teal"
-          icon={<span>❤️</span>}
-        />
-        
-        {/* How next 6 months will look - Teal */}
-        <PrintSection
-          title={sectionTitles[2]}
-          content={sections[2]?.content || ''}
-          variant="teal"
-          icon={<span>📅</span>}
-        />
-        
-        {/* How should I live - Neutral with subsections */}
-        <PrintSection
-          title={sectionTitles[1]}
-          content={sections[1]?.content || ''}
-          variant="neutral"
-          icon={<span>🏃</span>}
-        />
-        
-        {/* What does it mean for my life - Teal */}
-        <PrintSection
-          title={sectionTitles[3]}
-          content={sections[3]?.content || ''}
-          variant="teal"
-          icon={<span>✨</span>}
-        />
+        {/* Two-column grid layout */}
+        <div className="print-page-1-grid">
+          {/* Left Column: What I Have + 6 Months */}
+          <div className="print-page-1-left">
+            {/* What do I have - Teal */}
+            <PrintSection
+              title={sectionTitles[0]}
+              content={sections[0]?.content || ''}
+              variant="teal"
+              icon={<span>❤️</span>}
+            />
+            
+            {/* How next 6 months will look - Teal */}
+            <PrintSection
+              title={sectionTitles[2]}
+              content={sections[2]?.content || ''}
+              variant="teal"
+              icon={<span>📅</span>}
+            />
+          </div>
+          
+          {/* Right Column: How should I live */}
+          <div className="print-page-1-right">
+            <PrintSection
+              title={sectionTitles[1]}
+              content={sections[1]?.content || ''}
+              variant="neutral"
+              icon={<span>🏃</span>}
+              className="print-section--full-height"
+            />
+          </div>
+          
+          {/* Full Width: What does it mean for my life */}
+          <div className="print-page-1-full">
+            <PrintSection
+              title={sectionTitles[3]}
+              content={sections[3]?.content || ''}
+              variant="teal"
+              icon={<span>✨</span>}
+            />
+          </div>
+        </div>
       </div>
       
-      {/* Page 2 */}
+      {/* ==================== PAGE 2 ==================== */}
       <div className="print-page">
-        {/* Medications - Pink */}
-        <PrintMedications 
-          content={sections[4]?.content || ''} 
-          language={language}
-        />
+        {/* Decorative element */}
+        <span className="print-decoration print-decoration--top-left">💊</span>
         
-        {/* Warning signs - Red */}
-        <PrintWarnings 
-          content={sections[5]?.content || ''} 
-          language={language}
-        />
+        {/* Mini header for page 2 */}
+        <div className="print-header-mini">
+          <span></span>
+          <img 
+            src={carebloksLogo} 
+            alt="Careboks" 
+            className="print-header-mini-logo"
+          />
+        </div>
         
-        {/* Contacts - Teal background */}
-        <PrintContacts 
-          content={sections[6]?.content || ''} 
-          language={language}
-        />
+        {/* Two-column grid layout */}
+        <div className="print-page-2-grid">
+          {/* Left Column: Medications */}
+          <div className="print-page-2-left">
+            <PrintMedications 
+              content={sections[4]?.content || ''} 
+              language={language}
+            />
+          </div>
+          
+          {/* Right Column: Warnings + Contacts */}
+          <div className="print-page-2-right">
+            {/* Warning signs - Red */}
+            <PrintWarnings 
+              content={sections[5]?.content || ''} 
+              language={language}
+            />
+            
+            {/* Contacts - Teal background */}
+            <PrintContacts 
+              content={sections[6]?.content || ''} 
+              language={language}
+            />
+          </div>
+        </div>
         
-        {/* Footer with signature and QR */}
+        {/* Footer with signature and single QR code */}
         <PrintFooter
           clinicianName={clinicianName}
           date={date}

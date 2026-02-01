@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PrintableDocument } from '@/components/print/PrintableDocument';
-import { QRCodeDisplay } from '@/components/QRCodeDisplay';
 import { usePublishedDocument } from '@/hooks/usePublishedDocument';
 import { ChevronLeft, Printer, Share2, Copy, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -194,22 +193,15 @@ export default function PrintPreview() {
         </div>
       </div>
 
-      {/* Published Link & QR - Hidden on print */}
+      {/* Published confirmation - Hidden on print (QR only in printed document footer) */}
       {publishedUrl && (
         <div className="no-print max-w-[210mm] mx-auto p-4">
           <Card className="bg-green-50 border-green-200">
-            <CardContent className="flex items-center justify-between p-4">
-              <div>
-                <h3 className="font-medium text-green-900">Document Published</h3>
-                <p className="text-sm text-green-700">
-                  Patients can access their document using this QR code or link
-                </p>
-              </div>
-              <QRCodeDisplay 
-                url={publishedUrl} 
-                size={80}
-                label="Scan to view"
-              />
+            <CardContent className="p-4">
+              <h3 className="font-medium text-green-900">Document Published</h3>
+              <p className="text-sm text-green-700">
+                The QR code on the printed document will allow patients to access their care document online.
+              </p>
             </CardContent>
           </Card>
         </div>

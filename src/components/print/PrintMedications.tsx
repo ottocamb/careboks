@@ -3,6 +3,7 @@
  * 
  * Displays medication list with "if not taken" consequences
  * Pink themed section per Figma design
+ * Full-height variant for two-column layout
  */
 
 import ReactMarkdown from 'react-markdown';
@@ -28,11 +29,11 @@ export const PrintMedications = ({ content, language }: PrintMedicationsProps) =
   const header = HEADERS[normalizedLang] || HEADERS.english;
   
   return (
-    <div className="print-section print-section--pink">
+    <div className="print-section print-section--pink print-section--full-height">
       <h2 className="print-section-header">
         💊 {header}
       </h2>
-      <div className="print-body">
+      <div className="print-body print-body--compact">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </div>
