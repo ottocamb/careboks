@@ -140,7 +140,7 @@ export default function PrintPreview() {
         <div className="max-w-[210mm] mx-auto flex items-center justify-between">
           <Button 
             variant="outline" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/app`, { state: { returnToCaseId: caseId } })}
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Editing

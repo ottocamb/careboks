@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import MedicalHeader from "@/components/MedicalHeader";
 import TechnicalNoteInput from "@/components/TechnicalNoteInput";
 import PatientProfile from "@/components/PatientProfile";
@@ -6,6 +7,7 @@ import { ClinicianApproval } from "@/components/ClinicianApproval";
 import { Feedback } from "@/components/Feedback";
 import FinalOutput from "@/components/FinalOutput";
 import { ParsedSection } from "@/utils/draftParser";
+import { useCasePersistence } from "@/hooks/useCasePersistence";
 
 type Step = 'input' | 'profile' | 'approval' | 'feedback' | 'output';
 
@@ -21,11 +23,18 @@ interface PatientData {
   comorbidities: string[];
 }
 
+interface LocationState {
+  returnToCaseId?: string;
+}
+
 interface IndexProps {
   onLogout: () => void;
 }
 
 const Index = ({ onLogout }: IndexProps) => {
+  const location = useLocation();
+  const { loadCase } = useCasePersistence();
+  
   const [currentStep, setCurrentStep] = useState<Step>('input');
   const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
   const [technicalNote, setTechnicalNote] = useState("");
@@ -39,6 +48,48 @@ const Index = ({ onLogout }: IndexProps) => {
   const steps: Step[] = ['input', 'profile', 'approval', 'feedback', 'output'];
   const currentStepIndex = steps.indexOf(currentStep);
   const totalSteps = steps.length;
+
+  // Handle returning from print preview
+  useEffect(() => {
+    const state = location.state as LocationState | null;
+    if (state?.returnToCaseId && state.returnToCaseId !== currentCaseId) {
+      // Load the case and restore to approval step
+      loadCase(state.returnToCaseId).then(({ data, error }) => {
+        if (data && !error) {
+          setCurrentCaseId(data.id);
+          setTechnicalNote(data.technical_note || "");
+          
+          // Restore patient profile if exists
+          if (data.patient_profiles?.[0]) {
+            const profile = data.patient_profiles[0];
+            setPatientData({
+              age: profile.age_bracket || "",
+              sex: profile.sex || "",
+              language: profile.language || "english",
+              healthLiteracy: profile.health_literacy || "",
+              journeyType: profile.journey_type || "",
+              riskAppetite: profile.risk_appetite || "",
+              hasAccessibilityNeeds: profile.has_accessibility_needs || false,
+              includeRelatives: profile.include_relatives || false,
+              comorbidities: profile.comorbidities || []
+            });
+          }
+          
+          // Restore AI analysis if exists
+          if (data.ai_analyses?.[0]) {
+            setAiDraft(data.ai_analyses[0].ai_draft_text || "");
+            setAnalysis(data.ai_analyses[0].analysis_data);
+          }
+          
+          // Go to approval step
+          setCurrentStep('approval');
+        }
+      });
+      
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleTechnicalNoteSubmit = (note: string, caseId: string) => {
     setTechnicalNote(note);
