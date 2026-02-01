@@ -1,134 +1,151 @@
 
-# Feedback Page Implementation Plan
+# Bug Fixes: Patient Profile Navigation and Feedback Labels
 
 ## Overview
-Update the ClinicianApproval page layout and create a new Feedback page to collect clinician feedback on the most useful patient communication features.
+Fix two issues affecting the workflow:
+1. Patient Profile page not rendering correctly after using "Next Careboks"
+2. Feedback page checkbox labels not visible due to broken Label component
 
 ---
 
-## Changes Summary
+## Root Causes Identified
 
-### 1. Update ClinicianApproval.tsx Layout
+### Issue 1: Patient Profile Page Bug After First Cycle
 
-**Current State (lines 455-483):**
-- Clinician name input and action buttons are in the same Card component
-- "Sign with Smart ID" button leads to approval
+**Problem**: The `TechnicalNoteInput` component always creates a new case, even when navigating back to edit an existing case. It doesn't receive the current case ID.
 
-**New Layout:**
-- **Separate Card for Clinician Name**: Visual distinction with its own header
-- **Separate Card for Action Buttons**: Contains three buttons
-- Replace "Sign with Smart ID" button with "Feedback" button that navigates to feedback step
+**Current behavior**:
+- `handleLogoClick()` sets step to 'input' but keeps `currentCaseId`
+- `TechnicalNoteInput` always calls `createCase()` which creates a new case ID
+- This causes state inconsistency where the workflow expects one case but creates another
 
-### 2. Add New Feedback Step
+**Solution**: 
+- Pass `currentCaseId` to `TechnicalNoteInput`
+- Update TechnicalNoteInput to use `updateCase()` when editing an existing case
+- Only call `createCase()` when starting fresh (no case ID)
 
-**Workflow Change:**
-- Current: `input` → `profile` → `approval` → `output`
-- New: `input` → `profile` → `approval` → `feedback` → `output`
+### Issue 2: Invisible Feedback Labels
 
-**Feedback Page Features:**
-- Question: "Based on your experience, which feature do you consider most useful for patients?"
-- Checkbox options (multi-select):
-  - What do I have
-  - How should I live next
-  - How the next 6 months of my life look like
-  - What does it mean for my life
-  - My medications
-  - Warning signs
-  - General Notes
+**Problem**: The `Label` component in `src/components/ui/label.tsx` has an empty function body - it returns `undefined` instead of the actual Radix Label element.
 
-**Three Action Buttons:**
-1. **Rewrite** - Resets all checkbox selections
-2. **Submit** - Placeholder (does nothing for now)
-3. **Next Careboks** - Resets entire workflow and returns to Technical Note Input page
+**Current (broken)**:
+```typescript
+const Label = React.forwardRef<...>(({
+  className,
+  ...props
+}, ref) => {});  // Empty - returns undefined!
+```
 
 ---
 
-## Technical Details
-
-### File Changes
+## Changes Required
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/pages/Index.tsx` | Modify | Add 'feedback' step, update workflow handlers |
-| `src/components/ClinicianApproval.tsx` | Modify | Split Approval Controls into two Cards, replace "Sign with Smart ID" with "Feedback" |
-| `src/components/Feedback.tsx` | Create | New feedback component with checkbox form |
+| `src/components/ui/label.tsx` | Fix | Restore proper Label component implementation |
+| `src/pages/Index.tsx` | Modify | Pass `currentCaseId` to TechnicalNoteInput |
+| `src/components/TechnicalNoteInput.tsx` | Modify | Add case ID prop and update logic to handle both create and update |
 
-### Updated Workflow Types
-```text
-type Step = 'input' | 'profile' | 'approval' | 'feedback' | 'output';
+---
+
+## Technical Implementation Details
+
+### 1. Fix Label Component (`src/components/ui/label.tsx`)
+
+Restore the standard shadcn/ui Label implementation:
+
+```typescript
+const Label = React.forwardRef<
+  React.ElementRef<typeof LabelPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
+    VariantProps<typeof labelVariants>
+>(({ className, ...props }, ref) => (
+  <LabelPrimitive.Root
+    ref={ref}
+    className={cn(labelVariants(), className)}
+    {...props}
+  />
+));
 ```
 
-### Feedback Component Props
-```text
-interface FeedbackProps {
-  onBack: () => void;           // Return to approval step
-  onRestart: () => void;        // Reset entire workflow (Next Careboks)
+### 2. Update TechnicalNoteInput Props
+
+Add optional `caseId` prop to handle existing cases:
+
+```typescript
+interface TechnicalNoteInputProps {
+  onNext: (note: string, caseId: string) => void;
+  initialNote?: string;
+  caseId?: string | null;  // NEW: existing case ID for edit mode
 }
 ```
 
-### State Management
-- Selected options stored in local component state (array of strings)
-- No database persistence for PoC (Submit does nothing)
+### 3. Update TechnicalNoteInput handleNext Logic
+
+Modify the submit handler to update existing cases instead of always creating new ones:
+
+```typescript
+const handleNext = async () => {
+  if (!note.trim()) return;
+  
+  setIsProcessing(true);
+  const fileNames = uploadedFiles.map(f => f.name);
+  
+  // If we have an existing case ID, update it; otherwise create new
+  if (caseId) {
+    const { data, error } = await updateCase(caseId, {
+      technicalNote: note,
+      uploadedFileNames: fileNames
+    });
+    
+    if (error) {
+      // handle error
+      return;
+    }
+    
+    onNext(note, caseId);  // Use existing case ID
+  } else {
+    const { data, error } = await createCase(note, fileNames);
+    
+    if (error) {
+      // handle error
+      return;
+    }
+    
+    onNext(note, data.id);  // Use newly created case ID
+  }
+  
+  setIsProcessing(false);
+};
+```
+
+### 4. Update Index.tsx to Pass Case ID
+
+```typescript
+{currentStep === 'input' && (
+  <TechnicalNoteInput 
+    onNext={handleTechnicalNoteSubmit} 
+    initialNote={technicalNote}
+    caseId={currentCaseId}  // NEW: pass current case ID
+  />
+)}
+```
 
 ---
 
-## Visual Layout
+## Navigation Behavior After Fix
 
-### ClinicianApproval - New Approval Section
-```text
-+------------------------------------------+
-|  Approving Clinician                     |
-|  ----------------------------------------|
-|  Approving Clinician Name *              |
-|  [ Dr. Jane Smith                      ] |
-+------------------------------------------+
-
-+------------------------------------------+
-|  Action Buttons                          |
-|  ----------------------------------------|
-|  [ Patient Profile ] [ Print Preview ]   |
-|  [ Feedback ]                            |
-+------------------------------------------+
-```
-
-### Feedback Page Layout
-```text
-+------------------------------------------+
-|  Feedback                                |
-|  ----------------------------------------|
-|  Based on your experience, which feature |
-|  do you consider most useful for         |
-|  patients?                               |
-|                                          |
-|  [ ] What do I have                      |
-|  [ ] How should I live next              |
-|  [ ] How the next 6 months...            |
-|  [ ] What does it mean for my life       |
-|  [ ] My medications                      |
-|  [ ] Warning signs                       |
-|  [ ] General Notes                       |
-|                                          |
-|  [ Rewrite ] [ Submit ] [ Next Careboks ]|
-+------------------------------------------+
-```
+| Action | Goes To | Case ID | Effect |
+|--------|---------|---------|--------|
+| Logo Click | Input page | Preserved | Edit existing case |
+| "Patient Profile" back button | Input page | Preserved | Edit existing case |
+| "Next Careboks" | Input page | Cleared | Start fresh, create new case on submit |
+| "Rewrite" (Feedback) | N/A | N/A | Just clears checkbox selections |
 
 ---
 
-## Implementation Steps
+## Files Modified Summary
 
-1. **Create Feedback Component** (`src/components/Feedback.tsx`)
-   - Add checkbox list with all 7 options
-   - Implement Rewrite button to clear selections
-   - Add Submit button (placeholder)
-   - Add Next Careboks button with restart handler
-
-2. **Update Index.tsx**
-   - Add 'feedback' step to workflow
-   - Add navigation handlers for feedback transitions
-   - Connect handleRestart to Next Careboks
-
-3. **Update ClinicianApproval.tsx**
-   - Split bottom Card into two separate Cards
-   - Replace "Sign with Smart ID" with "Feedback" button
-   - Update onApprove callback to navigate to feedback
-
+1. **`src/components/ui/label.tsx`** - Fix empty component to properly render Label
+2. **`src/pages/Index.tsx`** - Add `caseId` prop to TechnicalNoteInput
+3. **`src/components/TechnicalNoteInput.tsx`** - Add caseId prop, use updateCase when editing
