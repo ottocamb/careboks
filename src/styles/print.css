@@ -4,6 +4,7 @@
  * Design based on Figma: Two-page A4 layout with color-coded sections
  * Two-column grid layout matching the exact Figma design
  * Optimized for accessibility and clinical readability
+ * COMPACT: Tightened spacing to fit content on A4 pages
  */
 
 /* Print color variables - from Figma design */
@@ -20,11 +21,11 @@
   --print-border: 215 20% 88%;
 }
 
-/* A4 page container */
+/* A4 page container - tighter padding */
 .print-page {
   width: 210mm;
   height: 297mm;
-  padding: 12mm 15mm;
+  padding: 10mm 12mm;
   margin: 0 auto;
   background: hsl(var(--print-bg));
   box-sizing: border-box;
@@ -66,7 +67,7 @@
   .print-page {
     width: 210mm;
     height: 297mm;
-    padding: 12mm 15mm;
+    padding: 10mm 12mm;
     margin: 0;
     page-break-after: always;
     page-break-inside: avoid;
@@ -102,15 +103,15 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto auto;
-  gap: 10pt;
-  height: calc(100% - 80pt); /* Account for header */
+  gap: 8pt;
+  height: calc(100% - 60pt); /* Account for header */
 }
 
 .print-page-1-left {
   grid-column: 1;
   display: flex;
   flex-direction: column;
-  gap: 10pt;
+  gap: 8pt;
 }
 
 .print-page-1-right {
@@ -130,8 +131,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr auto;
-  gap: 10pt;
-  height: calc(100% - 100pt); /* Account for header and footer */
+  gap: 8pt;
+  height: calc(100% - 80pt); /* Account for header and footer */
 }
 
 .print-page-2-left {
@@ -143,52 +144,52 @@
   grid-column: 2;
   display: flex;
   flex-direction: column;
-  gap: 10pt;
+  gap: 8pt;
 }
 
 /* ============================================
-   TYPOGRAPHY - A4 optimized
+   TYPOGRAPHY - A4 optimized (COMPACT)
    ============================================ */
 
 .print-title {
-  font-size: 22pt;
+  font-size: 18pt;
   font-weight: 700;
   color: hsl(var(--print-text));
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .print-subtitle {
-  font-size: 11pt;
+  font-size: 9pt;
   color: hsl(var(--print-text-light));
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .print-section-header {
-  font-size: 12pt;
+  font-size: 10pt;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6pt;
+  letter-spacing: 0.04em;
+  margin-bottom: 4pt;
 }
 
 .print-body {
-  font-size: 10pt;
-  line-height: 1.5;
+  font-size: 9pt;
+  line-height: 1.35;
   color: hsl(var(--print-text));
 }
 
 .print-body-large {
-  font-size: 11pt;
-  line-height: 1.5;
+  font-size: 10pt;
+  line-height: 1.4;
 }
 
 /* ============================================
-   SECTION STYLING VARIANTS
+   SECTION STYLING VARIANTS (COMPACT)
    ============================================ */
 
 .print-section {
-  padding: 10pt 12pt;
-  border-radius: 6pt;
+  padding: 8pt 10pt;
+  border-radius: 5pt;
   height: fit-content;
 }
 
@@ -254,35 +255,35 @@
 }
 
 /* ============================================
-   LIFESTYLE SUBSECTIONS
+   LIFESTYLE SUBSECTIONS (COMPACT)
    ============================================ */
 
 .print-lifestyle-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8pt;
+  gap: 5pt;
 }
 
 .print-lifestyle-item {
-  padding: 6pt 10pt;
+  padding: 4pt 8pt;
   background: hsl(0 0% 98%);
-  border-radius: 4pt;
+  border-radius: 3pt;
   border: 1pt solid hsl(var(--print-border));
 }
 
 .print-lifestyle-item h4 {
-  font-size: 9pt;
+  font-size: 8pt;
   font-weight: 600;
   color: hsl(var(--print-teal));
-  margin-bottom: 3pt;
+  margin-bottom: 2pt;
 }
 
 /* ============================================
-   MEDICATION LIST STYLING
+   MEDICATION LIST STYLING (COMPACT)
    ============================================ */
 
 .print-medication-item {
-  padding: 6pt 0;
+  padding: 4pt 0;
   border-bottom: 1pt solid hsl(var(--print-border));
 }
 
@@ -291,26 +292,26 @@
 }
 
 .print-medication-name {
-  font-size: 11pt;
+  font-size: 9pt;
   font-weight: 600;
   color: hsl(var(--print-text));
 }
 
 .print-medication-consequence {
-  font-size: 9pt;
+  font-size: 8pt;
   color: hsl(var(--print-pink));
   font-style: italic;
-  margin-top: 3pt;
+  margin-top: 2pt;
 }
 
 /* ============================================
-   CONTACT STYLING
+   CONTACT STYLING (COMPACT)
    ============================================ */
 
 .print-contact-item {
   display: flex;
   justify-content: space-between;
-  padding: 5pt 0;
+  padding: 3pt 0;
   border-bottom: 1pt solid hsl(0 0% 100% / 0.2);
 }
 
@@ -320,13 +321,13 @@
 
 .print-contact-emergency {
   background: hsl(0 0% 0% / 0.2);
-  padding: 6pt 10pt;
-  border-radius: 4pt;
-  margin-top: 6pt;
+  padding: 5pt 8pt;
+  border-radius: 3pt;
+  margin-top: 4pt;
 }
 
 /* ============================================
-   WARNING LIST STYLING
+   WARNING LIST STYLING (COMPACT)
    ============================================ */
 
 .print-warning-list {
@@ -337,8 +338,8 @@
 
 .print-warning-list li {
   position: relative;
-  padding-left: 16pt;
-  margin-bottom: 5pt;
+  padding-left: 14pt;
+  margin-bottom: 3pt;
 }
 
 .print-warning-list li::before {
@@ -349,26 +350,26 @@
 }
 
 /* ============================================
-   HEADER STYLING
+   HEADER STYLING (COMPACT)
    ============================================ */
 
 .print-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12pt;
-  padding-bottom: 10pt;
+  margin-bottom: 10pt;
+  padding-bottom: 8pt;
   border-bottom: 2pt solid hsl(var(--print-teal));
   position: relative;
 }
 
 .print-header-logo {
-  height: 32pt;
+  height: 28pt;
   width: auto;
 }
 
 .print-header-date {
-  font-size: 9pt;
+  font-size: 8pt;
   color: hsl(var(--print-text-light));
   text-align: right;
 }
@@ -378,23 +379,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12pt;
-  padding-bottom: 8pt;
+  margin-bottom: 8pt;
+  padding-bottom: 6pt;
   border-bottom: 1pt solid hsl(var(--print-border));
 }
 
 .print-header-mini-logo {
-  height: 24pt;
+  height: 20pt;
   width: auto;
 }
 
 /* ============================================
-   FOOTER STYLING
+   FOOTER STYLING (COMPACT)
    ============================================ */
 
 .print-footer {
   margin-top: auto;
-  padding-top: 10pt;
+  padding-top: 8pt;
   border-top: 1pt solid hsl(var(--print-border));
   display: flex;
   justify-content: space-between;
@@ -402,19 +403,19 @@
 }
 
 .print-signature {
-  font-size: 10pt;
+  font-size: 9pt;
 }
 
 .print-signature-label {
-  font-size: 8pt;
+  font-size: 7pt;
   color: hsl(var(--print-text-light));
-  margin-bottom: 3pt;
+  margin-bottom: 2pt;
 }
 
 .print-signature-line {
-  width: 120pt;
+  width: 100pt;
   border-bottom: 1pt solid hsl(var(--print-text));
-  padding-bottom: 3pt;
+  padding-bottom: 2pt;
 }
 
 .print-qr-container {
@@ -422,9 +423,9 @@
 }
 
 .print-qr-label {
-  font-size: 7pt;
+  font-size: 6pt;
   color: hsl(var(--print-text-light));
-  margin-top: 3pt;
+  margin-top: 2pt;
 }
 
 /* ============================================
@@ -433,34 +434,34 @@
 
 .print-decoration {
   position: absolute;
-  opacity: 0.08;
+  opacity: 0.06;
   pointer-events: none;
 }
 
 .print-decoration--top-right {
-  top: 8mm;
-  right: 60mm;
-  font-size: 48pt;
+  top: 6mm;
+  right: 50mm;
+  font-size: 40pt;
 }
 
 .print-decoration--top-left {
-  top: 8mm;
-  left: 12mm;
-  font-size: 36pt;
+  top: 6mm;
+  left: 10mm;
+  font-size: 28pt;
 }
 
 /* ============================================
-   MARKDOWN CONTENT STYLING
+   MARKDOWN CONTENT STYLING (COMPACT)
    ============================================ */
 
 .print-body ul,
 .print-body ol {
-  padding-left: 14pt;
-  margin: 4pt 0;
+  padding-left: 12pt;
+  margin: 2pt 0;
 }
 
 .print-body li {
-  margin-bottom: 3pt;
+  margin-bottom: 2pt;
 }
 
 .print-body strong {
@@ -468,24 +469,32 @@
 }
 
 .print-body p {
-  margin-bottom: 6pt;
+  margin-bottom: 4pt;
 }
 
 .print-body p:last-child {
   margin-bottom: 0;
 }
 
-/* Compact body for dense sections */
+/* Extra compact body for dense sections */
 .print-body--compact ul,
 .print-body--compact ol {
-  padding-left: 12pt;
-  margin: 2pt 0;
+  padding-left: 10pt;
+  margin: 1pt 0;
 }
 
 .print-body--compact li {
-  margin-bottom: 2pt;
+  margin-bottom: 1pt;
+  font-size: 8.5pt;
 }
 
 .print-body--compact p {
-  margin-bottom: 4pt;
+  margin-bottom: 2pt;
+  font-size: 8.5pt;
+}
+
+/* Section icon sizing */
+.print-section-header .icon,
+.print-section-header span:first-child {
+  font-size: 10pt;
 }
