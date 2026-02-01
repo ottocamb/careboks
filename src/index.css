@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './styles/print.css';
+
 /* TipTap Editor Styles */
 .ProseMirror {
   outline: none;

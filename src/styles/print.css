@@ -1,0 +1,343 @@
+/**
+ * Print-specific styles for patient document template
+ * 
+ * Design based on Figma: Two-page A4 layout with color-coded sections
+ * Optimized for accessibility and clinical readability
+ */
+
+/* Print color variables - from Figma design */
+:root {
+  --print-teal: 173 80% 40%;
+  --print-teal-light: 173 80% 95%;
+  --print-pink: 330 85% 70%;
+  --print-pink-light: 330 85% 95%;
+  --print-red: 0 84% 60%;
+  --print-red-light: 0 84% 95%;
+  --print-text: 215 25% 27%;
+  --print-text-light: 215 20% 45%;
+  --print-bg: 0 0% 100%;
+  --print-border: 215 20% 88%;
+}
+
+/* A4 page container */
+.print-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 15mm;
+  margin: 0 auto;
+  background: hsl(var(--print-bg));
+  box-sizing: border-box;
+}
+
+/* Screen preview styling */
+@media screen {
+  .print-page {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .print-container {
+    padding: 20px;
+    background: hsl(215 20% 95%);
+  }
+}
+
+/* Print media rules */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  
+  html, body {
+    width: 210mm;
+    height: 297mm;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 15mm;
+    margin: 0;
+    page-break-after: always;
+    box-shadow: none;
+  }
+  
+  .print-page:last-child {
+    page-break-after: auto;
+  }
+  
+  .print-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  /* Force color printing */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Typography - A4 optimized */
+.print-title {
+  font-size: 24pt;
+  font-weight: 700;
+  color: hsl(var(--print-text));
+  line-height: 1.2;
+}
+
+.print-subtitle {
+  font-size: 12pt;
+  color: hsl(var(--print-text-light));
+  line-height: 1.4;
+}
+
+.print-section-header {
+  font-size: 14pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8pt;
+}
+
+.print-body {
+  font-size: 11pt;
+  line-height: 1.6;
+  color: hsl(var(--print-text));
+}
+
+.print-body-large {
+  font-size: 12pt;
+  line-height: 1.5;
+}
+
+/* Section styling variants */
+.print-section {
+  margin-bottom: 16pt;
+  padding: 12pt 16pt;
+  border-radius: 8pt;
+}
+
+.print-section--teal {
+  border-left: 4pt solid hsl(var(--print-teal));
+  background: hsl(var(--print-teal-light));
+}
+
+.print-section--teal .print-section-header {
+  color: hsl(var(--print-teal));
+}
+
+.print-section--pink {
+  border-left: 4pt solid hsl(var(--print-pink));
+  background: hsl(var(--print-pink-light));
+}
+
+.print-section--pink .print-section-header {
+  color: hsl(var(--print-pink));
+}
+
+.print-section--red {
+  background: hsl(var(--print-red));
+  color: white;
+}
+
+.print-section--red .print-section-header {
+  color: white;
+}
+
+.print-section--red .print-body {
+  color: white;
+}
+
+.print-section--neutral {
+  border: 1pt solid hsl(var(--print-border));
+  background: hsl(0 0% 99%);
+}
+
+.print-section--contacts {
+  background: hsl(var(--print-teal));
+  color: white;
+}
+
+.print-section--contacts .print-section-header {
+  color: white;
+}
+
+.print-section--contacts .print-body {
+  color: white;
+}
+
+/* Lifestyle subsections grid */
+.print-lifestyle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12pt;
+}
+
+.print-lifestyle-item {
+  padding: 8pt 12pt;
+  background: hsl(0 0% 98%);
+  border-radius: 6pt;
+  border: 1pt solid hsl(var(--print-border));
+}
+
+.print-lifestyle-item h4 {
+  font-size: 10pt;
+  font-weight: 600;
+  color: hsl(var(--print-teal));
+  margin-bottom: 4pt;
+}
+
+/* Medication list styling */
+.print-medication-item {
+  padding: 8pt 0;
+  border-bottom: 1pt solid hsl(var(--print-border));
+}
+
+.print-medication-item:last-child {
+  border-bottom: none;
+}
+
+.print-medication-name {
+  font-size: 12pt;
+  font-weight: 600;
+  color: hsl(var(--print-text));
+}
+
+.print-medication-consequence {
+  font-size: 10pt;
+  color: hsl(var(--print-pink));
+  font-style: italic;
+  margin-top: 4pt;
+}
+
+/* Contact item styling */
+.print-contact-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6pt 0;
+  border-bottom: 1pt solid hsl(0 0% 100% / 0.2);
+}
+
+.print-contact-item:last-child {
+  border-bottom: none;
+}
+
+.print-contact-emergency {
+  background: hsl(0 0% 0% / 0.2);
+  padding: 8pt 12pt;
+  border-radius: 6pt;
+  margin-top: 8pt;
+}
+
+/* Warning list styling */
+.print-warning-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.print-warning-list li {
+  position: relative;
+  padding-left: 20pt;
+  margin-bottom: 6pt;
+}
+
+.print-warning-list li::before {
+  content: "⚠";
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Header styling */
+.print-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20pt;
+  padding-bottom: 12pt;
+  border-bottom: 2pt solid hsl(var(--print-teal));
+}
+
+.print-header-logo {
+  height: 40pt;
+  width: auto;
+}
+
+.print-header-date {
+  font-size: 10pt;
+  color: hsl(var(--print-text-light));
+  text-align: right;
+}
+
+/* Footer styling */
+.print-footer {
+  margin-top: 20pt;
+  padding-top: 12pt;
+  border-top: 1pt solid hsl(var(--print-border));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.print-signature {
+  font-size: 11pt;
+}
+
+.print-signature-label {
+  font-size: 9pt;
+  color: hsl(var(--print-text-light));
+  margin-bottom: 4pt;
+}
+
+.print-signature-line {
+  width: 150pt;
+  border-bottom: 1pt solid hsl(var(--print-text));
+  padding-bottom: 4pt;
+}
+
+.print-qr-container {
+  text-align: center;
+}
+
+.print-qr-label {
+  font-size: 8pt;
+  color: hsl(var(--print-text-light));
+  margin-top: 4pt;
+}
+
+/* Decorative elements */
+.print-decoration {
+  position: absolute;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Markdown content styling within print sections */
+.print-body ul,
+.print-body ol {
+  padding-left: 16pt;
+  margin: 6pt 0;
+}
+
+.print-body li {
+  margin-bottom: 4pt;
+}
+
+.print-body strong {
+  font-weight: 600;
+}
+
+.print-body p {
+  margin-bottom: 8pt;
+}
+
+.print-body p:last-child {
+  margin-bottom: 0;
+}

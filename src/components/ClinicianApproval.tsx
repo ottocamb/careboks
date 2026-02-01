@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,6 +107,7 @@ export const ClinicianApproval = ({
   
   const { toast } = useToast();
   const { saveApproval, updateCase, saveAIAnalysis } = useCasePersistence();
+  const navigate = useNavigate();
 
   /**
    * Initialize sections from props or trigger generation
@@ -291,34 +293,26 @@ export const ClinicianApproval = ({
   };
 
   /**
-   * Opens print preview in new window
+   * Navigates to the styled print preview page
    */
   const handlePrintPreview = () => {
-    const finalText = reconstructDraft(sections);
-    const printWindow = window.open("", "_blank");
-    
-    if (!printWindow) return;
-    
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Patient Communication</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-            h1 { color: #1a365d; border-bottom: 3px solid #3182ce; padding-bottom: 10px; }
-            h2 { color: #2d3748; margin-top: 30px; }
-            p { line-height: 1.6; color: #4a5568; }
-            .separator { border-top: 2px dashed #cbd5e0; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          ${finalText.replace(/\n/g, "<br>")}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+    if (!clinicianName.trim()) {
+      toast({
+        title: "Clinician name required",
+        description: "Please enter your name before viewing print preview",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    navigate(`/app/print-preview/${caseId}`, {
+      state: {
+        sections,
+        clinicianName,
+        language: patientData?.language || 'english',
+        hospitalName: undefined // Can be added to patient profile if needed
+      }
+    });
   };
 
   // Loading state
