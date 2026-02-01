@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Edit2, Check, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 /**
  * Props for the SectionBox component
@@ -153,8 +154,8 @@ export const SectionBox = ({
                 No content generated for this section. Click Edit to add information.
               </p>
             ) : (
-              <div className="prose prose-sm max-w-none">
-                <p className="whitespace-pre-wrap text-foreground">{content}</p>
+              <div className="prose prose-sm max-w-none text-foreground">
+                <ReactMarkdown>{content}</ReactMarkdown>
               </div>
             )}
 
