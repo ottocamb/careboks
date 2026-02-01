@@ -1,151 +1,101 @@
 
-# Bug Fixes: Patient Profile Navigation and Feedback Labels
 
-## Overview
-Fix two issues affecting the workflow:
-1. Patient Profile page not rendering correctly after using "Next Careboks"
-2. Feedback page checkbox labels not visible due to broken Label component
+# Fix Markdown Text Rendering Issue
+
+## Problem Summary
+The AI generates content with Markdown formatting (like `**bold**` and `*` for bullets), but the SectionBox component displays it as plain text. This results in users seeing raw asterisks instead of formatted text.
 
 ---
 
-## Root Causes Identified
+## Root Cause
 
-### Issue 1: Patient Profile Page Bug After First Cycle
+| Component | Current Behavior |
+|-----------|------------------|
+| `supabase/functions/generate-patient-document-v2/prompts.ts` | Instructs AI to "prioritize writing in bullet points" which produces Markdown-style formatting |
+| `src/components/SectionBox.tsx` (line 157) | Renders content as: `<p className="whitespace-pre-wrap">{content}</p>` - plain text only |
+| Missing | No Markdown-to-HTML parser exists in the project |
 
-**Problem**: The `TechnicalNoteInput` component always creates a new case, even when navigating back to edit an existing case. It doesn't receive the current case ID.
+---
 
-**Current behavior**:
-- `handleLogoClick()` sets step to 'input' but keeps `currentCaseId`
-- `TechnicalNoteInput` always calls `createCase()` which creates a new case ID
-- This causes state inconsistency where the workflow expects one case but creates another
+## Solution: Add Markdown Rendering Support
 
-**Solution**: 
-- Pass `currentCaseId` to `TechnicalNoteInput`
-- Update TechnicalNoteInput to use `updateCase()` when editing an existing case
-- Only call `createCase()` when starting fresh (no case ID)
+We'll add a Markdown parser to properly render the AI-generated content with formatting.
 
-### Issue 2: Invisible Feedback Labels
+### Approach
+1. Install a lightweight Markdown renderer (`react-markdown`)
+2. Update `SectionBox.tsx` to parse and render Markdown content
+3. Apply consistent styling for Markdown elements (lists, bold, italic)
 
-**Problem**: The `Label` component in `src/components/ui/label.tsx` has an empty function body - it returns `undefined` instead of the actual Radix Label element.
+---
 
-**Current (broken)**:
-```typescript
-const Label = React.forwardRef<...>(({
-  className,
-  ...props
-}, ref) => {});  // Empty - returns undefined!
+## Implementation Details
+
+### Step 1: Install react-markdown
+
+Add the `react-markdown` package which is a lightweight, secure Markdown renderer for React.
+
+### Step 2: Update SectionBox.tsx
+
+Replace the plain text rendering with Markdown support:
+
+**Current (line 156-158):**
+```text
+<div className="prose prose-sm max-w-none">
+  <p className="whitespace-pre-wrap text-foreground">{content}</p>
+</div>
 ```
 
+**Updated:**
+```text
+<div className="prose prose-sm max-w-none">
+  <ReactMarkdown>{content}</ReactMarkdown>
+</div>
+```
+
+### Step 3: Add Tailwind Prose Styling (Optional Enhancement)
+
+The component already uses `prose prose-sm` classes. We'll ensure proper styling for:
+- Bold text (`**text**`)
+- Bullet lists (`*` or `-`)
+- Numbered lists (`1.`, `2.`)
+- Headings if any
+
 ---
 
-## Changes Required
+## Files to Modify
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/components/ui/label.tsx` | Fix | Restore proper Label component implementation |
-| `src/pages/Index.tsx` | Modify | Pass `currentCaseId` to TechnicalNoteInput |
-| `src/components/TechnicalNoteInput.tsx` | Modify | Add case ID prop and update logic to handle both create and update |
+| `package.json` | Add dependency | Install `react-markdown` |
+| `src/components/SectionBox.tsx` | Modify | Import and use ReactMarkdown for content rendering |
 
 ---
 
-## Technical Implementation Details
+## Visual Before/After
 
-### 1. Fix Label Component (`src/components/ui/label.tsx`)
+**Before:**
+```text
+Here are the important contact details for your healthcare team:
 
-Restore the standard shadcn/ui Label implementation:
+**Emergency Services:**
 
-```typescript
-const Label = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
-    VariantProps<typeof labelVariants>
->(({ className, ...props }, ref) => (
-  <LabelPrimitive.Root
-    ref={ref}
-    className={cn(labelVariants(), className)}
-    {...props}
-  />
-));
+*   **Call 112 immediately** for any life-threatening emergencies
 ```
 
-### 2. Update TechnicalNoteInput Props
+**After:**
+Here are the important contact details for your healthcare team:
 
-Add optional `caseId` prop to handle existing cases:
+**Emergency Services:**
 
-```typescript
-interface TechnicalNoteInputProps {
-  onNext: (note: string, caseId: string) => void;
-  initialNote?: string;
-  caseId?: string | null;  // NEW: existing case ID for edit mode
-}
-```
-
-### 3. Update TechnicalNoteInput handleNext Logic
-
-Modify the submit handler to update existing cases instead of always creating new ones:
-
-```typescript
-const handleNext = async () => {
-  if (!note.trim()) return;
-  
-  setIsProcessing(true);
-  const fileNames = uploadedFiles.map(f => f.name);
-  
-  // If we have an existing case ID, update it; otherwise create new
-  if (caseId) {
-    const { data, error } = await updateCase(caseId, {
-      technicalNote: note,
-      uploadedFileNames: fileNames
-    });
-    
-    if (error) {
-      // handle error
-      return;
-    }
-    
-    onNext(note, caseId);  // Use existing case ID
-  } else {
-    const { data, error } = await createCase(note, fileNames);
-    
-    if (error) {
-      // handle error
-      return;
-    }
-    
-    onNext(note, data.id);  // Use newly created case ID
-  }
-  
-  setIsProcessing(false);
-};
-```
-
-### 4. Update Index.tsx to Pass Case ID
-
-```typescript
-{currentStep === 'input' && (
-  <TechnicalNoteInput 
-    onNext={handleTechnicalNoteSubmit} 
-    initialNote={technicalNote}
-    caseId={currentCaseId}  // NEW: pass current case ID
-  />
-)}
-```
+• **Call 112 immediately** for any life-threatening emergencies
 
 ---
 
-## Navigation Behavior After Fix
+## Why This Approach
 
-| Action | Goes To | Case ID | Effect |
-|--------|---------|---------|--------|
-| Logo Click | Input page | Preserved | Edit existing case |
-| "Patient Profile" back button | Input page | Preserved | Edit existing case |
-| "Next Careboks" | Input page | Cleared | Start fresh, create new case on submit |
-| "Rewrite" (Feedback) | N/A | N/A | Just clears checkbox selections |
+| Alternative | Reason Not Chosen |
+|-------------|-------------------|
+| Change AI to output plain text | Would lose useful formatting (bold for emphasis, bullets for lists) that improves readability |
+| Use dangerouslySetInnerHTML | Security risk - Markdown library handles sanitization safely |
+| Custom regex replacement | Fragile, doesn't handle edge cases, reinvents the wheel |
 
----
-
-## Files Modified Summary
-
-1. **`src/components/ui/label.tsx`** - Fix empty component to properly render Label
-2. **`src/pages/Index.tsx`** - Add `caseId` prop to TechnicalNoteInput
-3. **`src/components/TechnicalNoteInput.tsx`** - Add caseId prop, use updateCase when editing
