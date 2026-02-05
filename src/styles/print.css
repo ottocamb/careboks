@@ -97,59 +97,20 @@
 }
 
 /* ============================================
-   TWO-COLUMN GRID LAYOUTS (Collage Style)
+   SIMPLIFIED HORIZONTAL FLOW GRID
+   Cards flow left-to-right, wrap when needed
    ============================================ */
 
-/* Page 1 Grid: 
-   Left Column: What I Have + 6 Months
-   Right Column: How to Live
-   Full Width: Life Impact
-*/
-.print-page-1-grid {
+.print-content-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+  flex: 1;
 }
 
-.print-page-1-left {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.print-page-1-right {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.print-page-1-full {
+/* Full-width section spans both columns */
+.print-section--full-width {
   grid-column: 1 / -1;
-  grid-row: 2;
-}
-
-/* Page 2 Grid:
-   Left Column: Medications (full height)
-   Right Column: Warnings + Contacts
-*/
-.print-page-2-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto;
-  gap: 16px;
-}
-
-.print-page-2-left {
-  grid-column: 1;
-}
-
-.print-page-2-right {
-  grid-column: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 /* ============================================
