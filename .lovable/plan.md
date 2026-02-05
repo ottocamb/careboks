@@ -1,86 +1,104 @@
 
-# Plan: Fix Gray Background in Print/PDF Output
+# Plan: Add Outlines to All Buttons
 
-## Problem
+## Overview
 
-When printing to PDF or using the browser's print function, there's a gray area visible below the footer. This happens because:
+Add a subtle border/outline to all buttons throughout the application, including navigation bar buttons. The border will use a darker shade of the primary green color that matches the pressed/active state.
 
-1. `.print-container` (the wrapper around `.print-document`) has `background: hsl(215 20% 95%)` (gray) defined in the screen media query
-2. The `@media print` section doesn't include rules to reset the `.print-container` styling
-3. When the browser renders the print preview, the gray background is still applied and shows below the content
+## Design Approach
 
-## Root Cause
+### Color Selection
+- Current primary green: `hsl(127 19% 58%)` - a muted sage green
+- Darker green for borders: `hsl(127 19% 45%)` - same hue/saturation, darker lightness
+- This creates a cohesive look where the border color matches the overall brand
 
-In `src/styles/print.css`:
+### Button Variants to Update
+
+| Variant | Current Border | New Border |
+|---------|---------------|------------|
+| `default` | None | Thin darker green border |
+| `destructive` | None | Thin darker red border (matching) |
+| `outline` | `border-input` (light) | Change to darker green |
+| `secondary` | None | Thin darker green border |
+| `ghost` | None | Thin darker green border |
+| `link` | None | No change (text-only style) |
+
+---
+
+## Technical Changes
+
+### File: `src/index.css`
+
+Add a new CSS variable for the darker green border color:
 
 ```css
-@media screen {
-  .print-container {
-    padding: 20px;
-    background: hsl(215 20% 95%);  /* Gray background - shows in print! */
-  }
+:root {
+  /* ... existing variables ... */
+  --primary-dark: 127 19% 45%;  /* Darker green for borders */
 }
 ```
 
-The screen-specific styles are being applied, but `@media print` doesn't override them for the container element. Browsers may still apply non-print styles if not explicitly overridden.
+### File: `src/components/ui/button.tsx`
 
-## Solution
+Update each variant to include a border:
 
-Add explicit print styles for `.print-container` in the `@media print` block to:
-1. Remove the background color (set to transparent or white)
-2. Remove the padding
-3. Ensure clean white background for the entire printed page
-
-## Technical Change
-
-**File: `src/styles/print.css`**
-
-Add the following rules inside the existing `@media print` block:
-
-```css
-@media print {
-  /* ... existing rules ... */
-  
-  .print-container {
-    padding: 0;
-    margin: 0;
-    background: white !important;
-  }
-  
-  /* Ensure html/body are also white */
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: white !important;
-  }
-}
+```typescript
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 border border-[hsl(127_19%_45%)]",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 border border-red-700",
+        outline: "border border-[hsl(127_19%_45%)] bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-[hsl(127_19%_45%)]",
+        ghost: "hover:bg-accent hover:text-accent-foreground border border-[hsl(127_19%_45%)]",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      // ... sizes remain unchanged
+    },
+  },
+);
 ```
+
+---
 
 ## Visual Result
 
 ### Before
 ```
-┌─────────────────────────────────┐
-│ Header                          │
-│ [Content Grid]                  │
-│ [Footer with teal bg]           │
-│                                 │ ← Gray background visible
-│        (gray area)              │
-└─────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  [Logo]              Step 1 of 4    [👤] [🚪]    │
+│                                      ↑    ↑      │
+│                            No borders on icons   │
+└──────────────────────────────────────────────────┘
+
+       ┌─────────────────┐
+       │  Generate Draft │  ← No visible border
+       └─────────────────┘
 ```
 
 ### After
 ```
-┌─────────────────────────────────┐
-│ Header                          │
-│ [Content Grid]                  │
-│ [Footer with teal bg]           │
-└─────────────────────────────────┘
-↑ Clean white background - no gray
+┌──────────────────────────────────────────────────┐
+│  [Logo]              Step 1 of 4   ┌──┐ ┌──┐    │
+│                                    │👤│ │🚪│    │
+│                                    └──┘ └──┘    │
+│                            Thin green borders ↑  │
+└──────────────────────────────────────────────────┘
+
+       ╔═════════════════╗
+       ║  Generate Draft ║  ← Thin darker green border
+       ╚═════════════════╝
 ```
+
+---
 
 ## Summary
 
 | File | Change |
 |------|--------|
-| `src/styles/print.css` | Add `.print-container` rules in `@media print` block to set white background and remove padding |
+| `src/index.css` | Add `--primary-dark` CSS variable for border color |
+| `src/components/ui/button.tsx` | Add border classes to all button variants (except link) |
+
+This creates a consistent, professional look across all buttons while maintaining the green color theme of the application.
