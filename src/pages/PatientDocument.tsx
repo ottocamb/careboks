@@ -6,7 +6,7 @@
  * This is the destination page - no QR code displayed here.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { PrintableDocument } from '@/components/print/PrintableDocument';
 import { PatientFeedbackForm } from '@/components/PatientFeedbackForm';
@@ -20,7 +20,7 @@ import { Printer, Loader2, FileX } from 'lucide-react';
  */
 export default function PatientDocument() {
   const { accessToken } = useParams<{ accessToken: string }>();
-  const [document, setDocument] = useState<PublishedDocument | null>(null);
+  const [patientDoc, setPatientDoc] = useState<PublishedDocument | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [feedbackVisible, setFeedbackVisible] = useState(true);
   
@@ -30,7 +30,7 @@ export default function PatientDocument() {
     if (accessToken) {
       fetchByToken(accessToken).then(doc => {
         if (doc) {
-          setDocument(doc);
+          setPatientDoc(doc);
         } else {
           setNotFound(true);
         }
@@ -39,11 +39,40 @@ export default function PatientDocument() {
   }, [accessToken]);
 
   /**
-   * Handles browser print dialog
+   * Setup before/after print event listeners to force print-safe styling
    */
-  const handlePrint = () => {
-    window.print();
-  };
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      document.documentElement.classList.add('is-printing');
+    };
+    
+    const handleAfterPrint = () => {
+      document.documentElement.classList.remove('is-printing');
+    };
+    
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+      // Cleanup in case component unmounts while printing
+      document.documentElement.classList.remove('is-printing');
+    };
+  }, []);
+
+  /**
+   * Handles browser print dialog with print-safe class timing
+   */
+  const handlePrint = useCallback(() => {
+    // Add class before print to ensure browser captures white background
+    document.documentElement.classList.add('is-printing');
+    
+    // Small delay to let browser apply the class before capturing layout
+    setTimeout(() => {
+      window.print();
+    }, 50);
+  }, []);
 
   // Loading state
   if (isFetching) {
@@ -81,27 +110,27 @@ export default function PatientDocument() {
     );
   }
 
-  if (!document) {
+  if (!patientDoc) {
     return null;
   }
 
   // Parse sections from stored JSON
-  const sections = document.sections_data as { title: string; content: string }[];
-  const date = new Date(document.published_at).toLocaleDateString('en-GB', {
+  const sections = patientDoc.sections_data as { title: string; content: string }[];
+  const date = new Date(patientDoc.published_at).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   });
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="print-page min-h-screen bg-muted">
       {/* Action Bar - Hidden on print */}
       <div className="no-print sticky top-0 z-10 bg-background border-b p-4">
         <div className="max-w-[210mm] mx-auto flex items-center justify-between">
           <div>
             <h1 className="font-semibold text-lg">Your Care Document</h1>
             <p className="text-sm text-muted-foreground">
-              Prepared by {document.clinician_name}
+              Prepared by {patientDoc.clinician_name}
             </p>
           </div>
           
@@ -115,9 +144,9 @@ export default function PatientDocument() {
       {/* Printable Document - No QR code since this IS the destination page */}
       <PrintableDocument
         sections={sections}
-        language={document.patient_language}
-        clinicianName={document.clinician_name}
-        hospitalName={document.hospital_name}
+        language={patientDoc.patient_language}
+        clinicianName={patientDoc.clinician_name}
+        hospitalName={patientDoc.hospital_name}
         date={date}
         showQrCode={false}
       />
@@ -126,8 +155,8 @@ export default function PatientDocument() {
       {feedbackVisible && (
         <div className="no-print max-w-[210mm] mx-auto px-4 pb-12">
           <PatientFeedbackForm 
-            caseId={document.case_id}
-            publishedDocumentId={document.id}
+            caseId={patientDoc.case_id}
+            publishedDocumentId={patientDoc.id}
             onSubmitComplete={() => setFeedbackVisible(false)}
           />
         </div>

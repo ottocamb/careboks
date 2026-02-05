@@ -5,7 +5,7 @@
  * printing, and publishing for patient access.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +52,42 @@ export default function PrintPreview() {
     }
   }, [caseId]);
 
+  /**
+   * Setup before/after print event listeners to force print-safe styling
+   */
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      document.documentElement.classList.add('is-printing');
+    };
+    
+    const handleAfterPrint = () => {
+      document.documentElement.classList.remove('is-printing');
+    };
+    
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+      // Cleanup in case component unmounts while printing
+      document.documentElement.classList.remove('is-printing');
+    };
+  }, []);
+
+  /**
+   * Handles browser print dialog with print-safe class timing
+   */
+  const handlePrint = useCallback(() => {
+    // Add class before print to ensure browser captures white background
+    document.documentElement.classList.add('is-printing');
+    
+    // Small delay to let browser apply the class before capturing layout
+    setTimeout(() => {
+      window.print();
+    }, 50);
+  }, []);
+
   // Redirect if no state passed
   if (!state) {
     return (
@@ -80,13 +116,6 @@ export default function PrintPreview() {
     month: 'long',
     year: 'numeric'
   });
-
-  /**
-   * Handles browser print dialog
-   */
-  const handlePrint = () => {
-    window.print();
-  };
 
   /**
    * Copies URL to clipboard
@@ -130,7 +159,7 @@ export default function PrintPreview() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(215,20%,95%)]">
+    <div className="print-page min-h-screen bg-[hsl(215,20%,95%)]">
       {/* Action Bar - Hidden on print */}
       <div className="no-print sticky top-0 z-10 bg-background border-b p-4">
         <div className="max-w-[210mm] mx-auto px-4 md:px-0">
