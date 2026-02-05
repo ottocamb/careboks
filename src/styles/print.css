@@ -94,6 +94,9 @@
     padding: 0;
     margin: 0;
     background: white !important;
+    /* Reset any transforms from responsive styles */
+    transform: none !important;
+    transform-origin: initial !important;
   }
   
   .no-print {
@@ -104,6 +107,14 @@
     width: 100%;
     padding: 0;
     box-shadow: none;
+    /* CRITICAL: Reset any transforms from responsive styles */
+    transform: none !important;
+    transform-origin: initial !important;
+    background: white !important;
+  }
+  
+  .print-content-grid {
+    background: white !important;
   }
   
   /* Prevent sections from breaking across pages */
