@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
 import { supabase } from "@/integrations/supabase/client";
-import { Printer, ChevronLeft, CheckCircle2, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle, Loader2 } from "lucide-react";
+import { Printer, ChevronLeft, FileCheck, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle, Loader2 } from "lucide-react";
 import { SectionBox } from "@/components/SectionBox";
 import { parseDraftIntoSections, reconstructDraft, ParsedSection } from "@/utils/draftParser";
 import { parseStructuredDocument, structuredDocumentToText } from "@/utils/structuredDocumentParser";
@@ -259,7 +259,7 @@ export const ClinicianApproval = ({
   };
 
   /**
-   * Approves document and saves to database
+   * Approves document, saves to database, and navigates to PrintPreview
    */
   const handleApprove = async () => {
     if (!clinicianName.trim()) {
@@ -281,7 +281,18 @@ export const ClinicianApproval = ({
         description: "Patient communication has been finalized",
       });
 
+      // Call onApprove to update parent state
       onApprove(finalText, clinicianName, sections);
+
+      // Navigate to PrintPreview (output step)
+      navigate(`/app/print-preview/${caseId}`, {
+        state: {
+          sections,
+          clinicianName,
+          language: patientData?.language || 'english',
+          hospitalName: undefined // Can be added to patient profile if needed
+        }
+      });
     } catch (error) {
       console.error("Error approving document:", error);
       toast({
@@ -290,29 +301,6 @@ export const ClinicianApproval = ({
         variant: "destructive",
       });
     }
-  };
-
-  /**
-   * Navigates to the styled print preview page
-   */
-  const handlePrintPreview = () => {
-    if (!clinicianName.trim()) {
-      toast({
-        title: "Clinician name required",
-        description: "Please enter your name before viewing print preview",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    navigate(`/app/print-preview/${caseId}`, {
-      state: {
-        sections,
-        clinicianName,
-        language: patientData?.language || 'english',
-        hospitalName: undefined // Can be added to patient profile if needed
-      }
-    });
   };
 
   // Loading state
@@ -394,7 +382,7 @@ export const ClinicianApproval = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CheckCircle2 className="w-6 h-6 text-primary" />
+            <FileCheck className="w-6 h-6 text-primary" />
             Review & Edit Patient Communication
           </CardTitle>
           <CardDescription>
@@ -475,13 +463,9 @@ export const ClinicianApproval = ({
               <ChevronLeft className="w-4 h-4 mr-1" />
               Patient Profile
             </Button>
-            <Button onClick={handlePrintPreview} variant="outline" className="flex-1">
-              <Printer className="w-4 h-4 mr-1" />
-              Print Preview
-            </Button>
             <Button onClick={handleApprove} className="flex-1">
-              <CheckCircle2 className="w-4 h-4 mr-1" />
-              Feedback
+              <Printer className="w-4 h-4 mr-1" />
+              Print for Patient
             </Button>
           </div>
         </CardContent>

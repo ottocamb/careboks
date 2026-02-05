@@ -5,11 +5,10 @@ import TechnicalNoteInput from "@/components/TechnicalNoteInput";
 import PatientProfile from "@/components/PatientProfile";
 import { ClinicianApproval } from "@/components/ClinicianApproval";
 import { Feedback } from "@/components/Feedback";
-import FinalOutput from "@/components/FinalOutput";
 import { ParsedSection } from "@/utils/draftParser";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
 
-type Step = 'input' | 'profile' | 'approval' | 'feedback' | 'output';
+type Step = 'input' | 'profile' | 'approval' | 'output' | 'feedback';
 
 interface PatientData {
   age: string;
@@ -25,6 +24,7 @@ interface PatientData {
 
 interface LocationState {
   returnToCaseId?: string;
+  navigateToStep?: Step;
 }
 
 interface IndexProps {
@@ -45,15 +45,16 @@ const Index = ({ onLogout }: IndexProps) => {
   const [finalText, setFinalText] = useState("");
   const [approvedSections, setApprovedSections] = useState<ParsedSection[]>([]);
 
-  const steps: Step[] = ['input', 'profile', 'approval', 'feedback', 'output'];
+  // Updated steps order: Input → Profile → Approval → Output → Feedback
+  const steps: Step[] = ['input', 'profile', 'approval', 'output', 'feedback'];
   const currentStepIndex = steps.indexOf(currentStep);
   const totalSteps = steps.length;
 
-  // Handle returning from print preview
+  // Handle returning from print preview or navigating to specific step
   useEffect(() => {
     const state = location.state as LocationState | null;
     if (state?.returnToCaseId && state.returnToCaseId !== currentCaseId) {
-      // Load the case and restore to approval step
+      // Load the case and restore state
       loadCase(state.returnToCaseId).then(({ data, error }) => {
         if (data && !error) {
           setCurrentCaseId(data.id);
@@ -81,8 +82,9 @@ const Index = ({ onLogout }: IndexProps) => {
             setAnalysis(data.ai_analyses[0].analysis_data);
           }
           
-          // Go to approval step
-          setCurrentStep('approval');
+          // Navigate to the requested step or default to approval
+          const targetStep = state.navigateToStep || 'approval';
+          setCurrentStep(targetStep);
         }
       });
       
@@ -109,12 +111,14 @@ const Index = ({ onLogout }: IndexProps) => {
     setCurrentStep('approval');
   };
 
+  // Approval now navigates to output (PrintPreview) - handled via navigate in ClinicianApproval
   const handleClinicianApproval = (approvedText: string, clinicianName: string, sections: ParsedSection[]) => {
     setFinalText(approvedText);
     setApprovedSections(sections);
-    setCurrentStep('feedback');
+    // Note: Navigation to PrintPreview is handled in ClinicianApproval via navigate()
   };
 
+  // Back from feedback goes to approval (so user can edit and go to print again)
   const handleFeedbackBack = () => {
     setCurrentStep('approval');
   };
@@ -188,19 +192,11 @@ const Index = ({ onLogout }: IndexProps) => {
           />
         )}
 
-        {currentStep === 'feedback' && (
+        {currentStep === 'feedback' && currentCaseId && (
           <Feedback 
+            caseId={currentCaseId}
             onBack={handleFeedbackBack}
             onRestart={handleRestart}
-          />
-        )}
-        
-        {currentStep === 'output' && currentCaseId && (
-          <FinalOutput 
-            caseId={currentCaseId}
-            finalText={finalText}
-            onRestart={handleRestart}
-            onBack={() => setCurrentStep('approval')}
           />
         )}
       </main>
