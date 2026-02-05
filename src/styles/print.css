@@ -59,6 +59,13 @@
   html, body {
     margin: 0;
     padding: 0;
+    background: white !important;
+  }
+  
+  .print-container {
+    padding: 0;
+    margin: 0;
+    background: white !important;
   }
   
   .no-print {
