@@ -46,6 +46,7 @@
   .print-container {
     padding: 20px;
     background: hsl(215 20% 95%);
+    min-height: calc(100vh - 80px);
   }
 }
 
@@ -384,10 +385,9 @@
    ============================================ */
 
 .print-footer {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid hsl(var(--print-border));
+  margin-top: 16px;
   padding: 16px 24px;
+  border-top: 1px solid hsl(var(--print-border));
   background: var(--print-footer-bg);
   border-radius: 12px;
   display: flex;
