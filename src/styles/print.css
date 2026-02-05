@@ -102,14 +102,13 @@
 .print-page-1-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr auto;
+  grid-template-rows: auto auto;  /* Content-based sizing */
   gap: 8pt;
-  height: calc(100% - 60pt); /* Account for header */
 }
 
 .print-page-1-left {
   grid-column: 1;
-  grid-row: 1 / 3;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   gap: 8pt;
@@ -117,12 +116,12 @@
 
 .print-page-1-right {
   grid-column: 2;
-  grid-row: 1 / 3;
+  grid-row: 1;
 }
 
 .print-page-1-full {
   grid-column: 1 / -1;
-  grid-row: 3;
+  grid-row: 2;
 }
 
 /* Page 2 Grid:
@@ -132,19 +131,16 @@
 .print-page-2-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto;  /* Content-based sizing */
   gap: 8pt;
-  height: calc(100% - 80pt); /* Account for header and footer */
 }
 
 .print-page-2-left {
   grid-column: 1;
-  grid-row: 1 / -1;
 }
 
 .print-page-2-right {
   grid-column: 2;
-  grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: 8pt;
@@ -245,16 +241,10 @@
   color: white;
 }
 
-/* Full height section for medications */
+/* Full height section - content-based sizing */
 .print-section--full-height {
-  height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.print-section--full-height .print-body {
-  flex: 1;
-  overflow: hidden;
 }
 
 /* ============================================

@@ -105,7 +105,6 @@ export const PrintableDocument = ({
               content={sections[1]?.content || ''}
               variant="neutral"
               icon={<span>🏃</span>}
-              className="print-section--full-height"
             />
           </div>
           

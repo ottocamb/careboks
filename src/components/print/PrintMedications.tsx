@@ -29,7 +29,7 @@ export const PrintMedications = ({ content, language }: PrintMedicationsProps) =
   const header = HEADERS[normalizedLang] || HEADERS.english;
   
   return (
-    <div className="print-section print-section--pink print-section--full-height">
+    <div className="print-section print-section--pink">
       <h2 className="print-section-header">
         💊 {header}
       </h2>
