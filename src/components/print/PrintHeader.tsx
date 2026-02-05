@@ -52,7 +52,6 @@ export const PrintHeader = ({ language, date, hospitalName }: PrintHeaderProps) 
           alt="Careboks" 
           className="print-header-logo"
         />
-        <p className="print-header-date mt-2">{date}</p>
       </div>
     </div>
   );
