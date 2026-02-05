@@ -9,7 +9,6 @@
 
 import { LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import careboksLogo from "@/assets/careboks-logo.png";
 
@@ -72,29 +71,31 @@ const MedicalHeader = ({
     <header className="bg-card border-b border-border shadow-md">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo and Case ID */}
-          <div className="flex items-center space-x-4">
+          {/* Logo */}
+          <div className="flex items-center">
             <img
               src={careboksLogo}
               alt="Careboks"
               className="h-10 w-auto cursor-pointer"
               onClick={onLogoClick}
             />
-            {caseId && (
-              <Badge variant="outline" className="hidden sm:flex text-xs text-muted-foreground font-mono">
-                Case #{caseId.slice(0, 8)}
-              </Badge>
-            )}
           </div>
           
-          {/* Right Section: Progress + Actions */}
+          {/* Right Section: Progress + Case ID + Actions */}
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-4">
-              {/* Step Progress Indicator */}
+              {/* Step Progress Indicator with Case ID */}
               {showStepProgress && (
                 <div className="text-right">
-                  <div className="text-sm font-medium text-foreground">
-                    Step {currentStep} of {totalSteps}
+                  <div className="flex items-center justify-end gap-3">
+                    <span className="text-sm font-medium text-foreground">
+                      Step {currentStep} of {totalSteps}
+                    </span>
+                    {caseId && (
+                      <span className="hidden sm:inline text-sm text-muted-foreground">
+                        Case #{caseId.slice(0, 8)}
+                      </span>
+                    )}
                   </div>
                   <div className="w-32 h-2 bg-muted rounded-full mt-1">
                     <div
