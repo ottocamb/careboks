@@ -152,6 +152,11 @@ const Index = ({ onLogout }: IndexProps) => {
   };
 
   const handleBackToProfile = () => {
+    // Clear AI-generated content so it regenerates with updated profile
+    setAiDraft("");
+    setAiSections([]);
+    setApprovedSections([]);
+    setAnalysis(null);
     setCurrentStep('profile');
   };
 
