@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface PublishedDocument {
   id: string;
+  case_id: string;
   access_token: string;
   sections_data: any;
   patient_language: string;
