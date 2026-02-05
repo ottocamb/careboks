@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Landing Page
+ * 
+ * Public-facing landing page for Careboks. Showcases the product's
+ * value proposition, features, and workflow. Includes sections for:
+ * - Hero with product overview
+ * - The communication problem in healthcare
+ * - The Careboks approach and benefits
+ * - How it works (step-by-step)
+ * - Example output preview
+ * - Pilot program invitation
+ * 
+ * @module pages/Landing
+ */
+
 import { ArrowRight, CheckCircle2, FileText, MessageSquare, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,9 +22,23 @@ import clinicianPatientPhoto from "@/assets/careboks-photo-1800.jpg";
 import heroLogo from "@/assets/hero-logo.png";
 import heroLeftCards from "@/assets/hero-left-cards.png";
 import heroRightCards from "@/assets/hero-right-cards.png";
+
+/**
+ * Landing page component
+ * 
+ * Renders the public marketing page with product information,
+ * feature highlights, and call-to-action buttons.
+ * 
+ * @example
+ * ```tsx
+ * <Route path="/" element={<Landing />} />
+ * ```
+ */
 const Landing = () => {
   const navigate = useNavigate();
-  return <div className="min-h-screen bg-white">
+  
+  return (
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="py-20 px-6 relative overflow-hidden">
         <div className="container mx-auto max-w-7xl">
@@ -29,15 +58,15 @@ const Landing = () => {
               <p className="text-xl lg:text-2xl text-foreground mb-4 font-medium">
                 Your medical expertise, delivered with clarity.
               </p>
-              <p className="text-base lg:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">Careboks helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format, reducing misunderstandings and improving confidence in the care journey.</p>
+              <p className="text-base lg:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+                Careboks helps clinicians communicate complex medical information in a clear, structured, patient-appropriate format, reducing misunderstandings and improving confidence in the care journey.
+              </p>
               <div className="flex gap-4 justify-center flex-wrap">
                 <Button size="lg" onClick={() => navigate("/auth")}>
                   Request Pilot
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => document.getElementById("output-example")?.scrollIntoView({
-                behavior: "smooth"
-              })}>
+                <Button size="lg" variant="outline" onClick={() => document.getElementById("output-example")?.scrollIntoView({ behavior: "smooth" })}>
                   See Example Output
                 </Button>
               </div>
@@ -108,10 +137,17 @@ const Landing = () => {
         <div className="container mx-auto max-w-4xl">
           <h3 className="text-3xl font-bold text-center text-foreground mb-12">Why This Matters</h3>
           <div className="space-y-4 mb-8">
-            {["Clear communication improves treatment adherence.", "Understanding reduces anxiety and uncertainty.", "Confidence helps patients engage in their own recovery and self-care.", "Better comprehension lowers preventable complications and return visits."].map((point, i) => <div key={i} className="flex items-start gap-3">
+            {[
+              "Clear communication improves treatment adherence.",
+              "Understanding reduces anxiety and uncertainty.",
+              "Confidence helps patients engage in their own recovery and self-care.",
+              "Better comprehension lowers preventable complications and return visits."
+            ].map((point, i) => (
+              <div key={i} className="flex items-start gap-3">
                 <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
                 <p className="text-lg text-foreground">{point}</p>
-              </div>)}
+              </div>
+            ))}
           </div>
           <p className="text-center text-xl font-semibold text-foreground">
             Better understanding leads to better outcomes.
@@ -173,26 +209,21 @@ const Landing = () => {
             Where Carebox Fits in the Journey
           </h3>
           <div className="space-y-4 mb-8">
-            {[{
-            scenario: "Discharge from hospital",
-            role: "Summarizing condition, next steps, medication guidance. (Current MVP)"
-          }, {
-            scenario: "Outpatient consultation",
-            role: "Turning exam findings into understandable explanations for home care."
-          }, {
-            scenario: "Chronic condition follow-up",
-            role: "Helping patients track ongoing treatment changes."
-          }, {
-            scenario: "Pre-procedure preparation",
-            role: "Clarifying what will happen and how to prepare."
-          }].map((item, i) => <Card key={i}>
+            {[
+              { scenario: "Discharge from hospital", role: "Summarizing condition, next steps, medication guidance. (Current MVP)" },
+              { scenario: "Outpatient consultation", role: "Turning exam findings into understandable explanations for home care." },
+              { scenario: "Chronic condition follow-up", role: "Helping patients track ongoing treatment changes." },
+              { scenario: "Pre-procedure preparation", role: "Clarifying what will happen and how to prepare." }
+            ].map((item, i) => (
+              <Card key={i}>
                 <CardContent className="pt-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="font-semibold text-foreground">{item.scenario}</div>
                     <div className="text-muted-foreground">{item.role}</div>
                   </div>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
           <p className="text-center text-lg font-medium text-foreground">
             Carebox supports communication anywhere patients need clarity.
@@ -206,12 +237,20 @@ const Landing = () => {
           <h3 className="text-3xl font-bold text-center text-foreground mb-12">How It Works</h3>
           <p className="text-center text-muted-foreground mb-8">Clinical → Structured → Patient-ready.</p>
           <div className="space-y-6">
-            {["Clinician inputs or pastes documentation", "Selects patient context markers (age, literacy, communication considerations)", "Carebox restructures and simplifies content", "Clinician reviews and approves", "Output provided to patient (paper or digital)"].map((step, i) => <div key={i} className="flex gap-4 items-start">
+            {[
+              "Clinician inputs or pastes documentation",
+              "Selects patient context markers (age, literacy, communication considerations)",
+              "Carebox restructures and simplifies content",
+              "Clinician reviews and approves",
+              "Output provided to patient (paper or digital)"
+            ].map((step, i) => (
+              <div key={i} className="flex gap-4 items-start">
                 <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">
                   {i + 1}
                 </div>
                 <p className="text-lg text-foreground pt-0.5">{step}</p>
-              </div>)}
+              </div>
+            ))}
           </div>
           <p className="text-center text-lg font-semibold text-foreground mt-8">
             Total time: under 2 minutes.
@@ -259,12 +298,18 @@ const Landing = () => {
             Designed for Real Hospital Environments
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
-            {["No EMR integration required for pilot use", "Paper-first approach ensures universal access", "Future-ready for local, privacy-safe digital expansion"].map((point, i) => <Card key={i}>
+            {[
+              "No EMR integration required for pilot use",
+              "Paper-first approach ensures universal access",
+              "Future-ready for local, privacy-safe digital expansion"
+            ].map((point, i) => (
+              <Card key={i}>
                 <CardContent className="pt-6">
                   <CheckCircle2 className="h-8 w-8 text-primary mb-3" />
                   <p className="text-foreground">{point}</p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -290,6 +335,8 @@ const Landing = () => {
           <p>© 2025 Carebox. Supporting clinicians in delivering clear, patient-centered communication.</p>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Landing;

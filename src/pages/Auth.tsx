@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Authentication Page
+ * 
+ * Handles user sign-in and sign-up for the Careboks application.
+ * Provides a tabbed interface for switching between login and registration.
+ * Automatically redirects authenticated users to the main application.
+ * 
+ * @module pages/Auth
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +20,17 @@ import { supabase } from "@/integrations/supabase/client";
 import careboksLogo from "@/assets/careboks-logo.png";
 import { X } from "lucide-react";
 
+/**
+ * Authentication page component
+ * 
+ * Renders sign-in and sign-up forms with email/password authentication.
+ * Handles session management and redirects.
+ * 
+ * @example
+ * ```tsx
+ * <Route path="/auth" element={<Auth />} />
+ * ```
+ */
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +38,9 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  /**
+   * Check for existing session and set up auth state listener
+   */
   useEffect(() => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -35,6 +59,10 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  /**
+   * Handles new user registration
+   * @param e - Form submission event
+   */
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -65,6 +93,10 @@ const Auth = () => {
     }
   };
 
+  /**
+   * Handles user sign-in with email and password
+   * @param e - Form submission event
+   */
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

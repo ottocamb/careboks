@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Documents Management Section
+ * 
+ * Handles user document uploads and management. Supports:
+ * - PDF and TXT file uploads
+ * - File listing with metadata (size, upload date)
+ * - Download and delete functionality
+ * - Storage integration with Supabase
+ * 
+ * @module components/account/DocumentsSection
+ */
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +18,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Loader2, Trash2, Download } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
+/** Allowed file types for upload */
+const ALLOWED_FILE_TYPES = ['application/pdf', 'text/plain'];
+
+/**
+ * Document metadata structure
+ */
 interface Document {
   id: string;
   file_name: string;
@@ -15,6 +33,17 @@ interface Document {
   uploaded_at: string;
 }
 
+/**
+ * Documents management component
+ * 
+ * Provides interface for uploading, viewing, and managing
+ * user documents stored in Supabase storage.
+ * 
+ * @example
+ * ```tsx
+ * <DocumentsSection />
+ * ```
+ */
 const DocumentsSection = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +54,9 @@ const DocumentsSection = () => {
     loadDocuments();
   }, []);
 
+  /**
+   * Fetches documents from database for current user
+   */
   const loadDocuments = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -50,14 +82,17 @@ const DocumentsSection = () => {
     }
   };
 
+  /**
+   * Handles file upload to storage and database
+   * @param event - File input change event
+   */
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    const validTypes = ['application/pdf', 'text/plain'];
     
-    if (!validTypes.includes(file.type)) {
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       toast({
         title: "Invalid file type",
         description: "Only PDF and TXT files are allowed",
@@ -110,6 +145,10 @@ const DocumentsSection = () => {
     }
   };
 
+  /**
+   * Deletes a document from storage and database
+   * @param doc - Document to delete
+   */
   const handleDelete = async (doc: Document) => {
     try {
       const { error: storageError } = await supabase.storage
@@ -141,6 +180,10 @@ const DocumentsSection = () => {
     }
   };
 
+  /**
+   * Downloads a document from storage
+   * @param doc - Document to download
+   */
   const handleDownload = async (doc: Document) => {
     try {
       const { data, error } = await supabase.storage
@@ -167,6 +210,11 @@ const DocumentsSection = () => {
     }
   };
 
+  /**
+   * Formats file size in human-readable format
+   * @param bytes - File size in bytes
+   * @returns Formatted size string
+   */
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';

@@ -1,4 +1,15 @@
-import { useState } from "react";
+/**
+ * @fileoverview Account Management Page
+ * 
+ * User account settings and management interface. Provides tabbed access to:
+ * - Profile settings (name, email, language preferences)
+ * - Document management (uploaded files)
+ * - Clinician contacts directory
+ * - Application settings and logout
+ * 
+ * @module pages/Account
+ */
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, FileText, Users, Settings } from "lucide-react";
 import ProfileSection from "@/components/account/ProfileSection";
@@ -7,10 +18,25 @@ import ContactsSection from "@/components/account/ContactsSection";
 import SettingsSection from "@/components/account/SettingsSection";
 import MedicalHeader from "@/components/MedicalHeader";
 
+/**
+ * Props for the Account component
+ */
 interface AccountProps {
+  /** Callback function to handle user logout */
   onLogout: () => void;
 }
 
+/**
+ * Account management page component
+ * 
+ * Renders a tabbed interface for managing user account settings,
+ * documents, contacts, and application preferences.
+ * 
+ * @example
+ * ```tsx
+ * <Account onLogout={() => signOut()} />
+ * ```
+ */
 const Account = ({ onLogout }: AccountProps) => {
   return (
     <div className="min-h-screen bg-background">
