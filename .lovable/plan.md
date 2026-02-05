@@ -1,109 +1,91 @@
 
 
-# Plan: Auto-Regenerate AI Draft When Patient Profile Changes
+# Plan: Fix Gray Background Extending Beyond Footer
 
 ## Problem
 
-When navigating back from "Review & Edit Patient Communication" to "Patient Profile" and making changes, the app only saves the updated profile but does **not** regenerate the AI draft. The existing sections remain unchanged.
+After the footer, there's a visible gray area extending to the bottom of the page. This happens because:
 
-## Root Cause
+1. `.print-container` has `background: hsl(215 20% 95%)` (gray) on screen
+2. `.print-document` has `min-height: 297mm` (A4 page height)
+3. When content doesn't fill the full page, the gray background of the container is visible below the white document
 
-The `ClinicianApproval` component's `useEffect` only triggers AI generation when:
-```javascript
-const shouldGenerate = !draft && (!preParsedSections || preParsedSections.length === 0);
+## Root Cause Analysis
+
+```text
+┌────────────────────────────────────────────┐
+│        .print-container (gray bg)          │
+│  ┌──────────────────────────────────────┐  │
+│  │      .print-document (white bg)       │  │
+│  │                                       │  │
+│  │  [Header]                             │  │
+│  │  [Content Grid]                       │  │
+│  │  [Footer]                             │  │
+│  │                                       │  │  ← White document ends here
+│  └──────────────────────────────────────┘  │
+│                                            │  ← Gray container still visible
+│         ↑ Weird gray area here ↑           │
+└────────────────────────────────────────────┘
 ```
-
-Since sections already exist from the first generation, `shouldGenerate` evaluates to `false`.
 
 ## Solution
 
-Clear the existing `aiSections` and `aiDraft` state when navigating back to profile, so that when the user proceeds again, the `ClinicianApproval` component will detect empty sections and trigger a fresh regeneration.
+Remove the `min-height: 297mm` from `.print-document` in the screen media query. The document should only be as tall as its content, with the gray container background providing visual framing around it.
 
 ---
 
-## Changes
+## Technical Change
 
-### `src/pages/Index.tsx`
+**File: `src/styles/print.css`**
 
-Update `handleBackToProfile` to clear the AI-generated content:
+Update the screen media query for `.print-document`:
 
-**Before:**
-```typescript
-const handleBackToProfile = () => {
-  setCurrentStep('profile');
-};
-```
-
-**After:**
-```typescript
-const handleBackToProfile = () => {
-  // Clear AI-generated content so it regenerates with updated profile
-  setAiDraft("");
-  setAiSections([]);
-  setApprovedSections([]);
-  setAnalysis(null);
-  setCurrentStep('profile');
-};
+```css
+@media screen {
+  .print-document {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    /* REMOVE: min-height: 297mm; - causes gray area after footer */
+  }
+  
+  .print-container {
+    padding: 20px;
+    background: hsl(215 20% 95%);
+  }
+}
 ```
 
 ---
 
-## Flow After Change
+## Visual Result
 
+### Before
 ```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         User Workflow                                    │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  [Clinician Approval]                                                    │
-│         │                                                                │
-│         │ Click "Patient Profile" button                                 │
-│         ▼                                                                │
-│  handleBackToProfile()                                                   │
-│         │                                                                │
-│         ├── Clear aiDraft, aiSections, approvedSections, analysis        │
-│         │                                                                │
-│         └── setCurrentStep('profile')                                    │
-│                    │                                                     │
-│                    ▼                                                     │
-│            [Patient Profile]                                             │
-│                    │                                                     │
-│                    │ User edits profile, clicks "Generate AI Draft"      │
-│                    ▼                                                     │
-│         handlePatientProfileSubmit(data)                                 │
-│                    │                                                     │
-│                    ├── setPatientData(data)                              │
-│                    │                                                     │
-│                    └── setCurrentStep('approval')                        │
-│                              │                                           │
-│                              ▼                                           │
-│                    [Clinician Approval]                                  │
-│                              │                                           │
-│                              │ useEffect detects:                        │
-│                              │   shouldGenerate = !draft && !sections    │
-│                              │   shouldGenerate = true                   │
-│                              ▼                                           │
-│                    handleStartGeneration() → NEW AI DRAFT               │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────┐
+│ Header                          │
+│ [Content]                       │
+│ [Footer]                        │
+│                                 │ ← Gray background visible
+│          (gray area)            │
+│                                 │
+└─────────────────────────────────┘
+```
+
+### After
+```text
+┌─────────────────────────────────┐
+│ Header                          │
+│ [Content]                       │
+│ [Footer]                        │
+└─────────────────────────────────┘
+↑ Document ends cleanly at footer
 ```
 
 ---
 
-## Technical Details
+## Summary
 
 | File | Change |
 |------|--------|
-| `src/pages/Index.tsx` | Update `handleBackToProfile` function to clear `aiDraft`, `aiSections`, `approvedSections`, and `analysis` before navigating back |
-
----
-
-## User Experience
-
-1. User is on "Review & Edit Patient Communication" page
-2. User clicks "Patient Profile" button
-3. User modifies patient attributes (e.g., changes language from English to Estonian)
-4. User clicks "Generate AI Draft"
-5. **New behavior**: AI generates a fresh document using the updated patient profile
-6. User sees the newly generated sections tailored to the updated profile
+| `src/styles/print.css` | Remove `min-height: 297mm` from `.print-document` within the `@media screen` block (line 44) |
 
