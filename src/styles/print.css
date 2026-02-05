@@ -25,25 +25,23 @@
   --print-border: 215 20% 88%;
 }
 
-/* A4 page container - flexbox for footer positioning */
-.print-page {
+/* Flexible document container - grows with content */
+.print-document {
   width: 210mm;
-  height: 297mm;
   padding: 10mm 12mm;
   margin: 0 auto;
   background: hsl(var(--print-bg));
   box-sizing: border-box;
-  position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 /* Screen preview styling */
 @media screen {
-  .print-page {
+  .print-document {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    min-height: 297mm;
   }
   
   .print-container {
@@ -52,16 +50,14 @@
   }
 }
 
-/* Print media rules */
+/* Print media rules - let browser handle page breaks */
 @media print {
   @page {
     size: A4;
-    margin: 0;
+    margin: 10mm;
   }
   
   html, body {
-    width: 210mm;
-    height: 297mm;
     margin: 0;
     padding: 0;
   }
@@ -70,23 +66,23 @@
     display: none !important;
   }
   
-  .print-page {
-    width: 210mm;
-    height: 297mm;
-    padding: 10mm 12mm;
-    margin: 0;
-    page-break-after: always;
-    page-break-inside: avoid;
+  .print-document {
+    width: 100%;
+    padding: 0;
     box-shadow: none;
   }
   
-  .print-page:last-child {
-    page-break-after: auto;
-  }
-  
+  /* Prevent sections from breaking across pages */
   .print-section {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+  
+  /* Keep footer together */
+  .print-footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-top: 16px;
   }
   
   /* Force color printing */
@@ -348,20 +344,7 @@
   text-align: right;
 }
 
-/* Page 2 mini header */
-.print-header-mini {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid hsl(var(--print-border));
-}
-
-.print-header-mini-logo {
-  height: 20pt;
-  width: auto;
-}
+/* REMOVED: Page 2 mini header no longer needed with single-page flow */
 
 /* ============================================
    FOOTER STYLING - Teal background with signature box
