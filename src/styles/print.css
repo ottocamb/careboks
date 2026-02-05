@@ -194,40 +194,40 @@
 }
 
 .print-section--teal {
-  border-left: 3pt solid hsl(var(--print-teal));
-  background: hsl(var(--print-section-bg));  /* Unified background */
+  border-left: 3pt solid hsl(var(--print-teal)) !important;
+  background: hsl(var(--print-section-bg)) !important;  /* Unified background */
 }
 
 .print-section--teal .print-section-header {
-  color: hsl(var(--print-teal));
+  color: hsl(var(--print-teal)) !important;
 }
 
 .print-section--pink {
-  border-left: 3pt solid hsl(var(--print-pink));
-  background: hsl(var(--print-section-bg));  /* Unified background */
+  border-left: 3pt solid hsl(var(--print-pink)) !important;
+  background: hsl(var(--print-section-bg)) !important;  /* Unified background */
 }
 
 .print-section--pink .print-section-header {
-  color: hsl(var(--print-pink));
+  color: hsl(var(--print-pink)) !important;
 }
 
 /* KEEP red warning section - important for safety visibility */
 .print-section--red {
-  background: hsl(var(--print-red));
-  color: white;
+  background: hsl(var(--print-red)) !important;
+  color: white !important;
 }
 
 .print-section--red .print-section-header {
-  color: white;
+  color: white !important;
 }
 
 .print-section--red .print-body {
-  color: white;
+  color: white !important;
 }
 
 .print-section--neutral {
-  border: 1pt solid hsl(var(--print-border));
-  background: hsl(var(--print-section-bg));  /* Unified background */
+  border: 1pt solid hsl(var(--print-border)) !important;
+  background: hsl(var(--print-section-bg)) !important;  /* Unified background */
 }
 
 .print-section--contacts {
