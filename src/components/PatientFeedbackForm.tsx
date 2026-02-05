@@ -5,10 +5,14 @@
  * via QR code. This allows patients to provide anonymous feedback without
  * requiring authentication.
  * 
+ * Features:
+ * - One-time submission per document (persisted in localStorage)
+ * - Auto-dismissing confirmation (3 seconds)
+ * 
  * @module components/PatientFeedbackForm
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +22,8 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+const STORAGE_KEY = 'patientFeedbackSubmitted';
+
 /**
  * Props for the PatientFeedbackForm component
  */
@@ -26,8 +32,8 @@ interface PatientFeedbackFormProps {
   caseId: string;
   /** The published document ID */
   publishedDocumentId: string;
-  /** Callback when feedback is successfully submitted */
-  onSubmitSuccess?: () => void;
+  /** Callback when feedback is successfully submitted and confirmation dismissed */
+  onSubmitComplete?: () => void;
 }
 
 /**
@@ -47,26 +53,52 @@ const PATIENT_FEEDBACK_OPTIONS = [
  * 
  * Renders a feedback form for patients viewing their document via QR code.
  * The form is anonymous and doesn't require authentication.
+ * Only allows one submission per document (tracked via localStorage).
  * 
  * @example
  * ```tsx
  * <PatientFeedbackForm
  *   caseId="abc-123"
  *   publishedDocumentId="doc-456"
- *   onSubmitSuccess={() => console.log('Submitted!')}
+ *   onSubmitComplete={() => console.log('Done!')}
  * />
  * ```
  */
 export const PatientFeedbackForm = ({
   caseId,
   publishedDocumentId,
-  onSubmitSuccess
+  onSubmitComplete
 }: PatientFeedbackFormProps) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [additionalComments, setAdditionalComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(true);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const { toast } = useToast();
+
+  // Check localStorage on mount for previous submission
+  useEffect(() => {
+    try {
+      const submittedDocs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      if (submittedDocs.includes(publishedDocumentId)) {
+        setAlreadySubmitted(true);
+      }
+    } catch {
+      // If localStorage fails, allow submission
+    }
+  }, [publishedDocumentId]);
+
+  // Auto-dismiss confirmation after 3 seconds
+  useEffect(() => {
+    if (hasSubmitted) {
+      const timer = setTimeout(() => {
+        setShowConfirmation(false);
+        onSubmitComplete?.();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasSubmitted, onSubmitComplete]);
 
   /**
    * Handles checkbox selection changes
@@ -104,12 +136,20 @@ export const PatientFeedbackForm = ({
 
       if (error) throw error;
 
+      // Save to localStorage to prevent re-submission
+      try {
+        const submittedDocs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        submittedDocs.push(publishedDocumentId);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(submittedDocs));
+      } catch {
+        // Continue even if localStorage fails
+      }
+
       toast({
         title: "Thank you for your feedback!",
         description: "Your response helps us improve."
       });
       setHasSubmitted(true);
-      onSubmitSuccess?.();
     } catch (err) {
       console.error("Patient feedback submission error:", err);
       toast({
@@ -122,8 +162,16 @@ export const PatientFeedbackForm = ({
     }
   };
 
-  // Show thank you message after successful submission
+  // Don't render if already submitted previously
+  if (alreadySubmitted) {
+    return null;
+  }
+
+  // Show thank you message for 3 seconds after submission
   if (hasSubmitted) {
+    if (!showConfirmation) {
+      return null;
+    }
     return (
       <Card className="mt-8 border-primary/20 bg-primary/5">
         <CardContent className="pt-6 text-center">

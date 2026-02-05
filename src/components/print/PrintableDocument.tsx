@@ -68,9 +68,6 @@ export const PrintableDocument = ({
     <div className="print-container">
       {/* ==================== PAGE 1 ==================== */}
       <div className="print-page">
-        {/* Decorative heart illustration */}
-        <span className="print-decoration print-decoration--top-right">❤️</span>
-        
         <PrintHeader 
           language={language} 
           date={date}
@@ -122,8 +119,6 @@ export const PrintableDocument = ({
       
       {/* ==================== PAGE 2 ==================== */}
       <div className="print-page">
-        {/* Decorative element */}
-        <span className="print-decoration print-decoration--top-left">💊</span>
         
         {/* Mini header for page 2 */}
         <div className="print-header-mini">
