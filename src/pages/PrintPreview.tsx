@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PrintableDocument } from '@/components/print/PrintableDocument';
 import { usePublishedDocument } from '@/hooks/usePublishedDocument';
 import { ChevronLeft, Printer, Copy, Check, MessageSquare } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 interface LocationState {
   sections: { title: string; content: string }[];
@@ -29,7 +28,6 @@ export default function PrintPreview() {
   const { caseId } = useParams<{ caseId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   
   // Get data passed from approval page
   const state = location.state as LocationState | null;
@@ -99,17 +97,9 @@ export default function PrintPreview() {
     try {
       await navigator.clipboard.writeText(publishedUrl);
       setCopied(true);
-      toast({
-        title: 'Link copied',
-        description: 'Patient document URL copied to clipboard'
-      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast({
-        title: 'Copy failed',
-        description: 'Could not copy to clipboard',
-        variant: 'destructive'
-      });
+      // Silently fail - the button state provides feedback
     }
   };
 
