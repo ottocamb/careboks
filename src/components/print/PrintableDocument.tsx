@@ -74,46 +74,32 @@ export const PrintableDocument = ({
           hospitalName={hospitalName}
         />
         
-        {/* Two-column grid layout */}
-        <div className="print-page-1-grid">
-          {/* Left Column: What I Have + 6 Months */}
-          <div className="print-page-1-left">
-            {/* What do I have - Teal */}
-            <PrintSection
-              title={sectionTitles[0]}
-              content={sections[0]?.content || ''}
-              variant="teal"
-              icon={<span>❤️</span>}
-            />
-            
-            {/* How next 6 months will look - Teal */}
-            <PrintSection
-              title={sectionTitles[2]}
-              content={sections[2]?.content || ''}
-              variant="teal"
-              icon={<span>📅</span>}
-            />
-          </div>
-          
-          {/* Right Column: How should I live */}
-          <div className="print-page-1-right">
-            <PrintSection
-              title={sectionTitles[1]}
-              content={sections[1]?.content || ''}
-              variant="neutral"
-              icon={<span>🏃</span>}
-            />
-          </div>
-          
-          {/* Full Width: What does it mean for my life */}
-          <div className="print-page-1-full">
-            <PrintSection
-              title={sectionTitles[3]}
-              content={sections[3]?.content || ''}
-              variant="teal"
-              icon={<span>✨</span>}
-            />
-          </div>
+        {/* Horizontal flow grid - cards fill left-to-right */}
+        <div className="print-content-grid">
+          <PrintSection
+            title={sectionTitles[0]}
+            content={sections[0]?.content || ''}
+            variant="teal"
+            icon={<span>❤️</span>}
+          />
+          <PrintSection
+            title={sectionTitles[1]}
+            content={sections[1]?.content || ''}
+            variant="neutral"
+            icon={<span>🏃</span>}
+          />
+          <PrintSection
+            title={sectionTitles[2]}
+            content={sections[2]?.content || ''}
+            variant="teal"
+            icon={<span>📅</span>}
+          />
+          <PrintSection
+            title={sectionTitles[3]}
+            content={sections[3]?.content || ''}
+            variant="teal"
+            icon={<span>✨</span>}
+          />
         </div>
       </div>
       
@@ -130,30 +116,20 @@ export const PrintableDocument = ({
           />
         </div>
         
-        {/* Two-column grid layout */}
-        <div className="print-page-2-grid">
-          {/* Left Column: Medications */}
-          <div className="print-page-2-left">
-            <PrintMedications 
-              content={sections[4]?.content || ''} 
-              language={language}
-            />
-          </div>
-          
-          {/* Right Column: Warnings + Contacts */}
-          <div className="print-page-2-right">
-            {/* Warning signs - Red */}
-            <PrintWarnings 
-              content={sections[5]?.content || ''} 
-              language={language}
-            />
-            
-            {/* Contacts - Teal background */}
-            <PrintContacts 
-              content={sections[6]?.content || ''} 
-              language={language}
-            />
-          </div>
+        {/* Horizontal flow grid - cards fill left-to-right */}
+        <div className="print-content-grid">
+          <PrintMedications 
+            content={sections[4]?.content || ''} 
+            language={language}
+          />
+          <PrintWarnings 
+            content={sections[5]?.content || ''} 
+            language={language}
+          />
+          <PrintContacts 
+            content={sections[6]?.content || ''} 
+            language={language}
+          />
         </div>
         
         {/* Footer with signature and single QR code */}
