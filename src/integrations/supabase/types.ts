@@ -451,6 +451,7 @@ export type Database = {
       get_published_document_by_token: {
         Args: { token: string }
         Returns: {
+          case_id: string
           clinician_name: string
           hospital_name: string
           id: string
