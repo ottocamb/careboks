@@ -9,7 +9,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { PrintableDocument } from '@/components/print/PrintableDocument';
 import { usePublishedDocument } from '@/hooks/usePublishedDocument';
 import { ChevronLeft, Printer, Copy, Check, MessageSquare } from 'lucide-react';
@@ -153,32 +152,24 @@ export default function PrintPreview() {
             Back
           </Button>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button onClick={handlePrint} variant="outline">
               <Printer className="mr-2 h-4 w-4" />
               Print for Patient
             </Button>
             
-            {/* Show published URL if available (published during approval) */}
             {publishedUrl && (
-              <div className="flex items-center gap-2">
-                <Input 
-                  value={publishedUrl} 
-                  readOnly 
-                  className="w-64 text-sm"
-                />
-                <Button 
-                  size="icon" 
-                  variant="outline"
-                  onClick={handleCopyUrl}
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+              <Button 
+                variant="outline"
+                onClick={handleCopyUrl}
+              >
+                {copied ? (
+                  <Check className="mr-2 h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="mr-2 h-4 w-4" />
+                )}
+                {copied ? 'Copied!' : 'Copy Link'}
+              </Button>
             )}
 
             <Button onClick={handleContinueToFeedback}>
