@@ -1,37 +1,32 @@
 
 
-# Plan: Enhance Header Separator Line Visibility
+# Plan: Add Separator Line Above Footer
 
 ## Current State
 
-The `.print-header` class already includes a thin separator line:
+The footer styling currently has no visual separator from the content above:
 ```css
-.print-header {
-  margin-bottom: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid hsl(var(--print-border));
+.print-footer {
+  margin-top: auto;
+  padding: 16px 24px;
+  background: var(--print-footer-bg);
+  border-radius: 12px;
+  /* No border-top or padding-top for separation */
 }
 ```
 
-The line exists, but you may want **more spacing/padding** around it for better visual separation.
-
 ---
 
-## Changes
+## Solution
 
-### `src/styles/print.css`
-
-Update the `.print-header` styling to increase the spacing around the separator line:
+Add a separator line **above** the footer with matching spacing to the header:
 
 ```css
-.print-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;        /* Increased from 12px - more space after line */
-  padding-bottom: 16px;       /* Increased from 10px - more space before line */
-  border-bottom: 1px solid hsl(var(--print-border));
-  position: relative;
+.print-footer {
+  margin-top: 20px;           /* Match header's margin-bottom */
+  padding-top: 16px;          /* Space between line and footer content */
+  border-top: 1px solid hsl(var(--print-border));  /* Separator line */
+  /* ... rest of existing styles ... */
 }
 ```
 
@@ -41,22 +36,24 @@ Update the `.print-header` styling to increase the spacing around the separator 
 
 ### Before
 ```
-┌─────────────────────────────────────────┐
-│ Your next steps after discharge    Logo │
-│ Personalized care information...        │
-│─────────────────────────────────────────│ ← 10px padding above, 12px margin below
-│ [Card 1]        │ [Card 2]              │
+│ [Card 5]        │ [Card 6]              │
+│ [Card 7]        │                       │
+│                                         │
+│ ┌─────────────────────────────────────┐ │
+│ │ QR Code        Signature Box        │ │  ← No visual separation
+│ └─────────────────────────────────────┘ │
 ```
 
 ### After
 ```
-┌─────────────────────────────────────────┐
-│ Your next steps after discharge    Logo │
-│ Personalized care information...        │
-│                                         │ ← 16px padding above line
-│─────────────────────────────────────────│ 
-│                                         │ ← 20px margin below line
-│ [Card 1]        │ [Card 2]              │
+│ [Card 5]        │ [Card 6]              │
+│ [Card 7]        │                       │
+│                                         │ ← 20px margin above line
+│─────────────────────────────────────────│ ← Separator line
+│                                         │ ← 16px padding below line
+│ ┌─────────────────────────────────────┐ │
+│ │ QR Code        Signature Box        │ │
+│ └─────────────────────────────────────┘ │
 ```
 
 ---
@@ -65,5 +62,5 @@ Update the `.print-header` styling to increase the spacing around the separator 
 
 | File | Change |
 |------|--------|
-| `src/styles/print.css` | Update `.print-header` padding-bottom from 10px to 16px and margin-bottom from 12px to 20px |
+| `src/styles/print.css` | Update `.print-footer` to add `padding-top: 16px`, change `margin-top` from `auto` to `20px`, and add `border-top: 1px solid hsl(var(--print-border))` |
 
