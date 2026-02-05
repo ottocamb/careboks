@@ -140,7 +140,7 @@ export default function PrintPreview() {
   };
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-[hsl(215,20%,95%)]">
       {/* Action Bar - Hidden on print */}
       <div className="no-print sticky top-0 z-10 bg-background border-b p-4">
         <div className="max-w-[210mm] mx-auto px-4 md:px-0">
