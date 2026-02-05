@@ -1,243 +1,375 @@
 
-# Fix Critical Bugs and UI Polish
+# Bug Fix, UI Polish, and Patient Feedback Feature
 
 ## Overview
 
-This plan addresses four issues:
-1. **Critical Bug**: "Back" button state corruption where section content gets merged
-2. **Workflow**: Consolidate "Print for Patient" and "Publish & Share" into single action
-3. **Validation**: Add warning toast when skipping feedback
-4. **UI Polish**: Move toasts to bottom-left corner
+This plan addresses:
+1. **Bug Fix**: `isSubmitting` state not resetting properly
+2. **UI Polish**: Toast icons for visual distinction + Case ID badge in header
+3. **Major Feature**: Patient-side feedback via QR code view
 
 ---
 
-## 1. Critical Bug: Back Button State Corruption
+## 1. Bug Fix: isSubmitting State
 
-### Root Cause Analysis
+### Problem
 
-When navigating back from PrintPreview or Feedback to ClinicianApproval, the bug occurs because:
+In `Feedback.tsx`, when submission succeeds, the code calls `setTimeout(() => onRestart(), 1000)` which unmounts the component. However, `isSubmitting` is never set back to `false` before unmount. 
 
-1. **PrintPreview.tsx** passes `navigateToStep: 'approval'` to Index.tsx via router state
-2. **Index.tsx** `useEffect` calls `loadCase(returnToCaseId)` which loads from database
-3. The database only stores `ai_draft_text` (flat text), NOT the parsed sections array
-4. **ClinicianApproval** receives sections via props: `sections={approvedSections.length > 0 ? approvedSections : aiSections}`
-5. But neither `approvedSections` nor `aiSections` are restored because `loadCase` only returns raw text
+While React handles this gracefully in most cases, there's a potential issue if:
+- The component doesn't unmount (edge case)
+- User quickly navigates back before timeout
 
-The actual fix is: **Pass the sections data through navigation state**, not just `returnToCaseId`. The sections are already in memory on PrintPreview - we just need to pass them back.
+### Solution
 
-### Changes Required
-
-**PrintPreview.tsx (handleBack function):**
-```typescript
-const handleBack = () => {
-  // Pass sections back through state to preserve them
-  navigate('/app', { 
-    state: { 
-      returnToCaseId: caseId, 
-      navigateToStep: 'approval',
-      sections: sections  // ADD THIS
-    } 
-  });
-};
-```
-
-**Index.tsx (useEffect hook):**
-Update the state restoration logic to prefer sections from navigation state over database reload:
+Add `setIsSubmitting(false)` before the success timeout to ensure clean state:
 
 ```typescript
-useEffect(() => {
-  const state = location.state as LocationState | null;
-  if (state?.returnToCaseId && state.returnToCaseId !== currentCaseId) {
-    
-    // If sections are passed in state, use them directly (preserves edits)
-    if (state.sections && state.sections.length > 0) {
-      setApprovedSections(state.sections);
-      setAiSections(state.sections);
-    }
-    
-    // Load remaining case data from database
-    loadCase(state.returnToCaseId).then(({ data, error }) => {
-      // ... existing restoration logic
-    });
-    
-    // Navigate to target step
-    setCurrentStep(state.navigateToStep || 'approval');
-    setCurrentCaseId(state.returnToCaseId);
-    
-    window.history.replaceState({}, document.title);
-  }
-}, [location.state]);
-```
+// Feedback.tsx - handleSubmitAndNewPatient
+toast({
+  title: "Feedback submitted",
+  description: "Thank you! Starting new patient..."
+});
 
-**LocationState interface (Index.tsx):**
-```typescript
-interface LocationState {
-  returnToCaseId?: string;
-  navigateToStep?: Step;
-  sections?: ParsedSection[];  // ADD THIS
-}
+setIsSubmitting(false);  // ADD THIS - Reset state before timeout
+
+// Brief delay to show toast, then restart
+setTimeout(() => onRestart(), 1000);
 ```
 
 ---
 
-## 2. Print & Publish Workflow Consolidation
+## 2. UI Polish: Toast Icons and Case ID Badge
 
-### Current Flow
-- Button 1: "Print for Patient" → Opens print dialog
-- Button 2: "Publish & Share" → Saves to database, generates URL
+### 2a. Toast Icons with Visual Distinction
 
-### New Flow
-- Single Button: "Print & Publish for Patient" → Does both automatically
+**Problem**: All toasts look the same - no visual indicator of success/warning/error beyond color.
 
-### Changes Required
+**Solution**: Create a wrapper toast function or modify Toaster to auto-add icons based on variant.
 
-**ClinicianApproval.tsx:**
-Rename button and update `handleApprove` to also publish:
+#### Approach: Custom Toaster with Auto-Icons
 
-```typescript
-const handleApprove = async () => {
-  // ... existing validation and approval save ...
-  
-  // Also publish the document
-  const { publishDocument, getDocumentUrl } = usePublishedDocument();
-  const token = await publishDocument(
-    caseId,
-    sections,
-    clinicianName,
-    patientData?.language || 'english',
-    undefined // hospitalName
-  );
-  
-  // Navigate to PrintPreview with published URL
-  navigate(`/app/print-preview/${caseId}`, {
-    state: {
-      sections,
-      clinicianName,
-      language: patientData?.language || 'english',
-      publishedUrl: token ? getDocumentUrl(token) : undefined
-    }
-  });
-};
-```
+Modify `src/components/ui/toaster.tsx` to automatically add icons:
 
-Button label change:
+| Toast Type | Icon | Color |
+|------------|------|-------|
+| Success (default) | CheckCircle2 | Green text |
+| Warning | AlertTriangle | Amber text |
+| Destructive (error) | XCircle | Red text |
+
+**Changes to Toaster component:**
+
 ```tsx
-<Button onClick={handleApprove} className="flex-1">
-  <Printer className="w-4 h-4 mr-1" />
-  Print & Publish for Patient
-</Button>
-```
+// src/components/ui/toaster.tsx
+import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 
-**PrintPreview.tsx:**
-- Remove the standalone "Publish & Share" button
-- If `state.publishedUrl` is passed, show the URL input immediately (already published)
-- Keep the "Print for Patient" button for re-printing
+function getToastIcon(variant?: string) {
+  switch (variant) {
+    case 'destructive':
+      return <XCircle className="h-5 w-5 text-destructive-foreground" />;
+    case 'warning':
+      return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+    default:
+      return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+  }
+}
 
-Update LocationState:
-```typescript
-interface LocationState {
-  sections: { title: string; content: string }[];
-  clinicianName: string;
-  language: string;
-  hospitalName?: string;
-  publishedUrl?: string;  // ADD THIS - pre-published URL from approval
+export function Toaster() {
+  const { toasts } = useToast();
+
+  return (
+    <ToastProvider>
+      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
+        return (
+          <Toast key={id} variant={variant} {...props}>
+            <div className="flex gap-3">
+              {getToastIcon(variant)}
+              <div className="grid gap-1">
+                {title && <ToastTitle>{title}</ToastTitle>}
+                {description && <ToastDescription>{description}</ToastDescription>}
+              </div>
+            </div>
+            {action}
+            <ToastClose />
+          </Toast>
+        );
+      })}
+      <ToastViewport />
+    </ToastProvider>
+  );
 }
 ```
 
-Initialize state from props:
+**Add warning variant to toast.tsx:**
+
 ```typescript
-const [publishedUrl, setPublishedUrl] = useState<string | null>(
-  state?.publishedUrl || null
+// In toastVariants
+variants: {
+  variant: {
+    default: "border bg-background text-foreground",
+    destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
+    warning: "border-amber-200 bg-amber-50 text-amber-900",  // ADD THIS
+  },
+},
+```
+
+### 2b. Case ID Badge in Header
+
+**Problem**: Clinician doesn't know which case they're working on throughout the workflow.
+
+**Solution**: Add a subtle badge showing the Case ID in MedicalHeader.
+
+**Changes to MedicalHeader:**
+
+1. Add `caseId` prop to `MedicalHeaderProps`
+2. Display a badge next to the step progress when a case is active
+
+```tsx
+interface MedicalHeaderProps {
+  currentStep: number;
+  totalSteps: number;
+  onLogout: () => void;
+  onLogoClick?: () => void;
+  caseId?: string | null;  // ADD THIS
+}
+
+// In the component JSX, add between logo and progress:
+{caseId && (
+  <div className="hidden sm:flex items-center">
+    <Badge variant="outline" className="text-xs text-muted-foreground font-mono">
+      Case #{caseId.slice(0, 8)}
+    </Badge>
+  </div>
+)}
+```
+
+**Update Index.tsx to pass caseId:**
+
+```tsx
+<MedicalHeader 
+  currentStep={currentStepIndex + 1} 
+  totalSteps={totalSteps} 
+  onLogout={onLogout}
+  onLogoClick={handleLogoClick}
+  caseId={currentCaseId}  // ADD THIS
+/>
+```
+
+---
+
+## 3. Major Feature: Patient-Side Feedback
+
+### Current State
+
+- **Route**: `/document/:accessToken` (public, no auth)
+- **Component**: `PatientDocument.tsx`
+- **Database**: `case_feedback` table only has `submitted_by` (user_id) - designed for clinicians
+
+### Requirement
+
+Allow patients to submit feedback after viewing their document via QR code.
+
+### Database Schema Changes
+
+Create a new table or modify existing to distinguish feedback sources:
+
+**Option A (Recommended): Separate table `patient_feedback`**
+
+Keeps concerns separate, allows different question sets:
+
+```sql
+CREATE TABLE public.patient_feedback (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  case_id uuid NOT NULL,
+  published_document_id uuid NOT NULL,
+  feedback_source text NOT NULL DEFAULT 'qr_view',
+  selected_options text[] NOT NULL DEFAULT '{}',
+  additional_comments text,
+  submitted_at timestamptz NOT NULL DEFAULT now(),
+  -- No submitted_by since patients aren't authenticated
+  CONSTRAINT fk_case FOREIGN KEY (case_id) REFERENCES patient_cases(id),
+  CONSTRAINT fk_document FOREIGN KEY (published_document_id) REFERENCES published_documents(id)
+);
+
+-- RLS: Allow public INSERT (no auth required for patient feedback)
+ALTER TABLE patient_feedback ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can submit patient feedback"
+ON patient_feedback FOR INSERT
+WITH CHECK (true);
+
+-- Clinicians can view feedback for their cases
+CREATE POLICY "Clinicians can view patient feedback for their cases"
+ON patient_feedback FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM patient_cases
+    WHERE patient_cases.id = patient_feedback.case_id
+    AND patient_cases.created_by = auth.uid()
+  )
 );
 ```
 
-Remove the "Publish & Share" button from the action bar since it's now done automatically.
+### Frontend Changes
 
----
+#### 3a. Create Reusable Feedback Form Component
 
-## 3. Feedback Validation - Skip Warning
+Extract the feedback form UI into a reusable component that both Feedback.tsx and PatientDocument.tsx can use:
 
-### Requirement
-When user clicks "New Patient" (or potentially "Submit") with empty form, show a warning toast asking them to confirm.
+**New file: `src/components/FeedbackForm.tsx`**
 
-### Implementation
+```tsx
+interface FeedbackFormProps {
+  questionLabel: string;  // Different text for clinician vs patient
+  options: string[];
+  onSubmit: (selectedOptions: string[], comments: string) => Promise<void>;
+  isSubmitting: boolean;
+  submitButtonText: string;
+}
 
-**Feedback.tsx:**
-Add state for skip confirmation:
-```typescript
-const [skipWarningShown, setSkipWarningShown] = useState(false);
-```
-
-Update "New Patient" button handler:
-```typescript
-const handleNewPatient = () => {
-  // If form is empty and warning not yet shown, show warning
-  if (selectedOptions.length === 0 && !additionalComments.trim() && !skipWarningShown) {
-    toast({
-      title: "Skip feedback?",
-      description: "Are you sure you want to start a new patient without submitting feedback? Click again to confirm.",
-      variant: "default"
-    });
-    setSkipWarningShown(true);
-    return;
-  }
+export const FeedbackForm = ({
+  questionLabel,
+  options,
+  onSubmit,
+  isSubmitting,
+  submitButtonText
+}: FeedbackFormProps) => {
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [additionalComments, setAdditionalComments] = useState("");
   
-  // Second click or form has content - proceed
-  onRestart();
+  // ... checkbox logic, textarea, submit button
 };
 ```
 
-Button change:
+#### 3b. Patient-Specific Feedback Options
+
+For patients, use different (simpler) questions:
+
+```typescript
+const PATIENT_FEEDBACK_OPTIONS = [
+  "The document was easy to understand",
+  "I understand my condition better now",
+  "The medication information was helpful",
+  "I know what warning signs to watch for",
+  "I understand what lifestyle changes I need to make",
+  "I would like more details about my treatment"
+];
+```
+
+#### 3c. Update PatientDocument.tsx
+
+Add feedback section at the bottom:
+
 ```tsx
-<Button onClick={handleNewPatient} className="flex-1">
-  <UserPlus className="w-4 h-4 mr-1" />
-  New Patient
-</Button>
+// PatientDocument.tsx
+import { PatientFeedbackForm } from '@/components/PatientFeedbackForm';
+
+// After PrintableDocument, before closing div:
+<div className="no-print max-w-[210mm] mx-auto p-4 pb-12">
+  <PatientFeedbackForm 
+    caseId={document.case_id}
+    publishedDocumentId={document.id}
+    onSubmitSuccess={() => {
+      // Show thank you message, hide form
+    }}
+  />
+</div>
 ```
 
-Reset the warning state when user adds content:
-```typescript
-useEffect(() => {
-  if (selectedOptions.length > 0 || additionalComments.trim()) {
-    setSkipWarningShown(false);
+#### 3d. New PatientFeedbackForm Component
+
+```tsx
+// src/components/PatientFeedbackForm.tsx
+const PATIENT_FEEDBACK_OPTIONS = [
+  "The document was easy to understand",
+  "I understand my condition better now",
+  "The medication information was helpful",
+  "I know what warning signs to watch for",
+  "I understand what lifestyle changes I need to make",
+];
+
+export const PatientFeedbackForm = ({
+  caseId,
+  publishedDocumentId,
+  onSubmitSuccess
+}: {
+  caseId: string;
+  publishedDocumentId: string;
+  onSubmitSuccess: () => void;
+}) => {
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [additionalComments, setAdditionalComments] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    if (selectedOptions.length === 0 && !additionalComments.trim()) {
+      toast({
+        title: "Please provide feedback",
+        description: "Select at least one option or add a comment.",
+        variant: "warning"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Insert into patient_feedback (no auth required)
+      const { error } = await supabase.from('patient_feedback').insert({
+        case_id: caseId,
+        published_document_id: publishedDocumentId,
+        selected_options: selectedOptions,
+        additional_comments: additionalComments.trim() || null
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Thank you for your feedback!",
+        description: "Your response helps us improve."
+      });
+      setHasSubmitted(true);
+      onSubmitSuccess();
+    } catch (err) {
+      toast({
+        title: "Could not submit feedback",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (hasSubmitted) {
+    return (
+      <Card className="mt-8">
+        <CardContent className="pt-6 text-center">
+          <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
+          <h3 className="font-semibold text-lg">Thank you for your feedback!</h3>
+          <p className="text-muted-foreground">Your response helps us improve patient care.</p>
+        </CardContent>
+      </Card>
+    );
   }
-}, [selectedOptions, additionalComments]);
-```
 
----
-
-## 4. Toast Positioning - Bottom Left
-
-### Current Position
-Toasts appear in **bottom-right** (via `sm:right-0` in ToastViewport)
-
-### Target Position
-Toasts should appear in **bottom-left**
-
-### Changes Required
-
-**src/components/ui/toast.tsx (ToastViewport):**
-```typescript
-// Change from:
-"fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
-
-// To:
-"fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:left-0 sm:top-auto sm:flex-col md:max-w-[420px]"
-```
-
-Also update the slide animation to come from left:
-```typescript
-// In toastVariants, change:
-"data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full"
-
-// To:
-"data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-left-full"
-
-// And for exit:
-"data-[state=closed]:slide-out-to-right-full"
-
-// To:
-"data-[state=closed]:slide-out-to-left-full"
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle>How was this document?</CardTitle>
+        <CardDescription>
+          Your feedback helps us improve the information we provide to patients.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Checkboxes for PATIENT_FEEDBACK_OPTIONS */}
+        {/* Textarea for additional comments */}
+        {/* Submit button */}
+      </CardContent>
+    </Card>
+  );
+};
 ```
 
 ---
@@ -246,48 +378,76 @@ Also update the slide animation to come from left:
 
 | File | Changes |
 |------|---------|
-| `src/pages/Index.tsx` | Update LocationState interface to include sections, modify useEffect to restore sections from nav state |
-| `src/components/ClinicianApproval.tsx` | Rename button to "Print & Publish for Patient", add publish logic to handleApprove, import usePublishedDocument |
-| `src/pages/PrintPreview.tsx` | Update LocationState to accept publishedUrl, initialize from props, pass sections in handleBack, remove standalone Publish button |
-| `src/components/Feedback.tsx` | Add skipWarningShown state, modify New Patient handler to show warning toast on first click if form empty |
-| `src/components/ui/toast.tsx` | Change ToastViewport from right-0 to left-0, update slide animations for left side |
+| `src/components/Feedback.tsx` | Add `setIsSubmitting(false)` before timeout |
+| `src/components/ui/toast.tsx` | Add `warning` variant to toastVariants |
+| `src/components/ui/toaster.tsx` | Add auto-icons based on variant |
+| `src/components/MedicalHeader.tsx` | Add `caseId` prop and Badge display |
+| `src/pages/Index.tsx` | Pass `caseId` to MedicalHeader |
+| `src/components/PatientFeedbackForm.tsx` | **NEW** - Patient feedback form component |
+| `src/pages/PatientDocument.tsx` | Add PatientFeedbackForm at bottom |
+| **Database Migration** | Create `patient_feedback` table with RLS policies |
 
 ---
 
-## Navigation State Flow Diagram
+## Database Migration SQL
+
+```sql
+-- Create patient feedback table for QR code view feedback
+CREATE TABLE public.patient_feedback (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  case_id uuid NOT NULL,
+  published_document_id uuid NOT NULL,
+  feedback_source text NOT NULL DEFAULT 'qr_view',
+  selected_options text[] NOT NULL DEFAULT '{}',
+  additional_comments text,
+  submitted_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.patient_feedback ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can submit feedback (patients aren't authenticated)
+CREATE POLICY "Anyone can submit patient feedback"
+ON public.patient_feedback FOR INSERT
+WITH CHECK (true);
+
+-- Clinicians can view feedback for cases they created
+CREATE POLICY "Clinicians view patient feedback for their cases"
+ON public.patient_feedback FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM patient_cases
+    WHERE patient_cases.id = patient_feedback.case_id
+    AND patient_cases.created_by = auth.uid()
+  )
+);
+```
+
+---
+
+## Visual Flow
 
 ```text
-ClinicianApproval
-      |
-      | handleApprove() 
-      | - saves approval
-      | - publishes document (NEW)
-      | - navigate with { sections, publishedUrl }
-      v
-PrintPreview
-      |
-      |-- handleBack() with { sections } --> ClinicianApproval (sections preserved)
-      |
-      |-- handleContinueToFeedback() with { sections } --> Feedback
-      v
-Feedback
-      |
-      |-- handleBack() with { sections } --> ClinicianApproval (sections preserved)
-      |
-      |-- handleNewPatient() --> reset all state
+Clinician App (/app)                    Patient View (/document/:token)
+      |                                         |
+      v                                         v
+ MedicalHeader                           PatientDocument.tsx
+ [Logo] [Case #abc12345] [Step 3/5]      - PrintableDocument
+      |                                  - PatientFeedbackForm (NEW)
+      v                                         |
+ Feedback.tsx                                   v
+ - Clinician questions                   patient_feedback table
+ - case_feedback table                   (no auth, public insert)
 ```
 
 ---
 
 ## Testing Checklist
 
-1. Create a case and go through to ClinicianApproval
-2. Edit section content manually
-3. Click "Print & Publish for Patient" - verify document publishes AND navigates to PrintPreview
-4. Verify QR code/URL appears immediately (already published)
-5. Click "Back" - verify you return to ClinicianApproval with all edits preserved
-6. Click through to Feedback
-7. Click "Back" from Feedback - verify edits still preserved
-8. On Feedback, click "New Patient" with empty form - should show warning toast
-9. Click "New Patient" again - should reset workflow
-10. Verify all toasts appear in bottom-left corner
+1. Trigger various toasts - verify icons appear (success=checkmark, error=X, warning=triangle)
+2. Start a case - verify Case ID badge appears in header
+3. Navigate through workflow - verify badge persists with correct ID
+4. Click "Submit & New Patient" - verify `isSubmitting` resets properly
+5. Access patient document via QR/URL - verify feedback form appears
+6. Submit patient feedback - verify it saves to `patient_feedback` table
+7. Verify clinician can query patient feedback for their cases
