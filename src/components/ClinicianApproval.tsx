@@ -20,7 +20,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCasePersistence } from "@/hooks/useCasePersistence";
 import { supabase } from "@/integrations/supabase/client";
-import { Printer, ChevronLeft, FileCheck, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle, Loader2 } from "lucide-react";
+import { Printer, ChevronLeft, FileCheck, Heart, Activity, Calendar, Sparkles, Pill, Phone, AlertTriangle, Loader2, Share2 } from "lucide-react";
+import { usePublishedDocument } from "@/hooks/usePublishedDocument";
 import { SectionBox } from "@/components/SectionBox";
 import { parseDraftIntoSections, reconstructDraft, ParsedSection } from "@/utils/draftParser";
 import { parseStructuredDocument, structuredDocumentToText } from "@/utils/structuredDocumentParser";
@@ -258,8 +259,11 @@ export const ClinicianApproval = ({
     }
   };
 
+  // Hook for publishing
+  const { publishDocument, getDocumentUrl, isPublishing } = usePublishedDocument();
+
   /**
-   * Approves document, saves to database, and navigates to PrintPreview
+   * Approves document, publishes it, saves to database, and navigates to PrintPreview
    */
   const handleApprove = async () => {
     if (!clinicianName.trim()) {
@@ -273,24 +277,32 @@ export const ClinicianApproval = ({
 
     try {
       const finalText = reconstructDraft(sections);
+      
+      // Save approval to database
       await saveApproval(caseId, finalText, clinicianName);
       await updateCase(caseId, { status: "approved" });
 
-      toast({
-        title: "Document approved",
-        description: "Patient communication has been finalized",
-      });
+      // Publish the document and get shareable URL
+      const language = patientData?.language || 'english';
+      const token = await publishDocument(
+        caseId,
+        sections,
+        clinicianName,
+        language,
+        undefined // hospitalName
+      );
 
       // Call onApprove to update parent state
       onApprove(finalText, clinicianName, sections);
 
-      // Navigate to PrintPreview (output step)
+      // Navigate to PrintPreview (output step) with published URL
       navigate(`/app/print-preview/${caseId}`, {
         state: {
           sections,
           clinicianName,
-          language: patientData?.language || 'english',
-          hospitalName: undefined // Can be added to patient profile if needed
+          language,
+          hospitalName: undefined,
+          publishedUrl: token ? getDocumentUrl(token) : undefined
         }
       });
     } catch (error) {
@@ -463,9 +475,18 @@ export const ClinicianApproval = ({
               <ChevronLeft className="w-4 h-4 mr-1" />
               Patient Profile
             </Button>
-            <Button onClick={handleApprove} className="flex-1">
-              <Printer className="w-4 h-4 mr-1" />
-              Print for Patient
+            <Button onClick={handleApprove} className="flex-1" disabled={isPublishing}>
+              {isPublishing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Publishing...
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 mr-1" />
+                  Print & Publish for Patient
+                </>
+              )}
             </Button>
           </div>
         </CardContent>

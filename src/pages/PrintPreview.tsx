@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PrintableDocument } from '@/components/print/PrintableDocument';
 import { usePublishedDocument } from '@/hooks/usePublishedDocument';
-import { ChevronLeft, Printer, Share2, Copy, Check, Loader2, MessageSquare } from 'lucide-react';
+import { ChevronLeft, Printer, Copy, Check, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LocationState {
@@ -20,6 +20,7 @@ interface LocationState {
   clinicianName: string;
   language: string;
   hospitalName?: string;
+  publishedUrl?: string;
 }
 
 /**
@@ -34,19 +35,18 @@ export default function PrintPreview() {
   // Get data passed from approval page
   const state = location.state as LocationState | null;
   
-  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  // Initialize from state if publishedUrl was passed (already published during approval)
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(state?.publishedUrl || null);
   const [copied, setCopied] = useState(false);
   
   const { 
-    publishDocument, 
     getDocumentForCase,
-    getDocumentUrl,
-    isPublishing 
+    getDocumentUrl
   } = usePublishedDocument();
 
-  // Check for existing published document
+  // Check for existing published document (fallback if not passed in state)
   useEffect(() => {
-    if (caseId) {
+    if (caseId && !publishedUrl) {
       getDocumentForCase(caseId).then(doc => {
         if (doc) {
           setPublishedUrl(getDocumentUrl(doc.access_token));
@@ -92,25 +92,6 @@ export default function PrintPreview() {
   };
 
   /**
-   * Publishes document and generates shareable link
-   */
-  const handlePublish = async () => {
-    if (!caseId) return;
-    
-    const token = await publishDocument(
-      caseId,
-      sections,
-      clinicianName,
-      language,
-      hospitalName
-    );
-    
-    if (token) {
-      setPublishedUrl(getDocumentUrl(token));
-    }
-  };
-
-  /**
    * Copies URL to clipboard
    */
   const handleCopyUrl = async () => {
@@ -133,18 +114,30 @@ export default function PrintPreview() {
     }
   };
 
-  /**
-   * Navigate back to approval step
+/**
+   * Navigate back to approval step - preserves section edits
    */
   const handleBack = () => {
-    navigate('/app', { state: { returnToCaseId: caseId, navigateToStep: 'approval' } });
+    navigate('/app', { 
+      state: { 
+        returnToCaseId: caseId, 
+        navigateToStep: 'approval',
+        sections: sections  // Pass sections back to preserve edits
+      } 
+    });
   };
 
   /**
-   * Navigate to feedback step
+   * Navigate to feedback step - preserves section edits for potential back navigation
    */
   const handleContinueToFeedback = () => {
-    navigate('/app', { state: { returnToCaseId: caseId, navigateToStep: 'feedback' } });
+    navigate('/app', { 
+      state: { 
+        returnToCaseId: caseId, 
+        navigateToStep: 'feedback',
+        sections: sections  // Pass sections for potential back navigation from feedback
+      } 
+    });
   };
 
   return (
@@ -166,25 +159,8 @@ export default function PrintPreview() {
               Print for Patient
             </Button>
             
-            {!publishedUrl ? (
-              <Button 
-                onClick={handlePublish} 
-                disabled={isPublishing}
-                variant="outline"
-              >
-                {isPublishing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Publishing...
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Publish & Share
-                  </>
-                )}
-              </Button>
-            ) : (
+            {/* Show published URL if available (published during approval) */}
+            {publishedUrl && (
               <div className="flex items-center gap-2">
                 <Input 
                   value={publishedUrl} 
