@@ -3,17 +3,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, RotateCcw, Send, ArrowRight } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ChevronLeft, RotateCcw, Send, UserPlus, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
 interface FeedbackProps {
+  caseId: string;
   onBack: () => void;
   onRestart: () => void;
 }
-const FEEDBACK_OPTIONS = ["What do I have", "How should I live next", "How the next 6 months of my life look like", "What does it mean for my life", "My medications", "Warning signs", "General Notes"];
+
+const FEEDBACK_OPTIONS = [
+  "What do I have",
+  "How should I live next",
+  "How the next 6 months of my life look like",
+  "What does it mean for my life",
+  "My medications",
+  "Warning signs",
+  "General Notes"
+];
+
 export const Feedback = ({
+  caseId,
   onBack,
   onRestart
 }: FeedbackProps) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [additionalComments, setAdditionalComments] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
   const handleCheckboxChange = (option: string, checked: boolean) => {
     if (checked) {
       setSelectedOptions(prev => [...prev, option]);
@@ -21,14 +41,58 @@ export const Feedback = ({
       setSelectedOptions(prev => prev.filter(o => o !== option));
     }
   };
+
   const handleRewrite = () => {
     setSelectedOptions([]);
+    setAdditionalComments("");
   };
-  const handleSubmit = () => {
-    // Placeholder - does nothing for now
-    console.log("Feedback submitted:", selectedOptions);
+
+  const handleSubmit = async () => {
+    if (selectedOptions.length === 0 && !additionalComments.trim()) {
+      toast({
+        title: "Feedback required",
+        description: "Please select at least one option or add comments",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase.from('case_feedback').insert({
+        case_id: caseId,
+        submitted_by: user.id,
+        selected_options: selectedOptions,
+        additional_comments: additionalComments.trim() || null
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Feedback submitted",
+        description: "Thank you for your feedback!"
+      });
+
+      // Clear form after successful submission
+      setSelectedOptions([]);
+      setAdditionalComments("");
+    } catch (err) {
+      console.error("Feedback submission error:", err);
+      toast({
+        title: "Submission failed",
+        description: "Could not save feedback. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  return <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle>Feedback</CardTitle>
@@ -36,36 +100,72 @@ export const Feedback = ({
             Based on your experience, which feature do you consider most useful for patients?
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Checkbox Options */}
           <div className="space-y-3">
-            {FEEDBACK_OPTIONS.map(option => <div key={option} className="flex items-center space-x-3">
-                <Checkbox id={option} checked={selectedOptions.includes(option)} onCheckedChange={checked => handleCheckboxChange(option, checked as boolean)} />
-                <Label htmlFor={option} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+            {FEEDBACK_OPTIONS.map(option => (
+              <div key={option} className="flex items-center space-x-3">
+                <Checkbox
+                  id={option}
+                  checked={selectedOptions.includes(option)}
+                  onCheckedChange={checked => handleCheckboxChange(option, checked as boolean)}
+                />
+                <Label
+                  htmlFor={option}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
                   {option}
                 </Label>
-              </div>)}
+              </div>
+            ))}
+          </div>
+
+          {/* Free Text Field */}
+          <div className="space-y-2">
+            <Label htmlFor="comments">Additional Comments/Suggestions</Label>
+            <Textarea
+              id="comments"
+              value={additionalComments}
+              onChange={(e) => setAdditionalComments(e.target.value)}
+              placeholder="Share any additional feedback about the generated document..."
+              rows={4}
+            />
           </div>
         </CardContent>
       </Card>
 
+      {/* Action Buttons */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex gap-3">
-            
+            <Button onClick={onBack} variant="outline" className="flex-1">
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
             <Button onClick={handleRewrite} variant="outline" className="flex-1">
               <RotateCcw className="w-4 h-4 mr-1" />
               Rewrite
             </Button>
-            <Button onClick={handleSubmit} variant="outline" className="flex-1">
-              <Send className="w-4 h-4 mr-1" />
+            <Button 
+              onClick={handleSubmit} 
+              variant="outline" 
+              className="flex-1"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 mr-1" />
+              )}
               Submit
             </Button>
             <Button onClick={onRestart} className="flex-1">
-              <ArrowRight className="w-4 h-4 mr-1" />
-              Next Careboks
+              <UserPlus className="w-4 h-4 mr-1" />
+              New Patient
             </Button>
           </div>
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };

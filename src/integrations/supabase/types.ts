@@ -91,6 +91,41 @@ export type Database = {
           },
         ]
       }
+      case_feedback: {
+        Row: {
+          additional_comments: string | null
+          case_id: string
+          id: string
+          selected_options: string[]
+          submitted_at: string
+          submitted_by: string
+        }
+        Insert: {
+          additional_comments?: string | null
+          case_id: string
+          id?: string
+          selected_options?: string[]
+          submitted_at?: string
+          submitted_by: string
+        }
+        Update: {
+          additional_comments?: string | null
+          case_id?: string
+          id?: string
+          selected_options?: string[]
+          submitted_at?: string
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_feedback_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "patient_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinician_contacts: {
         Row: {
           created_at: string

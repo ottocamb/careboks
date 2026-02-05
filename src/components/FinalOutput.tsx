@@ -4,13 +4,15 @@
  * Final step of the patient communication workflow. Displays the
  * approved patient communication document and provides:
  * - Print functionality for patient handout
- * - Comprehension testing questions (teach-back method)
  * - Option to start a new case
+ * 
+ * Note: This component is currently not used in the main workflow.
+ * The workflow now goes: Approval → PrintPreview → Feedback
  * 
  * @module components/FinalOutput
  */
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,20 +34,11 @@ interface FinalOutputProps {
   onBack: () => void;
 }
 
-/** Questions for patient comprehension testing (teach-back method) */
-const COMPREHENSION_QUESTIONS = [
-  "Can you tell me in your own words what heart failure means?",
-  "What should you do if your breathing becomes much worse?",
-  "How much fluid should you drink each day?",
-  "When is your next appointment with the cardiologist?",
-  "What are your three main medications and what do they do?"
-];
-
 /**
  * Final Output Component
  * 
  * Displays the completed patient communication document with
- * print and comprehension testing functionality.
+ * print functionality.
  * 
  * @example
  * ```tsx
@@ -63,7 +56,6 @@ const FinalOutput = ({
   onRestart,
   onBack
 }: FinalOutputProps) => {
-  const [showComprehensionTest, setShowComprehensionTest] = useState(false);
   const { updateCase } = useCasePersistence();
 
   // Mark case as completed when component mounts
@@ -119,13 +111,6 @@ const FinalOutput = ({
     `);
     printWindow.document.close();
     printWindow.print();
-  };
-
-  /**
-   * Toggles visibility of comprehension test section
-   */
-  const toggleComprehensionTest = () => {
-    setShowComprehensionTest(prev => !prev);
   };
 
   return (
@@ -190,15 +175,6 @@ const FinalOutput = ({
             
             <Button 
               variant="outline" 
-              onClick={toggleComprehensionTest}
-              className="flex items-center space-x-2"
-            >
-              <Users className="h-4 w-4" />
-              <span>Comprehension Test</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
               onClick={onRestart}
               className="flex items-center space-x-2"
             >
@@ -208,49 +184,6 @@ const FinalOutput = ({
           </div>
         </CardContent>
       </Card>
-
-      {/* Comprehension Test Section */}
-      {showComprehensionTest && (
-        <Card className="bg-medical-light-blue border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-primary" />
-              <span>Patient Comprehension Assessment</span>
-            </CardTitle>
-            <CardDescription>
-              Use these questions to verify patient understanding (teach-back method)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <h3 className="font-semibold">Ask the patient these questions:</h3>
-              <div className="space-y-3">
-                {COMPREHENSION_QUESTIONS.map((question, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start space-x-3 p-3 bg-background rounded-lg border border-border"
-                  >
-                    <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <p className="text-sm">{question}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                <h4 className="font-semibold text-warning mb-2">Assessment Notes:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Document patient responses in medical record</li>
-                  <li>• If patient cannot answer correctly, provide additional explanation</li>
-                  <li>• Consider involving family members if patient struggles with comprehension</li>
-                  <li>• Schedule follow-up education session if needed</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

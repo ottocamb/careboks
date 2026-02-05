@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PrintableDocument } from '@/components/print/PrintableDocument';
 import { usePublishedDocument } from '@/hooks/usePublishedDocument';
-import { ChevronLeft, Printer, Share2, Copy, Check, Loader2 } from 'lucide-react';
+import { ChevronLeft, Printer, Share2, Copy, Check, Loader2, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LocationState {
@@ -133,6 +133,20 @@ export default function PrintPreview() {
     }
   };
 
+  /**
+   * Navigate back to approval step
+   */
+  const handleBack = () => {
+    navigate('/app', { state: { returnToCaseId: caseId, navigateToStep: 'approval' } });
+  };
+
+  /**
+   * Navigate to feedback step
+   */
+  const handleContinueToFeedback = () => {
+    navigate('/app', { state: { returnToCaseId: caseId, navigateToStep: 'feedback' } });
+  };
+
   return (
     <div className="min-h-screen bg-muted">
       {/* Action Bar - Hidden on print */}
@@ -140,22 +154,23 @@ export default function PrintPreview() {
         <div className="max-w-[210mm] mx-auto flex items-center justify-between">
           <Button 
             variant="outline" 
-            onClick={() => navigate(`/app`, { state: { returnToCaseId: caseId } })}
+            onClick={handleBack}
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Editing
+            Back
           </Button>
           
           <div className="flex items-center gap-3">
             <Button onClick={handlePrint} variant="outline">
               <Printer className="mr-2 h-4 w-4" />
-              Print
+              Print for Patient
             </Button>
             
             {!publishedUrl ? (
               <Button 
                 onClick={handlePublish} 
                 disabled={isPublishing}
+                variant="outline"
               >
                 {isPublishing ? (
                   <>
@@ -189,6 +204,11 @@ export default function PrintPreview() {
                 </Button>
               </div>
             )}
+
+            <Button onClick={handleContinueToFeedback}>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Continue to Feedback
+            </Button>
           </div>
         </div>
       </div>
