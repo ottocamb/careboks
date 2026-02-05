@@ -91,7 +91,8 @@ export const Feedback = ({
 
       toast({
         title: "Feedback submitted",
-        description: "Thank you! Starting new patient..."
+        description: "Thank you! Starting new patient...",
+        duration: 3000
       });
       
       setIsSubmitting(false); // Reset state before timeout
