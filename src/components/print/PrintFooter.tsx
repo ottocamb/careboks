@@ -1,7 +1,8 @@
 /**
  * @fileoverview Print document footer component
  *
- * Displays clinician signature and QR code for document access
+ * Displays clinician signature in white box (right) and QR code (left)
+ * on teal background
  */
 
 import { QRCodeSVG } from "qrcode.react";
@@ -33,7 +34,8 @@ const LABELS: Record<string, { signedBy: string; scanQr: string }> = {
 };
 
 /**
- * Renders the document footer with signature and QR code
+ * Renders the document footer with teal background
+ * QR code on left, signature box on right
  */
 export const PrintFooter = ({ clinicianName, date, documentUrl, language }: PrintFooterProps) => {
   const normalizedLang = language?.toLowerCase() || "english";
@@ -41,18 +43,20 @@ export const PrintFooter = ({ clinicianName, date, documentUrl, language }: Prin
 
   return (
     <div className="print-footer">
-      <div className="print-signature">
-        <p className="print-signature-label">{labels.signedBy}</p>
-        <p className="print-signature-line font-medium">{clinicianName}</p>
-        <p className="text-[9pt] text-[hsl(var(--print-text-light))] mt-1">{date}</p>
-      </div>
-
+      {/* QR Code on LEFT */}
       {documentUrl && (
         <div className="print-qr-container">
           <QRCodeSVG value={documentUrl} size={64} level="M" includeMargin={false} />
           <p className="print-qr-label">{labels.scanQr}</p>
         </div>
       )}
+
+      {/* Signature box on RIGHT - white card */}
+      <div className="print-signature">
+        <p className="print-signature-label">{labels.signedBy}</p>
+        <p className="print-signature-line">{clinicianName}</p>
+        <p className="print-signature-date">{date}</p>
+      </div>
     </div>
   );
 };
