@@ -148,25 +148,19 @@ const TechnicalNoteInput = ({
     
     try {
       let combinedText = note;
-      console.log('Starting text extraction. Initial note length:', combinedText.length);
-      console.log(`Processing ${filesToProcess.length} new file(s), skipping ${extractedFileNames.size} already extracted`);
       
       for (const file of filesToProcess) {
-        console.log(`Processing file: ${file.name}`);
-        
         if (file.type === 'application/pdf') {
           // Attempt direct text extraction first (faster, for native PDFs)
           const directText = await extractTextDirectly(file, MAX_PAGES_PER_DOCUMENT);
           
           if (directText.trim().length > MIN_DIRECT_EXTRACTION_LENGTH) {
-            console.log(`Direct extraction successful for ${file.name}, extracted ${directText.length} characters`);
             combinedText += (combinedText ? '\n\n' : '') + `--- Extracted from ${file.name} ---\n${directText}`;
             newExtractedFiles.add(file.name);
             continue;
           }
 
           // Fallback to OCR for scanned PDFs
-          console.log(`Falling back to OCR for ${file.name} (scanned document detected)`);
           await extractTextViaOCR(file, newExtractedFiles, (text) => {
             combinedText += text;
           });
@@ -178,7 +172,6 @@ const TechnicalNoteInput = ({
         }
       }
       
-      console.log('Extraction complete. Final text length:', combinedText.length);
       setNote(combinedText);
       setExtractedFileNames(newExtractedFiles);
       
@@ -232,7 +225,6 @@ const TechnicalNoteInput = ({
         }
         
         if (data?.extractedText) {
-          console.log(`OCR extracted ${data.extractedText.length} characters from ${file.name} page ${pageIndex}`);
           appendText(`\n\n--- Extracted from ${file.name} (page ${pageIndex}) ---\n${data.extractedText}`);
           fileExtracted = true;
         }
@@ -280,7 +272,6 @@ const TechnicalNoteInput = ({
     }
     
     if (data?.extractedText) {
-      console.log(`Image OCR extracted ${data.extractedText.length} characters from ${file.name}`);
       appendText(`\n\n--- Extracted from ${file.name} ---\n${data.extractedText}`);
       extractedSet.add(file.name);
     }

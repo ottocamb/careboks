@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Account Settings Section
+ * 
+ * Provides access to application settings and account management.
+ * Currently includes:
+ * - Security settings (placeholder for future password management)
+ * - Notification preferences (placeholder)
+ * - Appearance settings (placeholder)
+ * - Sign out functionality
+ * 
+ * @module components/account/SettingsSection
+ */
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -14,10 +27,25 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+/**
+ * Props for the SettingsSection component
+ */
 interface SettingsSectionProps {
+  /** Callback function to handle user logout */
   onLogout: () => void;
 }
 
+/**
+ * Account settings component
+ * 
+ * Renders settings categories and sign-out functionality
+ * with confirmation dialog for destructive actions.
+ * 
+ * @example
+ * ```tsx
+ * <SettingsSection onLogout={() => signOut()} />
+ * ```
+ */
 const SettingsSection = ({ onLogout }: SettingsSectionProps) => {
   return (
     <div className="space-y-6">
@@ -30,6 +58,7 @@ const SettingsSection = ({ onLogout }: SettingsSectionProps) => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
+            {/* Security Settings */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -49,6 +78,7 @@ const SettingsSection = ({ onLogout }: SettingsSectionProps) => {
 
             <Separator />
 
+            {/* Notification Settings */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-accent/10 rounded-lg">
@@ -68,6 +98,7 @@ const SettingsSection = ({ onLogout }: SettingsSectionProps) => {
 
             <Separator />
 
+            {/* Appearance Settings */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-secondary/10 rounded-lg">
@@ -88,6 +119,7 @@ const SettingsSection = ({ onLogout }: SettingsSectionProps) => {
         </CardContent>
       </Card>
 
+      {/* Danger Zone - Sign Out */}
       <Card>
         <CardHeader>
           <CardTitle>Danger Zone</CardTitle>

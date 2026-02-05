@@ -119,18 +119,9 @@ export const ClinicianApproval = ({
     if (shouldGenerate) {
       handleStartGeneration();
     } else if (preParsedSections && preParsedSections.length > 0) {
-      console.log("Using pre-parsed sections (V2):", preParsedSections.map(s => ({ 
-        title: s.title, 
-        contentLength: s.content.length 
-      })));
       setSections(preParsedSections);
     } else {
-      console.log("Parsing draft text (V1 fallback)");
       const parsed = parseDraftIntoSections(draft);
-      console.log("Parsed sections:", parsed.map(s => ({ 
-        title: s.title, 
-        contentLength: s.content.length 
-      })));
       setSections(parsed);
     }
   }, []);
@@ -143,8 +134,6 @@ export const ClinicianApproval = ({
     setGenerationError('');
 
     try {
-      console.log("Starting V2 document generation...");
-      
       const { data: documentData, error: documentError } = await supabase.functions.invoke(
         'generate-patient-document-v2',
         { body: { technicalNote, patientData } }
@@ -152,8 +141,6 @@ export const ClinicianApproval = ({
 
       if (documentError) throw documentError;
       if (!documentData?.document) throw new Error("No document data received");
-
-      console.log("Document generated successfully:", documentData);
 
       // Parse structured JSON into sections
       const parsedSections = parseStructuredDocument(documentData.document, patientData.language);
@@ -171,10 +158,6 @@ export const ClinicianApproval = ({
       );
 
       await updateCase(caseId, { status: 'processing' });
-
-      if (documentData.validation?.warnings?.length > 0) {
-        console.warn("Validation warnings:", documentData.validation.warnings);
-      }
 
       toast({
         title: "Document Generated",

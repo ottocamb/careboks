@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Clinician Contacts Section
+ * 
+ * Manages the user's directory of clinician contacts. These contacts
+ * can be included in patient communication documents. Features:
+ * - CRUD operations for contacts
+ * - Primary contact designation
+ * - Maximum of 5 contacts per user
+ * 
+ * @module components/account/ContactsSection
+ */
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +22,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Loader2, Phone, Mail, Star } from "lucide-react";
 
+/** Maximum number of contacts allowed per user */
+const MAX_CONTACTS = 5;
+
+/**
+ * Contact data structure
+ */
 interface Contact {
   id: string;
   name: string;
@@ -20,6 +38,17 @@ interface Contact {
   is_primary: boolean;
 }
 
+/**
+ * Clinician contacts management component
+ * 
+ * Provides interface for managing clinician contact directory
+ * with add, edit, and delete functionality.
+ * 
+ * @example
+ * ```tsx
+ * <ContactsSection />
+ * ```
+ */
 const ContactsSection = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +69,9 @@ const ContactsSection = () => {
     loadContacts();
   }, []);
 
+  /**
+   * Fetches contacts from database for current user
+   */
   const loadContacts = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -66,6 +98,10 @@ const ContactsSection = () => {
     }
   };
 
+  /**
+   * Opens the contact form dialog
+   * @param contact - Existing contact to edit, or undefined for new contact
+   */
   const handleOpenDialog = (contact?: Contact) => {
     if (contact) {
       setEditingContact(contact);
@@ -91,6 +127,9 @@ const ContactsSection = () => {
     setDialogOpen(true);
   };
 
+  /**
+   * Saves contact to database (create or update)
+   */
   const handleSave = async () => {
     if (!formData.name.trim()) {
       toast({
@@ -101,10 +140,10 @@ const ContactsSection = () => {
       return;
     }
 
-    if (contacts.length >= 5 && !editingContact) {
+    if (contacts.length >= MAX_CONTACTS && !editingContact) {
       toast({
         title: "Limit reached",
-        description: "You can only have up to 5 contacts",
+        description: `You can only have up to ${MAX_CONTACTS} contacts`,
         variant: "destructive"
       });
       return;
@@ -161,6 +200,10 @@ const ContactsSection = () => {
     }
   };
 
+  /**
+   * Deletes a contact from the database
+   * @param id - Contact ID to delete
+   */
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
@@ -193,13 +236,13 @@ const ContactsSection = () => {
           <div>
             <CardTitle>Clinician Contacts</CardTitle>
             <CardDescription>
-              Manage your trusted clinician references (max 5)
+              Manage your trusted clinician references (max {MAX_CONTACTS})
             </CardDescription>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                disabled={contacts.length >= 5}
+                disabled={contacts.length >= MAX_CONTACTS}
                 onClick={() => handleOpenDialog()}
               >
                 <Plus className="h-4 w-4" />
