@@ -214,6 +214,51 @@ export type Database = {
           },
         ]
       }
+      patient_feedback: {
+        Row: {
+          additional_comments: string | null
+          case_id: string
+          feedback_source: string
+          id: string
+          published_document_id: string
+          selected_options: string[]
+          submitted_at: string
+        }
+        Insert: {
+          additional_comments?: string | null
+          case_id: string
+          feedback_source?: string
+          id?: string
+          published_document_id: string
+          selected_options?: string[]
+          submitted_at?: string
+        }
+        Update: {
+          additional_comments?: string | null
+          case_id?: string
+          feedback_source?: string
+          id?: string
+          published_document_id?: string
+          selected_options?: string[]
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_feedback_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "patient_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_feedback_published_document_id_fkey"
+            columns: ["published_document_id"]
+            isOneToOne: false
+            referencedRelation: "published_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_profiles: {
         Row: {
           age_bracket: string | null

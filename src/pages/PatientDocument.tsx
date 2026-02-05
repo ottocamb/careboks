@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { PrintableDocument } from '@/components/print/PrintableDocument';
+import { PatientFeedbackForm } from '@/components/PatientFeedbackForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePublishedDocument, PublishedDocument } from '@/hooks/usePublishedDocument';
@@ -119,6 +120,14 @@ export default function PatientDocument() {
         date={date}
         showQrCode={false}
       />
+
+      {/* Patient Feedback Form - Hidden on print */}
+      <div className="no-print max-w-[210mm] mx-auto px-4 pb-12">
+        <PatientFeedbackForm 
+          caseId={document.case_id}
+          publishedDocumentId={document.id}
+        />
+      </div>
     </div>
   );
 }
