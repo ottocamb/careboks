@@ -86,22 +86,25 @@ const MedicalHeader = ({
             <div className="flex items-center space-x-4">
               {/* Step Progress Indicator with Case ID */}
               {showStepProgress && (
-                <div className="text-right">
-                  <div className="flex items-center justify-end gap-3">
-                    <span className="text-sm font-medium text-foreground">
-                      Step {currentStep} of {totalSteps}
+                <div className="flex items-center gap-6">
+                  {/* Case ID - Left side, bold */}
+                  {caseId && (
+                    <span className="hidden sm:inline text-sm font-semibold text-muted-foreground">
+                      Case #{caseId.slice(0, 8)}
                     </span>
-                    {caseId && (
-                      <span className="hidden sm:inline text-sm text-muted-foreground">
-                        Case #{caseId.slice(0, 8)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="w-32 h-2 bg-muted rounded-full mt-1">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all duration-500"
-                      style={{ width: `${stepProgressPercent}%` }}
-                    />
+                  )}
+                  
+                  {/* Step Progress - Right side */}
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-foreground">
+                      Step {currentStep} of {totalSteps}
+                    </div>
+                    <div className="w-32 h-2 bg-muted rounded-full mt-1">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-500"
+                        style={{ width: `${stepProgressPercent}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
