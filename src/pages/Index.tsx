@@ -168,6 +168,7 @@ const Index = ({ onLogout }: IndexProps) => {
         totalSteps={totalSteps} 
         onLogout={onLogout}
         onLogoClick={handleLogoClick}
+        caseId={currentCaseId}
       />
       
       <main className="container mx-auto px-6 py-8">

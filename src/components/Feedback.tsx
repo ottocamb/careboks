@@ -94,6 +94,8 @@ export const Feedback = ({
         description: "Thank you! Starting new patient..."
       });
       
+      setIsSubmitting(false); // Reset state before timeout
+      
       // Brief delay to show toast, then restart
       setTimeout(() => onRestart(), 1000);
       

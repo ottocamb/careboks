@@ -9,6 +9,7 @@
 
 import { LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import careboksLogo from "@/assets/careboks-logo.png";
 
@@ -24,6 +25,8 @@ interface MedicalHeaderProps {
   onLogout: () => void;
   /** Callback when user clicks the logo (optional) */
   onLogoClick?: () => void;
+  /** Current case ID to display in header */
+  caseId?: string | null;
 }
 
 /**
@@ -48,7 +51,8 @@ const MedicalHeader = ({
   currentStep,
   totalSteps,
   onLogout,
-  onLogoClick
+  onLogoClick,
+  caseId
 }: MedicalHeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,14 +72,19 @@ const MedicalHeader = ({
     <header className="bg-card border-b border-border shadow-md">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
+          {/* Logo and Case ID */}
+          <div className="flex items-center space-x-4">
             <img
               src={careboksLogo}
               alt="Careboks"
               className="h-10 w-auto cursor-pointer"
               onClick={onLogoClick}
             />
+            {caseId && (
+              <Badge variant="outline" className="hidden sm:flex text-xs text-muted-foreground font-mono">
+                Case #{caseId.slice(0, 8)}
+              </Badge>
+            )}
           </div>
           
           {/* Right Section: Progress + Actions */}
