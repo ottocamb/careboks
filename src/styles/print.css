@@ -41,7 +41,6 @@
   .print-document {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    min-height: 297mm;
   }
   
   .print-container {
