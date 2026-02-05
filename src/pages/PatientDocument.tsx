@@ -22,6 +22,7 @@ export default function PatientDocument() {
   const { accessToken } = useParams<{ accessToken: string }>();
   const [document, setDocument] = useState<PublishedDocument | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [feedbackVisible, setFeedbackVisible] = useState(true);
   
   const { fetchByToken, isFetching } = usePublishedDocument();
 
@@ -121,13 +122,16 @@ export default function PatientDocument() {
         showQrCode={false}
       />
 
-      {/* Patient Feedback Form - Hidden on print */}
-      <div className="no-print max-w-[210mm] mx-auto px-4 pb-12">
-        <PatientFeedbackForm 
-          caseId={document.case_id}
-          publishedDocumentId={document.id}
-        />
-      </div>
+      {/* Patient Feedback Form - Hidden on print, hidden after submission */}
+      {feedbackVisible && (
+        <div className="no-print max-w-[210mm] mx-auto px-4 pb-12">
+          <PatientFeedbackForm 
+            caseId={document.case_id}
+            publishedDocumentId={document.id}
+            onSubmitComplete={() => setFeedbackVisible(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -20,15 +20,15 @@ interface PrintFooterProps {
 const LABELS: Record<string, { signedBy: string; scanQr: string }> = {
   estonian: {
     signedBy: "Kinnitanud",
-    scanQr: "Skanni ligipääsuks"
+    scanQr: "Skanni digitaalseks koopiaks"
   },
   russian: {
     signedBy: "Утверждено",
-    scanQr: "Сканируйте для доступа"
+    scanQr: "Сканируйте для цифровой копии"
   },
   english: {
     signedBy: "Signed by",
-    scanQr: "Scan for access"
+    scanQr: "Scan for digital copy"
   }
 };
 
