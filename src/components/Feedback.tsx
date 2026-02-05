@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, RotateCcw, Send, UserPlus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ParsedSection } from "@/utils/draftParser";
 
 interface FeedbackProps {
   caseId: string;
+  sections?: ParsedSection[];
   onBack: () => void;
   onRestart: () => void;
 }
@@ -26,13 +28,22 @@ const FEEDBACK_OPTIONS = [
 
 export const Feedback = ({
   caseId,
+  sections,
   onBack,
   onRestart
 }: FeedbackProps) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [additionalComments, setAdditionalComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [skipWarningShown, setSkipWarningShown] = useState(false);
   const { toast } = useToast();
+
+  // Reset skip warning when user adds content
+  useEffect(() => {
+    if (selectedOptions.length > 0 || additionalComments.trim()) {
+      setSkipWarningShown(false);
+    }
+  }, [selectedOptions, additionalComments]);
 
   const handleCheckboxChange = (option: string, checked: boolean) => {
     if (checked) {
@@ -45,6 +56,7 @@ export const Feedback = ({
   const handleRewrite = () => {
     setSelectedOptions([]);
     setAdditionalComments("");
+    setSkipWarningShown(false);
   };
 
   const handleSubmit = async () => {
@@ -79,6 +91,7 @@ export const Feedback = ({
       // Clear form after successful submission
       setSelectedOptions([]);
       setAdditionalComments("");
+      setSkipWarningShown(false);
     } catch (err) {
       console.error("Feedback submission error:", err);
       toast({
@@ -89,6 +102,35 @@ export const Feedback = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  /**
+   * Handles New Patient click with skip warning for empty feedback
+   */
+  const handleNewPatient = () => {
+    const formIsEmpty = selectedOptions.length === 0 && !additionalComments.trim();
+    
+    // If form is empty and warning not yet shown, show warning first
+    if (formIsEmpty && !skipWarningShown) {
+      toast({
+        title: "Skip feedback?",
+        description: "Are you sure you want to start a new patient without submitting feedback? Click again to confirm.",
+      });
+      setSkipWarningShown(true);
+      return;
+    }
+    
+    // Second click with empty form OR form has content - proceed with restart
+    onRestart();
+  };
+
+  /**
+   * Handles Back navigation - passes sections to preserve edits
+   */
+  const handleBack = () => {
+    // onBack will be called, and parent will handle navigation
+    // sections are passed via location.state in parent
+    onBack();
   };
 
   return (
@@ -138,7 +180,7 @@ export const Feedback = ({
       <Card>
         <CardContent className="pt-6">
           <div className="flex gap-3">
-            <Button onClick={onBack} variant="outline" className="flex-1">
+            <Button onClick={handleBack} variant="outline" className="flex-1">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back
             </Button>
@@ -159,7 +201,7 @@ export const Feedback = ({
               )}
               Submit
             </Button>
-            <Button onClick={onRestart} className="flex-1">
+            <Button onClick={handleNewPatient} className="flex-1">
               <UserPlus className="w-4 h-4 mr-1" />
               New Patient
             </Button>

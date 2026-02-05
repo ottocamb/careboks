@@ -25,6 +25,7 @@ interface PatientData {
 interface LocationState {
   returnToCaseId?: string;
   navigateToStep?: Step;
+  sections?: ParsedSection[];
 }
 
 interface IndexProps {
@@ -54,7 +55,15 @@ const Index = ({ onLogout }: IndexProps) => {
   useEffect(() => {
     const state = location.state as LocationState | null;
     if (state?.returnToCaseId && state.returnToCaseId !== currentCaseId) {
-      // Load the case and restore state
+      
+      // CRITICAL: If sections are passed in state, restore them immediately
+      // This preserves all edits when navigating back from PrintPreview/Feedback
+      if (state.sections && state.sections.length > 0) {
+        setApprovedSections(state.sections);
+        setAiSections(state.sections);
+      }
+      
+      // Load the case and restore other state
       loadCase(state.returnToCaseId).then(({ data, error }) => {
         if (data && !error) {
           setCurrentCaseId(data.id);
@@ -76,8 +85,8 @@ const Index = ({ onLogout }: IndexProps) => {
             });
           }
           
-          // Restore AI analysis if exists
-          if (data.ai_analyses?.[0]) {
+          // Restore AI analysis if exists (only if sections not passed in state)
+          if (data.ai_analyses?.[0] && (!state.sections || state.sections.length === 0)) {
             setAiDraft(data.ai_analyses[0].ai_draft_text || "");
             setAnalysis(data.ai_analyses[0].analysis_data);
           }
@@ -195,6 +204,7 @@ const Index = ({ onLogout }: IndexProps) => {
         {currentStep === 'feedback' && currentCaseId && (
           <Feedback 
             caseId={currentCaseId}
+            sections={approvedSections.length > 0 ? approvedSections : aiSections}
             onBack={handleFeedbackBack}
             onRestart={handleRestart}
           />
