@@ -70,11 +70,6 @@ export function usePublishedDocument() {
       
       if (error) throw error;
       
-      toast({
-        title: 'Document published',
-        description: 'Patient can now access their document via the link'
-      });
-      
       return accessToken;
       
     } catch (error: any) {
