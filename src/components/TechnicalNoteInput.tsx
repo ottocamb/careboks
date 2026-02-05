@@ -425,11 +425,11 @@ const TechnicalNoteInput = ({
           {/* Upload and Extract Controls */}
           <div className="space-y-2">
             <Label htmlFor="file-upload">Upload PDF or Images (Max {MAX_UPLOAD_FILES})</Label>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="w-full sm:flex-1"
                 disabled={isDisabled || isUploadLimitReached}
                 onClick={() => document.getElementById('file-upload')?.click()}
               >
@@ -440,7 +440,7 @@ const TechnicalNoteInput = ({
               <Button
                 type="button"
                 variant="default"
-                className="flex-1"
+                className="w-full sm:flex-1"
                 disabled={isDisabled || uploadedFiles.length === 0}
                 onClick={handleExtractText}
               >

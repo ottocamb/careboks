@@ -158,14 +158,14 @@ export const Feedback = ({
       {/* Action Buttons - Streamlined Two-Button Layout */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex gap-3">
-            <Button onClick={onBack} variant="ghost" className="flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button onClick={onBack} variant="ghost" className="w-full sm:flex-1">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back to Document
             </Button>
             <Button 
               onClick={handleSubmitAndNewPatient} 
-              className="flex-[2]"
+              className="w-full sm:flex-[2]"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

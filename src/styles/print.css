@@ -49,6 +49,33 @@
   }
 }
 
+/* Mobile responsive scaling for A4 preview */
+@media screen and (max-width: 767px) {
+  .print-container {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .print-document {
+    /* Scale to fit screen width while maintaining aspect ratio */
+    transform-origin: top left;
+    transform: scale(calc((100vw - 32px) / 210mm));
+    width: 210mm; /* Keep A4 width */
+  }
+}
+
+/* Tablet scaling */
+@media screen and (min-width: 768px) and (max-width: 849px) {
+  .print-container {
+    padding: 16px;
+  }
+  
+  .print-document {
+    transform-origin: top center;
+    transform: scale(0.9);
+  }
+}
+
 /* Print media rules - let browser handle page breaks */
 @media print {
   @page {

@@ -280,7 +280,7 @@ const PatientProfile = ({
           {/* Comorbidities Section */}
           <div className="space-y-4">
             <Label>Comorbidities</Label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {COMORBIDITY_OPTIONS.map(condition => (
                 <div key={condition} className="flex items-center space-x-2">
                   <Checkbox
@@ -320,12 +320,12 @@ const PatientProfile = ({
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between pt-6 border-t border-border">
-            <Button variant="outline" onClick={onBack}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-6 border-t border-border">
+            <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Clinical Documents
             </Button>
-            <Button onClick={handleNext} disabled={!isValid}>
+            <Button onClick={handleNext} disabled={!isValid} className="w-full sm:w-auto">
               Generate AI Draft
             </Button>
           </div>
