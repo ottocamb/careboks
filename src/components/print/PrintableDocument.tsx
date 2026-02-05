@@ -66,15 +66,14 @@ export const PrintableDocument = ({
   
   return (
     <div className="print-container">
-      {/* ==================== PAGE 1 ==================== */}
-      <div className="print-page">
+      <div className="print-document">
         <PrintHeader 
           language={language} 
           date={date}
           hospitalName={hospitalName}
         />
         
-        {/* Horizontal flow grid - cards fill left-to-right */}
+        {/* All 7 sections in one continuous grid */}
         <div className="print-content-grid">
           <PrintSection
             title={sectionTitles[0]}
@@ -100,24 +99,6 @@ export const PrintableDocument = ({
             variant="teal"
             icon={<span>✨</span>}
           />
-        </div>
-      </div>
-      
-      {/* ==================== PAGE 2 ==================== */}
-      <div className="print-page">
-        
-        {/* Mini header for page 2 */}
-        <div className="print-header-mini">
-          <span></span>
-          <img 
-            src={carebloksLogo} 
-            alt="Careboks" 
-            className="print-header-mini-logo"
-          />
-        </div>
-        
-        {/* Horizontal flow grid - cards fill left-to-right */}
-        <div className="print-content-grid">
           <PrintMedications 
             content={sections[4]?.content || ''} 
             language={language}
@@ -132,7 +113,7 @@ export const PrintableDocument = ({
           />
         </div>
         
-        {/* Footer with signature and single QR code */}
+        {/* Footer with signature and QR code */}
         <PrintFooter
           clinicianName={clinicianName}
           date={date}
