@@ -90,10 +90,17 @@
     background: white !important;
   }
   
+  /* Page wrapper must be white in print */
+  .print-page {
+    background: white !important;
+    min-height: auto !important;
+  }
+  
   .print-container {
     padding: 0;
     margin: 0;
     background: white !important;
+    min-height: auto !important;
     /* Reset any transforms from responsive styles */
     transform: none !important;
     transform-origin: initial !important;
@@ -135,6 +142,41 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+}
+
+/* ============================================
+   IS-PRINTING OVERRIDES
+   Fallback for browsers that don't honor @media print correctly.
+   Applied via JS before window.print() is called.
+   ============================================ */
+
+html.is-printing,
+html.is-printing body,
+html.is-printing #root {
+  background: white !important;
+}
+
+html.is-printing .print-page {
+  background: white !important;
+  min-height: auto !important;
+}
+
+html.is-printing .print-container {
+  background: white !important;
+  min-height: auto !important;
+  transform: none !important;
+  transform-origin: initial !important;
+}
+
+html.is-printing .print-document {
+  background: white !important;
+  transform: none !important;
+  transform-origin: initial !important;
+  box-shadow: none !important;
+}
+
+html.is-printing .print-content-grid {
+  background: white !important;
 }
 
 /* ============================================
