@@ -4,25 +4,28 @@
  * Design based on Figma: Two-page A4 layout with color-coded sections
  * Two-column grid layout matching the exact Figma design
  * Optimized for accessibility and clinical readability
- * COMPACT: Tightened spacing to fit content on A4 pages
+ * Visual style: White card backgrounds with colored borders
  */
 
-/* Print color variables - from Figma design */
+/* Print color variables - updated for card-based design */
 :root {
-  --print-teal: 173 80% 40%;
-  --print-teal-light: 173 80% 95%;
-  --print-pink: 330 85% 70%;
-  --print-pink-light: 330 85% 95%;
-  --print-red: 0 84% 60%;
-  --print-red-light: 0 84% 95%;
+  /* Border colors for section variants */
+  --print-teal-border: #43B39D;
+  --print-pink-border: #DD4C6E;
+  --print-red-border: #ce556e;
+  --print-navy-border: #252e51;
+  
+  /* Footer teal background */
+  --print-footer-bg: #C0E1D9;
+  
+  /* Text colors */
   --print-text: 215 25% 27%;
   --print-text-light: 215 20% 45%;
   --print-bg: 0 0% 100%;
   --print-border: 215 20% 88%;
-  --print-section-bg: 210 20% 98%;  /* Unified light gray: #F8F9FA */
 }
 
-/* A4 page container - tighter padding */
+/* A4 page container */
 .print-page {
   width: 210mm;
   height: 297mm;
@@ -92,7 +95,7 @@
 }
 
 /* ============================================
-   TWO-COLUMN GRID LAYOUTS (Figma Design)
+   TWO-COLUMN GRID LAYOUTS (Collage Style)
    ============================================ */
 
 /* Page 1 Grid: 
@@ -103,8 +106,8 @@
 .print-page-1-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;  /* Content-based sizing */
-  gap: 12pt;  /* Increased from 8pt for better spacing */
+  grid-template-rows: auto auto;
+  gap: 16px;
 }
 
 .print-page-1-left {
@@ -112,7 +115,7 @@
   grid-row: 1;
   display: flex;
   flex-direction: column;
-  gap: 12pt;  /* Increased from 8pt */
+  gap: 16px;
 }
 
 .print-page-1-right {
@@ -132,8 +135,8 @@
 .print-page-2-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto;  /* Content-based sizing */
-  gap: 12pt;  /* Increased from 8pt */
+  grid-template-rows: auto;
+  gap: 16px;
 }
 
 .print-page-2-left {
@@ -144,142 +147,149 @@
   grid-column: 2;
   display: flex;
   flex-direction: column;
-  gap: 12pt;  /* Increased from 8pt */
+  gap: 16px;
 }
 
 /* ============================================
-   TYPOGRAPHY - A4 optimized (COMPACT)
+   TYPOGRAPHY - Updated sizes
    ============================================ */
 
 .print-title {
-  font-size: 18pt;
+  font-size: 16px;
   font-weight: 700;
   color: hsl(var(--print-text));
   line-height: 1.15;
 }
 
 .print-subtitle {
-  font-size: 9pt;
+  font-size: 10px;
   color: hsl(var(--print-text-light));
   line-height: 1.3;
 }
 
 .print-section-header {
-  font-size: 10pt;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 4pt;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .print-body {
-  font-size: 9pt;
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.4;
   color: hsl(var(--print-text));
 }
 
 .print-body-large {
-  font-size: 10pt;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 /* ============================================
-   SECTION STYLING VARIANTS (COMPACT)
+   SECTION STYLING - White cards with colored borders
    ============================================ */
 
 .print-section {
-  padding: 8pt 10pt;
-  border-radius: 5pt;
+  padding: 12px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid;
   height: fit-content;
 }
 
+/* Teal variant */
 .print-section--teal {
-  border-left: 3pt solid hsl(var(--print-teal)) !important;
-  background: hsl(var(--print-section-bg)) !important;  /* Unified background */
+  border-color: var(--print-teal-border);
 }
 
 .print-section--teal .print-section-header {
-  color: hsl(var(--print-teal)) !important;
+  color: var(--print-teal-border);
 }
 
+/* Pink variant */
 .print-section--pink {
-  border-left: 3pt solid hsl(var(--print-pink)) !important;
-  background: hsl(var(--print-section-bg)) !important;  /* Unified background */
+  border-color: var(--print-pink-border);
 }
 
 .print-section--pink .print-section-header {
-  color: hsl(var(--print-pink)) !important;
+  color: var(--print-pink-border);
 }
 
-/* KEEP red warning section - important for safety visibility */
+/* Red/Warning variant - NOW white bg with red border */
 .print-section--red {
-  background: hsl(var(--print-red)) !important;
-  color: white !important;
+  border-color: var(--print-red-border);
+  background: white;
 }
 
 .print-section--red .print-section-header {
-  color: white !important;
+  color: var(--print-red-border);
 }
 
 .print-section--red .print-body {
-  color: white !important;
+  color: hsl(var(--print-text));
 }
 
+/* Neutral variant */
 .print-section--neutral {
-  border: 1pt solid hsl(var(--print-border)) !important;
-  background: hsl(var(--print-section-bg)) !important;  /* Unified background */
+  border-color: hsl(var(--print-border));
+  background: white;
 }
 
+/* Contacts variant - NOW white bg with navy border */
 .print-section--contacts {
-  background: hsl(var(--print-teal));
-  color: white;
+  border-color: var(--print-navy-border);
+  background: white;
 }
 
 .print-section--contacts .print-section-header {
-  color: white;
+  color: var(--print-navy-border);
 }
 
 .print-section--contacts .print-body {
-  color: white;
+  color: hsl(var(--print-text));
 }
 
-/* Full height section - content-based sizing */
+/* Full height section */
 .print-section--full-height {
   display: flex;
   flex-direction: column;
 }
 
 /* ============================================
-   LIFESTYLE SUBSECTIONS (COMPACT)
+   LIFESTYLE SUBSECTIONS
    ============================================ */
 
 .print-lifestyle-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 5pt;
+  gap: 8px;
 }
 
 .print-lifestyle-item {
-  padding: 4pt 8pt;
+  padding: 6px 10px;
   background: hsl(0 0% 98%);
-  border-radius: 3pt;
-  border: 1pt solid hsl(var(--print-border));
+  border-radius: 6px;
+  border: 1px solid hsl(var(--print-border));
 }
 
 .print-lifestyle-item h4 {
-  font-size: 8pt;
+  font-size: 10px;
   font-weight: 600;
-  color: hsl(var(--print-teal));
-  margin-bottom: 2pt;
+  color: var(--print-teal-border);
+  margin-bottom: 3px;
 }
 
 /* ============================================
-   MEDICATION LIST STYLING (COMPACT)
+   MEDICATION LIST STYLING
    ============================================ */
 
 .print-medication-item {
-  padding: 4pt 0;
-  border-bottom: 1pt solid hsl(var(--print-border));
+  padding: 6px 0;
+  border-bottom: 1px solid hsl(var(--print-border));
 }
 
 .print-medication-item:last-child {
@@ -287,27 +297,27 @@
 }
 
 .print-medication-name {
-  font-size: 9pt;
+  font-size: 12px;
   font-weight: 600;
   color: hsl(var(--print-text));
 }
 
 .print-medication-consequence {
-  font-size: 8pt;
-  color: hsl(var(--print-pink));
+  font-size: 10px;
+  color: var(--print-pink-border);
   font-style: italic;
-  margin-top: 2pt;
+  margin-top: 3px;
 }
 
 /* ============================================
-   CONTACT STYLING (COMPACT)
+   CONTACT STYLING
    ============================================ */
 
 .print-contact-item {
   display: flex;
   justify-content: space-between;
-  padding: 3pt 0;
-  border-bottom: 1pt solid hsl(0 0% 100% / 0.2);
+  padding: 4px 0;
+  border-bottom: 1px solid hsl(var(--print-border));
 }
 
 .print-contact-item:last-child {
@@ -315,14 +325,14 @@
 }
 
 .print-contact-emergency {
-  background: hsl(0 0% 0% / 0.2);
-  padding: 5pt 8pt;
-  border-radius: 3pt;
-  margin-top: 4pt;
+  background: hsl(var(--print-border));
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-top: 6px;
 }
 
 /* ============================================
-   WARNING LIST STYLING (COMPACT)
+   WARNING LIST STYLING
    ============================================ */
 
 .print-warning-list {
@@ -333,8 +343,9 @@
 
 .print-warning-list li {
   position: relative;
-  padding-left: 14pt;
-  margin-bottom: 3pt;
+  padding-left: 18px;
+  margin-bottom: 4px;
+  color: hsl(var(--print-text));
 }
 
 .print-warning-list li::before {
@@ -342,19 +353,20 @@
   position: absolute;
   left: 0;
   top: 0;
+  color: var(--print-red-border);
 }
 
 /* ============================================
-   HEADER STYLING (COMPACT)
+   HEADER STYLING
    ============================================ */
 
 .print-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 10pt;
-  padding-bottom: 8pt;
-  border-bottom: 1pt solid hsl(var(--print-border));  /* Consistent with footer */
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid hsl(var(--print-border));
   position: relative;
 }
 
@@ -364,7 +376,7 @@
 }
 
 .print-header-date {
-  font-size: 8pt;
+  font-size: 10px;
   color: hsl(var(--print-text-light));
   text-align: right;
 }
@@ -374,9 +386,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8pt;
-  padding-bottom: 6pt;
-  border-bottom: 1pt solid hsl(var(--print-border));
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid hsl(var(--print-border));
 }
 
 .print-header-mini-logo {
@@ -385,42 +397,56 @@
 }
 
 /* ============================================
-   FOOTER STYLING (COMPACT)
+   FOOTER STYLING - Teal background with signature box
    ============================================ */
 
 .print-footer {
   margin-top: auto;
-  padding-top: 8pt;
-  border-top: 1pt solid hsl(var(--print-border));
+  padding: 16px 24px;
+  background: var(--print-footer-bg);
+  border-radius: 12px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
 }
 
-.print-signature {
-  font-size: 9pt;
-}
-
-.print-signature-label {
-  font-size: 7pt;
-  color: hsl(var(--print-text-light));
-  margin-bottom: 2pt;
-}
-
-.print-signature-line {
-  width: 100pt;
-  border-bottom: 1pt solid hsl(var(--print-text));
-  padding-bottom: 2pt;
-}
-
+/* QR code on LEFT side */
 .print-qr-container {
   text-align: center;
+  order: -1;
 }
 
 .print-qr-label {
-  font-size: 6pt;
+  font-size: 10px;
+  color: hsl(var(--print-text));
+  margin-top: 4px;
+}
+
+/* Signature box on RIGHT side - white card */
+.print-signature {
+  background: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: right;
+}
+
+.print-signature-label {
+  font-size: 10px;
   color: hsl(var(--print-text-light));
-  margin-top: 2pt;
+  margin-bottom: 4px;
+}
+
+.print-signature-line {
+  font-size: 14px;
+  font-weight: 600;
+  font-style: italic;
+  color: hsl(var(--print-text));
+}
+
+.print-signature-date {
+  font-size: 10px;
+  color: hsl(var(--print-text-light));
+  margin-top: 4px;
 }
 
 /* ============================================
@@ -446,17 +472,17 @@
 }
 
 /* ============================================
-   MARKDOWN CONTENT STYLING (COMPACT)
+   MARKDOWN CONTENT STYLING
    ============================================ */
 
 .print-body ul,
 .print-body ol {
-  padding-left: 12pt;
-  margin: 2pt 0;
+  padding-left: 16px;
+  margin: 4px 0;
 }
 
 .print-body li {
-  margin-bottom: 2pt;
+  margin-bottom: 3px;
 }
 
 .print-body strong {
@@ -464,32 +490,32 @@
 }
 
 .print-body p {
-  margin-bottom: 4pt;
+  margin-bottom: 6px;
 }
 
 .print-body p:last-child {
   margin-bottom: 0;
 }
 
-/* Extra compact body for dense sections */
+/* Compact body for dense sections */
 .print-body--compact ul,
 .print-body--compact ol {
-  padding-left: 10pt;
-  margin: 1pt 0;
+  padding-left: 14px;
+  margin: 2px 0;
 }
 
 .print-body--compact li {
-  margin-bottom: 1pt;
-  font-size: 8.5pt;
+  margin-bottom: 2px;
+  font-size: 11px;
 }
 
 .print-body--compact p {
-  margin-bottom: 2pt;
-  font-size: 8.5pt;
+  margin-bottom: 3px;
+  font-size: 11px;
 }
 
 /* Section icon sizing */
 .print-section-header .icon,
 .print-section-header span:first-child {
-  font-size: 10pt;
+  font-size: 14px;
 }
