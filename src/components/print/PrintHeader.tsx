@@ -41,7 +41,7 @@ export const PrintHeader = ({ language, date, hospitalName }: PrintHeaderProps) 
     <div className="print-header">
       <div>
         <h1 className="print-title">{titles.main}</h1>
-        <p className="print-subtitle">{titles.sub}</p>
+        <p className="print-subtitle mt-2">{titles.sub}</p>
         {hospitalName && (
           <p className="print-subtitle mt-1">{hospitalName}</p>
         )}
