@@ -1,347 +1,265 @@
 
+# Pre-Deployment Cleanup Plan
 
-# Responsive Design Implementation Plan
+## Executive Summary
 
-## Overview
-
-This plan implements responsive design across the application to ensure optimal display and usability on Mobile (375px+), Tablet (768px+), and Desktop (1024px+) screens. The print output structure remains unchanged—only the viewing container and UI controls will be adjusted.
-
----
-
-## Breakpoint Strategy
-
-| Breakpoint | Target | Tailwind Prefix |
-|------------|--------|-----------------|
-| 375px+ | Mobile (default) | (none) |
-| 768px+ | Tablet | `md:` |
-| 1024px+ | Desktop | `lg:` |
+This cleanup plan covers three phases: Dead Code Elimination, Naming & Organization, and Documentation. All changes preserve existing business logic, UI styling, and application flow.
 
 ---
 
-## 1. Global Layout & Spacing
+## Phase 1: Dead Code Elimination & Cleanup
 
-### File: `src/pages/Index.tsx`
+### 1.1 Unused Files to Delete
 
-**Current:**
-```tsx
-<main className="container mx-auto px-6 py-8">
-```
+| File | Reason |
+|------|--------|
+| `src/components/FinalOutput.tsx` | Not imported anywhere (confirmed via search). Comment in file states "not used in main workflow". The workflow now goes: Approval → PrintPreview → Feedback |
+| `src/components/QRCodeDisplay.tsx` | Not imported anywhere. QR code is now rendered directly in `PrintableDocument.tsx` using `QRCodeSVG` |
 
-**Updated:**
-```tsx
-<main className="container mx-auto px-4 py-6 md:px-6 md:py-8">
-```
+### 1.2 Console Log Cleanup
 
-- Mobile: 16px horizontal padding, 24px vertical padding
-- Tablet+: 24px horizontal padding, 32px vertical padding
+Remove development console.log statements while preserving critical error logging:
 
----
+**Files with console.log to remove:**
 
-## 2. Header (MedicalHeader.tsx)
+| File | Lines | Action |
+|------|-------|--------|
+| `src/components/TechnicalNoteInput.tsx` | 151-152, 155, 162, 169, 181, 235, 283 | Remove all debug logs |
+| `src/components/ClinicianApproval.tsx` | 122-133, 146, 156, 176-177, 214, 220, 258 | Remove debug logs, keep error logging |
+| `src/components/Feedback.tsx` | 104 | Keep error logging (critical) |
 
-### Current Issues:
-- Logo and Case ID may overlap on small screens
-- Step progress bar doesn't scale well
+**Files with console.log/warn/error to KEEP (critical error handling):**
 
-### Changes:
+| File | Reason |
+|------|--------|
+| `src/pages/NotFound.tsx` | Security logging for 404 attempts |
+| `src/hooks/useCasePersistence.ts` | Error context for debugging database operations |
+| `src/hooks/usePublishedDocument.ts` | Error context for publishing failures |
+| `src/components/account/ProfileSection.tsx` | Error context for profile operations |
+| `supabase/functions/*` | Edge function logging is necessary for debugging |
 
-**File: `src/components/MedicalHeader.tsx`**
+### 1.3 Unused Imports Cleanup
 
-| Element | Mobile | Tablet+ |
-|---------|--------|---------|
-| Container padding | `px-4 py-3` | `md:px-6 md:py-4` |
-| Logo height | `h-8` | `md:h-10` |
-| Progress bar width | `w-24` | `md:w-32` |
-| Case ID | Hidden | Show with `hidden md:inline` (already done) |
-| Layout | Flex with wrap/gap | Same but tighter spacing |
+Review and remove any unused imports after file deletions:
 
-Key changes:
-- Reduce header padding on mobile
-- Scale down logo and progress bar for mobile
-- Hide Case ID on mobile (already implemented with `hidden sm:inline`)
-- Ensure minimum touch target of 44px for icon buttons
+| File | Import to Check |
+|------|-----------------|
+| `src/pages/Index.tsx` | After removal of FinalOutput, no reference needed |
 
----
+### 1.4 TypeScript Strict Mode Check
 
-## 3. Technical Note Input (TechnicalNoteInput.tsx)
-
-### Current Issues:
-- Upload buttons side-by-side may be cramped on mobile
-
-### Changes:
-
-**File: `src/components/TechnicalNoteInput.tsx`**
-
-**Upload controls grid (lines 428-459):**
-
-```tsx
-// Before
-<div className="flex gap-2">
-
-// After
-<div className="flex flex-col gap-2 sm:flex-row">
-```
-
-This makes buttons stack vertically on mobile and sit side-by-side on larger screens.
+The codebase uses TypeScript with proper typing. No glaring type errors found during review. All components have:
+- Proper interface definitions
+- Type annotations on function parameters
+- Consistent use of `any` only where necessary (AI analysis data)
 
 ---
 
-## 4. Patient Profile (PatientProfile.tsx)
+## Phase 2: Naming & Organization
 
-### Current Issues:
-- 2-column grid on all screens
-- Form fields may be too narrow on mobile
+### 2.1 Naming Conventions Audit
 
-### Changes:
+**All React Components already use PascalCase:**
+- `ClinicianApproval.tsx`
+- `TechnicalNoteInput.tsx`
+- `PatientProfile.tsx`
+- `MedicalHeader.tsx`
+- `SectionBox.tsx`
+- `RichTextEditor.tsx`
+- `Feedback.tsx`
+- `PrintableDocument.tsx`
+- etc.
 
-**File: `src/components/PatientProfile.tsx`**
+**All helper functions use camelCase:**
+- `handleSubmit`
+- `isSubmitting`
+- `parseDraftIntoSections`
+- `reconstructDraft`
+- `parseStructuredDocument`
+- `structuredDocumentToText`
 
-**Demographics grid (line 186):**
-```tsx
-// Already has: grid-cols-1 md:grid-cols-2
-// This is correct - single column on mobile, 2 columns on tablet+
-```
+**No naming changes required** - the codebase follows consistent conventions.
 
-**Comorbidities grid (line 283):**
-```tsx
-// Before
-<div className="grid grid-cols-2 gap-4">
+### 2.2 File Structure Analysis
 
-// After  
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-```
-
-**Navigation buttons (lines 323-331):**
-```tsx
-// Before
-<div className="flex justify-between pt-6 border-t border-border">
-
-// After
-<div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-6 border-t border-border">
-```
-
-Make buttons stack on mobile, row on tablet+.
-
----
-
-## 5. Clinician Approval (ClinicianApproval.tsx)
-
-### Current Issues:
-- Section grid always 2 columns
-- Action buttons may be cramped
-
-### Changes:
-
-**File: `src/components/ClinicianApproval.tsx`**
-
-**Section grid (line 407):**
-```tsx
-// Before
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-// Already correct! Single column on mobile, 2 columns on tablet+
-```
-
-**Action buttons (lines 473-491):**
-```tsx
-// Before
-<div className="flex gap-3">
-  <Button ... className="flex-1">
-  <Button ... className="flex-1">
-</div>
-
-// After
-<div className="flex flex-col gap-3 sm:flex-row">
-  <Button ... className="w-full sm:flex-1">
-  <Button ... className="w-full sm:flex-1">
-</div>
-```
-
-Full-width stacked buttons on mobile, flex row on tablet+.
-
----
-
-## 6. Feedback Screen (Feedback.tsx)
-
-### Current Issues:
-- Buttons may be cramped on mobile
-
-### Changes:
-
-**File: `src/components/Feedback.tsx`**
-
-**Action buttons (lines 161-178):**
-```tsx
-// Before
-<div className="flex gap-3">
-  <Button ... className="flex-1">
-  <Button ... className="flex-[2]">
-</div>
-
-// After
-<div className="flex flex-col gap-3 sm:flex-row">
-  <Button ... className="w-full sm:flex-1">
-  <Button ... className="w-full sm:flex-[2]">
-</div>
-```
-
-Stack vertically on mobile with full width, flex row with proportional widths on tablet+.
-
----
-
-## 7. Print Preview Page (PrintPreview.tsx) - CRITICAL
-
-### Current Issues:
-- A4 document preview doesn't scale on mobile
-- Action buttons don't stack on mobile
-- Controls at top may overlap
-
-### Changes:
-
-**File: `src/pages/PrintPreview.tsx`**
-
-### 7.1 Action Bar Buttons
-
-**Current (lines 145-180):**
-```tsx
-<div className="max-w-[210mm] mx-auto flex items-center justify-between">
-  <Button>Back</Button>
-  <div className="flex items-center gap-4">
-    <Button>Print</Button>
-    <Button>Copy Link</Button>
-    <Button>Continue</Button>
-  </div>
-</div>
-```
-
-**Updated:**
-```tsx
-<div className="max-w-[210mm] mx-auto px-4 md:px-0">
-  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <Button className="w-full sm:w-auto">Back</Button>
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-      <Button className="w-full sm:w-auto">Print</Button>
-      <Button className="w-full sm:w-auto">Copy Link</Button>
-      <Button className="w-full sm:w-auto">Continue</Button>
-    </div>
-  </div>
-</div>
-```
-
-### 7.2 A4 Document Scaling
-
-**File: `src/styles/print.css`**
-
-Add responsive wrapper for the A4 preview on mobile:
-
-```css
-/* Mobile responsive scaling for A4 preview */
-@media screen and (max-width: 767px) {
-  .print-container {
-    padding: 16px;
-    overflow-x: auto;
-  }
-  
-  .print-document {
-    /* Scale to fit screen width while maintaining aspect ratio */
-    transform-origin: top left;
-    transform: scale(calc((100vw - 32px) / 210mm));
-    width: 210mm; /* Keep A4 width */
-  }
-}
-
-@media screen and (min-width: 768px) and (max-width: 849px) {
-  .print-container {
-    padding: 16px;
-  }
-  
-  .print-document {
-    transform-origin: top center;
-    transform: scale(0.9);
-  }
-}
-```
-
-This scales the A4 preview to fit mobile screens while keeping the print output unchanged.
-
----
-
-## 8. Minimum Touch Targets
-
-Ensure all interactive elements have minimum 44px touch height on mobile.
-
-**File: `src/components/ui/button.tsx`**
-
-The button component already uses appropriate sizes. For icon buttons and checkboxes, ensure:
-
-```tsx
-// Icon buttons should use min-h-[44px] min-w-[44px] on mobile
-// Checkbox items in Feedback.tsx get enough padding from flex items-center space-x-3
-```
-
-No changes needed - current implementation meets accessibility standards.
-
----
-
-## Summary of File Changes
-
-| File | Changes |
-|------|---------|
-| `src/pages/Index.tsx` | Responsive container padding |
-| `src/components/MedicalHeader.tsx` | Responsive padding, logo size, progress bar |
-| `src/components/TechnicalNoteInput.tsx` | Stack upload buttons on mobile |
-| `src/components/PatientProfile.tsx` | Comorbidities grid responsive, buttons stack |
-| `src/components/ClinicianApproval.tsx` | Action buttons stack on mobile |
-| `src/components/Feedback.tsx` | Action buttons stack on mobile |
-| `src/pages/PrintPreview.tsx` | Action bar responsive, horizontal padding |
-| `src/styles/print.css` | A4 document scaling for mobile/tablet |
-
----
-
-## Visual Summary
+**Current structure is well-organized:**
 
 ```text
-MOBILE (375px+)              TABLET (768px+)           DESKTOP (1024px+)
-┌─────────────────┐          ┌──────────────────────┐  ┌────────────────────────┐
-│ [Logo]          │          │ [Logo]  Step 1/4     │  │ [Logo]  Case#  Step 1/4│
-│ Step 1 of 4     │          │         Progress ███ │  │         Progress ███████│
-├─────────────────┤          ├──────────────────────┤  ├────────────────────────┤
-│                 │          │                      │  │                        │
-│ [Full-width     │          │ ┌────┐    ┌────┐    │  │ ┌────────┐ ┌────────┐  │
-│  Form Field]    │          │ │Form│    │Form│    │  │ │ Form   │ │ Form   │  │
-│                 │          │ └────┘    └────┘    │  │ └────────┘ └────────┘  │
-│ [Full-width     │          │                      │  │                        │
-│  Form Field]    │          │ ┌────────────────┐  │  │ ┌────────┐ ┌────────┐  │
-│                 │          │ │  Form Field    │  │  │ │ Form   │ │ Form   │  │
-├─────────────────┤          ├──────────────────────┤  ├────────────────────────┤
-│  [Back]         │          │ [Back]      [Next →] │  │ [Back]        [Next →] │
-│  [Next →]       │          │                      │  │                        │
-└─────────────────┘          └──────────────────────┘  └────────────────────────┘
+src/
+├── pages/           # All page-level components
+├── components/      # Reusable components
+│   ├── ui/          # shadcn/ui primitives
+│   ├── account/     # Account-specific sections
+│   └── print/       # Print-specific components
+├── hooks/           # Custom React hooks
+├── utils/           # Utility functions
+└── lib/             # Library helpers
+```
 
-PRINT PREVIEW (Mobile)
-┌─────────────────┐
-│ [← Back]        │
-│ [Print]         │
-│ [Copy Link]     │
-│ [Continue →]    │
-├─────────────────┤
-│ ┌─────────────┐ │ 
-│ │  Scaled A4  │ │  ← CSS transform: scale()
-│ │  Document   │ │     fits to screen width
-│ │  Preview    │ │
-│ └─────────────┘ │
-└─────────────────┘
+**No reorganization needed** - the structure follows best practices.
+
+### 2.3 Small File Consolidation Analysis
+
+All utility files contain multiple related functions and are appropriately sized:
+- `draftParser.ts` - 2 functions, well-scoped
+- `structuredDocumentParser.ts` - 3 functions, well-scoped
+- `pdfTextExtraction.ts` - PDF-specific utilities
+- `pdfToImages.ts` - PDF to image conversion
+
+**No consolidation needed** - files are appropriately sized and scoped.
+
+---
+
+## Phase 3: Documentation & Comments
+
+### 3.1 JSDoc Comments
+
+Most major files already have excellent JSDoc documentation. The following need additional comments:
+
+**Files needing JSDoc additions:**
+
+| File | What to Add |
+|------|-------------|
+| `src/pages/Auth.tsx` | Fileoverview JSDoc, function documentation |
+| `src/pages/Landing.tsx` | Fileoverview JSDoc |
+| `src/pages/Account.tsx` | Fileoverview JSDoc |
+| `src/components/account/ContactsSection.tsx` | Fileoverview JSDoc |
+| `src/components/account/DocumentsSection.tsx` | Fileoverview JSDoc |
+| `src/components/account/SettingsSection.tsx` | Fileoverview JSDoc |
+
+**Files with excellent existing documentation (no changes):**
+- `src/components/ClinicianApproval.tsx`
+- `src/components/PatientProfile.tsx`
+- `src/components/TechnicalNoteInput.tsx`
+- `src/components/SectionBox.tsx`
+- `src/components/RichTextEditor.tsx`
+- `src/components/MedicalHeader.tsx`
+- `src/components/Feedback.tsx`
+- `src/hooks/useCasePersistence.ts`
+- `src/hooks/usePublishedDocument.ts`
+- `src/utils/draftParser.ts`
+- `src/utils/structuredDocumentParser.ts`
+
+### 3.2 README.md Overhaul
+
+The existing README is comprehensive but needs updates to reflect current state:
+
+**Updates Required:**
+
+1. **Remove FinalOutput references** - Component is deprecated
+2. **Update section count** - Now 7 sections (added Warning Signs)
+3. **Add Warning Signs section** - Missing from documentation
+4. **Update workflow description** - Approval → PrintPreview → Feedback (not FinalOutput)
+5. **Add published_documents table** - Missing from database schema
+6. **Add case_feedback table** - Missing from database schema
+7. **Add patient_feedback table** - Missing from database schema
+8. **Update architecture diagram** - Add PrintPreview.tsx and PatientDocument.tsx pages
+
+**New README structure:**
+
+```text
+# Careboks - AI Communication Tool for Cardiac Patients
+
+## Project Overview
+## Tech Stack
+## Setup Guide
+  - Prerequisites
+  - Installation
+  - Environment Variables
+  - Running Locally
+## Application Workflow
+## Architecture
+  - Frontend
+  - Backend Functions
+  - Database Schema
+## Output Document Structure
+## Deployment
+## Security
+## Links
 ```
 
 ---
 
-## Technical Notes
+## Implementation Order
 
-1. **Print Output Unchanged**: All changes use `@media screen` queries only. The `@media print` rules remain untouched.
+### Batch 1: Phase 1 (Dead Code Elimination)
+1. Delete `src/components/FinalOutput.tsx`
+2. Delete `src/components/QRCodeDisplay.tsx`
+3. Remove console.log statements from:
+   - `src/components/TechnicalNoteInput.tsx`
+   - `src/components/ClinicianApproval.tsx`
 
-2. **CSS Scaling Approach**: Using `transform: scale()` for the A4 preview maintains the exact layout while making it visible on mobile. The user can see the full document without horizontal scrolling.
+### Batch 2: Phase 3 (Documentation)
+1. Add JSDoc to account section components
+2. Add JSDoc to Auth.tsx and Landing.tsx
+3. Rewrite README.md with updated structure
 
-3. **Touch Targets**: All buttons use Tailwind's default sizing which meets the 44px minimum. The `py-2` and `px-4` classes on buttons ensure adequate touch area.
+---
 
-4. **No Logic Changes**: Only Tailwind classes and CSS are modified. No JavaScript logic or data flow changes.
+## Verification Checklist
 
+After implementation, verify:
+
+- [ ] No broken imports (npm run build succeeds)
+- [ ] Index.tsx 5-step workflow intact (input → profile → approval → output → feedback)
+- [ ] PrintPreview page accessible and functional
+- [ ] Feedback page accessible and functional
+- [ ] Print & Publish flow works correctly
+- [ ] Patient document QR code access works
+
+---
+
+## Technical Details
+
+### Files to Delete (2 files)
+
+```text
+src/components/FinalOutput.tsx      # 230 lines - unused
+src/components/QRCodeDisplay.tsx    # 46 lines - unused
+```
+
+### Console Logs to Remove
+
+**TechnicalNoteInput.tsx** (lines 151-283):
+- Line 151: `console.log('Starting text extraction...')`
+- Line 152: `console.log('Processing files...')`
+- Line 155: `console.log('Processing file: ${file.name}')`
+- Line 162: `console.log('Direct extraction successful...')`
+- Line 169: `console.log('Falling back to OCR...')`
+- Line 181: `console.log('Extraction complete...')`
+- Line 235: `console.log('OCR extracted...')`
+- Line 283: `console.log('Image OCR extracted...')`
+
+**ClinicianApproval.tsx** (lines 122-258):
+- Lines 122-133: Multiple debug logs for section parsing
+- Line 146: `console.log('Starting V2 document generation...')`
+- Line 156: `console.log('Document generated successfully...')`
+- Lines 176-177: Validation warning logs (keep as console.warn)
+- Line 214: `console.log('Document generated, validating...')`
+- Line 220: `console.log('Validation passed!')`
+- Line 258: `console.log('Retrying generation...')` (keep for debugging)
+
+### README Updates
+
+The README needs to reflect that the workflow is now:
+1. Technical Note Input
+2. Patient Profile
+3. Clinician Approval
+4. Print Preview (with Publish)
+5. Feedback
+
+Not the deprecated FinalOutput component.
+
+---
+
+## Summary
+
+| Phase | Items | Estimated Changes |
+|-------|-------|-------------------|
+| Phase 1 | Delete 2 unused files, remove ~15 console.log statements | 3 files modified, 2 deleted |
+| Phase 2 | No changes needed (naming/structure is correct) | 0 files |
+| Phase 3 | Add JSDoc to 5 files, rewrite README | 6 files modified |
+
+**Total:** 9 files modified, 2 files deleted
+
+All changes are cosmetic/documentation only - **no business logic, UI styling, or application flow changes**.
