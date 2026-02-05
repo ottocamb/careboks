@@ -143,39 +143,43 @@ export default function PrintPreview() {
     <div className="min-h-screen bg-muted">
       {/* Action Bar - Hidden on print */}
       <div className="no-print sticky top-0 z-10 bg-background border-b p-4">
-        <div className="max-w-[210mm] mx-auto flex items-center justify-between">
-          <Button 
-            variant="outline" 
-            onClick={handleBack}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          
-          <div className="flex items-center gap-4">
-            <Button onClick={handlePrint} variant="outline">
-              <Printer className="mr-2 h-4 w-4" />
-              Print for Patient
+        <div className="max-w-[210mm] mx-auto px-4 md:px-0">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button 
+              variant="outline" 
+              onClick={handleBack}
+              className="w-full sm:w-auto"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back
             </Button>
             
-            {publishedUrl && (
-              <Button 
-                variant="outline"
-                onClick={handleCopyUrl}
-              >
-                {copied ? (
-                  <Check className="mr-2 h-4 w-4 text-green-600" />
-                ) : (
-                  <Copy className="mr-2 h-4 w-4" />
-                )}
-                {copied ? 'Copied!' : 'Copy Link'}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+              <Button onClick={handlePrint} variant="outline" className="w-full sm:w-auto">
+                <Printer className="mr-2 h-4 w-4" />
+                Print for Patient
               </Button>
-            )}
+              
+              {publishedUrl && (
+                <Button 
+                  variant="outline"
+                  onClick={handleCopyUrl}
+                  className="w-full sm:w-auto"
+                >
+                  {copied ? (
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="mr-2 h-4 w-4" />
+                  )}
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </Button>
+              )}
 
-            <Button onClick={handleContinueToFeedback}>
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Continue to Feedback
-            </Button>
+              <Button onClick={handleContinueToFeedback} className="w-full sm:w-auto">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Continue to Feedback
+              </Button>
+            </div>
           </div>
         </div>
       </div>

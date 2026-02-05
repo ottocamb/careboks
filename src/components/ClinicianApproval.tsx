@@ -470,12 +470,12 @@ export const ClinicianApproval = ({
           <CardTitle className="text-lg">Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3">
-            <Button onClick={onBack} variant="outline" className="flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button onClick={onBack} variant="outline" className="w-full sm:flex-1">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Patient Profile
             </Button>
-            <Button onClick={handleApprove} className="flex-1" disabled={isPublishing}>
+            <Button onClick={handleApprove} className="w-full sm:flex-1" disabled={isPublishing}>
               {isPublishing ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
